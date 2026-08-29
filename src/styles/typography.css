@@ -1,0 +1,46 @@
+@font-face {
+  font-family: 'Gondens';
+  src: url('../assets/fonts/gondens/Gondens DEMO.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Feldora';
+  src: url('../assets/fonts/feldora/FeldoraDemoRegular-ZpjY3.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'VictoryStriker';
+  src: url('../assets/fonts/victory/Victory Striker Sans Demo.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-deep-blue);
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+h1 { font-size: var(--font-size-3xl); }
+h2 { font-size: var(--font-size-2xl); }
+h3 { font-size: var(--font-size-xl); }
+
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}

@@ -1,0 +1,242 @@
+/* ── SECTION SHELL ───────────────────────────────────── */
+.section {
+  background-color: #1e1b19;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  /* Wave top-edge via box-shadow trick handled in Home */
+}
+
+/* ── SECTION EYEBROW ─────────────────────────────────── */
+.sectionEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 4rem 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.eyebrowRule {
+  flex: 1;
+  height: 1px;
+  background: rgba(210, 186, 152, 0.12);
+  display: block;
+}
+
+.eyebrowLabel {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: rgba(210, 186, 152, 0.35);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── FLOATING CANVAS ─────────────────────────────────── */
+.canvas {
+  position: relative;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  /* Fixed height so absolute children have a reference */
+  height: 75vh;
+  min-height: 560px;
+  max-height: 780px;
+  box-sizing: border-box;
+}
+
+/* ── CONNECTOR SVG ───────────────────────────────────── */
+.connectorSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.connectorLine {
+  stroke: rgba(210, 186, 152, 0.07);
+  stroke-width: 1;
+  stroke-dasharray: 3 6;
+}
+
+/* ── FEATURE BASE ────────────────────────────────────── */
+.feature {
+  position: absolute;
+  cursor: default;
+  max-width: 240px;
+}
+
+/* ── ASYMMETRIC POSITIONS ────────────────────────────── */
+
+/* F1 — upper left */
+.f1 {
+  top: 10%;
+  left: 4%;
+}
+
+/* F2 — mid left, offset inward */
+.f2 {
+  top: 50%;
+  left: 8%;
+}
+
+/* F3 — upper right */
+.f3 {
+  top: 8%;
+  right: 5%;
+  max-width: 220px;
+  text-align: right;
+}
+
+/* F4 — lower right, slightly inward */
+.f4 {
+  top: 56%;
+  right: 8%;
+  max-width: 220px;
+  text-align: right;
+}
+
+/* F5 — lower center, slightly left of center */
+.f5 {
+  top: 76%;
+  left: 50%;
+  transform: translateX(-60%);
+  max-width: 240px;
+}
+
+/* ── FEATURE INNER ───────────────────────────────────── */
+.featureInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+/* Right-aligned features need reversed layout */
+.f3 .featureInner,
+.f4 .featureInner {
+  flex-direction: row-reverse;
+}
+
+/* ── ACCENT MARKER ───────────────────────────────────── */
+.accentMarker {
+  display: block;
+  height: 1px;
+  width: 10px;
+  background-color: rgba(210, 186, 152, 0.45);
+  flex-shrink: 0;
+  margin-top: 0.9rem; /* vertically align with title baseline */
+  transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+/* ── FEATURE CONTENT ─────────────────────────────────── */
+.featureContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* ── NUMBER ──────────────────────────────────────────── */
+.featureNum {
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgba(210, 186, 152, 0.25);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+/* ── TITLE ───────────────────────────────────────────── */
+.featureTitle {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(250, 246, 240, 0.72);
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.titleLine {
+  display: block;
+}
+
+/* ── DESCRIPTION ─────────────────────────────────────── */
+.featureDesc {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: rgba(250, 246, 240, 0.3);
+  line-height: 1.6;
+  margin: 0.25rem 0 0;
+  max-width: 200px;
+}
+
+/* ── WAVE SEPARATOR (rendered in Home.tsx) ───────────── */
+
+/* ── TABLET ──────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .canvas {
+    height: 80vh;
+    min-height: 600px;
+  }
+
+  .f1 { top: 8%;  left: 2%; }
+  .f2 { top: 48%; left: 4%; }
+  .f3 { top: 8%;  right: 2%; }
+  .f4 { top: 54%; right: 4%; }
+  .f5 { top: 80%; left: 50%; transform: translateX(-55%); }
+
+  .feature { max-width: 210px; }
+  .f3, .f4 { max-width: 200px; }
+}
+
+/* ── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .section {
+    padding-bottom: 3rem;
+  }
+
+  .sectionEyebrow {
+    padding: 2.5rem 1.5rem 0;
+  }
+
+  .canvas {
+    /* Switch to static vertical flow on mobile */
+    height: auto;
+    min-height: unset;
+    max-height: unset;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+
+  /* All features become static, no absolute positioning */
+  .feature,
+  .f1, .f2, .f3, .f4, .f5 {
+    position: static;
+    transform: none;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .f3 .featureInner,
+  .f4 .featureInner {
+    flex-direction: row; /* restore LTR on mobile */
+  }
+
+  .connectorSvg {
+    display: none; /* hide connectors on mobile */
+  }
+}

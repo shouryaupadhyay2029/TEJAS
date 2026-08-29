@@ -1,0 +1,462 @@
+/* ── PAGE SHELL ──────────────────────────────────────── */
+.homeContainer {
+  background-color: #1e1b19;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NAVBAR ──────────────────────────────────────────── */
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2.5rem;
+  box-sizing: border-box;
+}
+
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  font-family: 'Gondens', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.logoCircle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: #1e1b19;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: rgba(210, 186, 152, 0.95);
+  padding-right: 7px;
+  font-family: 'Gondens', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.25);
+}
+
+.logoTextOutside {
+  color: #1e1b19;
+  margin-left: -4px;
+  font-size: 1.35rem;
+  line-height: 1;
+  font-family: 'Gondens', sans-serif;
+  font-weight: 900;
+  display: inline-block;
+}
+
+.logoDivider {
+  width: 1.5px;
+  height: 22px;
+  background-color: rgba(30, 27, 25, 0.2);
+}
+
+.logoTagline {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(30, 27, 25, 0.55);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  max-width: 110px;
+  line-height: 1.2;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.navLink {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(30, 27, 25, 0.55);
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: #1e1b19;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+}
+
+.orderButton {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(210, 186, 152, 0.95);
+  background-color: #1e1b19;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 1.25rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 12px rgba(30, 27, 25, 0.18);
+  display: inline-block;
+}
+
+.orderButton:hover {
+  background-color: #2c2826;
+}
+
+/* ── HERO SECTION ────────────────────────────────────── */
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 620px;
+  flex-shrink: 0;
+}
+
+/* ── FLOATING FEATURES OVERLAY ───────────────────────── */
+.floatingOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* doesn't block clicks on CTAs etc */
+  z-index: 10;
+}
+
+.floatingItem {
+  position: absolute;
+  max-width: 190px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.floatNum {
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: rgba(30, 27, 25, 0.2);
+  flex-shrink: 0;
+  padding-top: 0.22rem; /* align with title cap-height */
+  display: block;
+}
+
+.floatBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.floatTitleLine {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(30, 27, 25, 0.6);
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.floatDesc {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: rgba(30, 27, 25, 0.35);
+  line-height: 1.55;
+  margin-top: 0.15rem;
+}
+
+/* hide floating features on mobile — they stack below */
+@media (max-width: 768px) {
+  .floatingOverlay { display: none; }
+}
+
+/* Right-side floating items: text right-aligned, number trails */
+.floatingItemRight {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.floatingItemRight .floatBody {
+  align-items: flex-end;
+}
+
+/* ── THREE-COLUMN LAYOUT ─────────────────────────────── */
+.triLayout {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  /* left placeholder | center hero | right rail */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  padding: 90px 3rem 2.5rem;
+  gap: 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  pointer-events: none; /* overlay handles its own pointer-events */
+}
+
+/* re-enable pointer events on interactive children */
+.triLayout > * { pointer-events: auto; }
+
+/* ── SIDE RAILS ──────────────────────────────────────── */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-right: 2.5rem;
+}
+
+.railRight {
+  padding-right: 0;
+  padding-left: 2.5rem;
+}
+
+.railHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.railEyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: rgba(30, 27, 25, 0.38);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.railRule {
+  flex: 1;
+  height: 1px;
+  background: rgba(30, 27, 25, 0.15);
+  display: block;
+}
+
+/* ── FEATURE ROWS ────────────────────────────────────── */
+.featureList {
+  display: flex;
+  flex-direction: column;
+}
+
+.featureRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(30, 27, 25, 0.09);
+  cursor: default;
+  transition: background 0.18s ease;
+}
+
+.featureRow:first-child {
+  border-top: 1px solid rgba(30, 27, 25, 0.09);
+}
+
+.featureRowRight {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.featureRowRight .featureBody {
+  align-items: flex-end;
+}
+
+.featureNum {
+  font-family: 'Gondens', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: rgba(30, 27, 25, 0.22);
+  line-height: 1.6;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+  min-width: 1.5rem;
+}
+
+.featureBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.featureTitle {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgba(30, 27, 25, 0.75);
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.featureDesc {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: rgba(30, 27, 25, 0.42);
+  line-height: 1.55;
+}
+
+/* ── CENTER HERO ─────────────────────────────────────── */
+.heroCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% - 3rem)); /* slight upward bias matching old margin-top */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+  width: clamp(240px, 35vw, 520px);
+  container-type: inline-size;
+  z-index: 20;
+}
+
+.eyebrow {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: rgba(30, 27, 25, 0.42);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.heroTitle {
+  font-family: 'Gondens', sans-serif;
+  font-size: clamp(4rem, 22cqi, 8rem);
+  font-weight: 900;
+  color: #1e1b19;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  margin: 0 0 2.5rem;
+  width: 100%;
+  word-break: keep-all;
+  padding-bottom: 0.5rem; /* account for font descent */
+}
+
+.heroTagline {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(30, 27, 25, 0.52);
+  line-height: 1.65;
+  max-width: 320px;
+  margin: 0 0 1.75rem;
+}
+
+/* ── CTAs ────────────────────────────────────────────── */
+.ctaGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ctaPrimary {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(210, 186, 152, 0.95);
+  background-color: #1e1b19;
+  padding: 0.65rem 1.5rem;
+  border-radius: 9999px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 16px rgba(30, 27, 25, 0.22);
+  white-space: nowrap;
+}
+
+.ctaPrimary:hover {
+  background-color: #2c2826;
+  box-shadow: 0 6px 22px rgba(30, 27, 25, 0.3);
+}
+
+.ctaSecondary {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(30, 27, 25, 0.55);
+  background: transparent;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(30, 27, 25, 0.25);
+  transition: color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  border-radius: 0;
+}
+
+.ctaSecondary:hover {
+  color: #1e1b19;
+  border-color: rgba(30, 27, 25, 0.6);
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .triLayout {
+    grid-template-columns: 1fr 1.4fr 1fr;
+    padding: 90px 1.5rem 2rem;
+    gap: 0;
+  }
+  .rail { padding-right: 1.5rem; }
+  .railRight { padding-left: 1.5rem; padding-right: 0; }
+}
+
+@media (max-width: 768px) {
+  .triLayout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding: 80px 1.5rem 2rem;
+    gap: 2rem;
+    overflow-y: auto;
+  }
+  .rail { padding-right: 0; order: 2; }
+  .railRight { padding-left: 0; order: 3; }
+  .heroCenter { order: 1; }
+  .navLinks { display: none; }
+  .navbar { padding: 1rem 1.5rem; }
+  .featureRowRight { flex-direction: row; text-align: left; }
+  .featureRowRight .featureBody { align-items: flex-start; }
+}

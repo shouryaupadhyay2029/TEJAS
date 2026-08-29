@@ -1,0 +1,68 @@
+:root {
+  /* Brand Palette: Vintage Paper Theme */
+  --color-primary: #d2b48c;       /* Warm Tan/Cream Primary */
+  --color-primary-hover: #bda27e; /* Darker Tan */
+  --color-primary-light: #463f3a; /* Secondary Warm Gray */
+  
+  --color-deep-blue: #1e1b19;     /* Deep Warm Charcoal Background */
+  --color-railway-red: #bc473a;   /* Rust Red */
+  --color-forest: #463f3a;        
+  --color-dark-surface: #2c2826;  /* Card Background */
+  
+  /* Status Colors */
+  --color-critical: #bc473a;      
+  --color-warning: #8a7e72;       
+  --color-success: #d2b48c;       
+  --color-info: #463f3a;          
+  
+  /* Material Backgrounds & Borders */
+  --color-bg-base: #1e1b19;       /* Dark Background */
+  --color-bg-surface: #2c2826;    /* Dark Card */
+  --color-bg-surface-raised: #3a3532; /* Raised Card / Border */
+  --color-border: #3a3532;        /* Theme Border */
+  --color-border-strong: #463f3a;
+  
+  /* Text Colors */
+  --color-text-primary: #faf6f0;  /* Very Light Warm White */
+  --color-text-secondary: #d2b48c; /* Tan Accent Text */
+  --color-text-muted: #8a7e72;    /* Warm Muted Gray */
+  --color-text-on-primary: #1e1b19; /* Dark text on Tan button */
+  
+  /* Typography Stacks */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'Inter', monospace;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  
+  /* Border Radii - 0.25rem styling */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-full: 4px;
+  
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Transitions */
+  --transition-normal: all 0.2s ease-in-out;
+}
