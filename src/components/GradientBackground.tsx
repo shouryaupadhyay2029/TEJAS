@@ -31,7 +31,6 @@ const Noise: React.FC<NoiseProps> = ({
       return;
     }
 
-    let frame = 0;
     const patternCanvas = document.createElement('canvas');
     patternCanvas.width = patternSize;
     patternCanvas.height = patternSize;
@@ -96,25 +95,27 @@ const Noise: React.FC<NoiseProps> = ({
     };
 
     let animationFrameId: number;
-    const loop = () => {
-      if (canvasCssSizeRef.current.width > 0 && canvasCssSizeRef.current.height > 0) {
-        if (frame % patternRefreshInterval === 0) {
+    let lastTime = 0;
+    const fpsInterval = 80; // 80ms interval (~12.5 fps) gives organic film grain motion without blocking the main JS thread during page transitions
+
+    const loop = (timestamp: number) => {
+      const { width, height } = canvasCssSizeRef.current;
+      if (width > 0 && height > 0) {
+        if (!lastTime) lastTime = timestamp;
+        const elapsed = timestamp - lastTime;
+
+        if (elapsed > fpsInterval) {
+          lastTime = timestamp - (elapsed % fpsInterval);
           updatePattern();
           drawGrain();
         }
       }
-      frame++;
       animationFrameId = window.requestAnimationFrame(loop);
     };
 
     window.addEventListener('resize', resize);
     resize();
-    if (patternRefreshInterval > 0) {
-      loop();
-    } else {
-      updatePattern();
-      drawGrain();
-    }
+    animationFrameId = window.requestAnimationFrame(loop);
 
     return () => {
       window.removeEventListener('resize', resize);

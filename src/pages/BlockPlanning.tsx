@@ -9,6 +9,7 @@ import { Navbar } from './Home/components/Navbar';
 import GradientBackground from '../components/GradientBackground';
 import { ScrollReveal } from '../components/motion/ScrollSystem';
 import styles from './BlockPlanning.module.css';
+import { PageEntryReveal } from '../components/PageEntryReveal';
 
 interface PlanningBlock {
   id: string;
@@ -177,8 +178,16 @@ export const BlockPlanning: React.FC = () => {
         <ScrollReveal>
           <div className={styles.headerWrap}>
             <div className={styles.headerLeft}>
-              <span className={`${styles.eyebrow} reveal-target`}>OPERATIONS CONSOLE</span>
-              <h1 className={`${styles.title} reveal-target`}>Block Planning</h1>
+              <PageEntryReveal delay={0.15} duration={1.1}>
+                <span className={`${styles.eyebrow} reveal-target`}>OPERATIONS CONSOLE</span>
+              </PageEntryReveal>
+              
+              <div style={{ margin: '4px 0' }}>
+                <PageEntryReveal delay={0.35} duration={1.25}>
+                  <h1 className={`${styles.title} reveal-target`}>Block Planning</h1>
+                </PageEntryReveal>
+              </div>
+
               <p className={`${styles.desc} reveal-target`}>
                 Coordinate track maintenance blocks across Engineering, S&T and Traction departments to align access windows and minimize track downtime.
               </p>

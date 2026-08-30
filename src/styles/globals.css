@@ -1,19 +1,27 @@
 @import './variables.css';
 @import './typography.css';
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   background-color: var(--color-bg-base);
   min-height: 100vh;
   scroll-behavior: smooth;
 }
 
-body, button, input, select, textarea, a {
+body,
+button,
+input,
+select,
+textarea,
+a {
   font-family: var(--font-sans);
 }
 
@@ -54,6 +62,7 @@ button {
 .interactive-hover {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
+
 .interactive-hover:hover {
   transform: translateY(-1.5px);
 }
@@ -62,6 +71,7 @@ button {
 .nav-underline-anim {
   position: relative;
 }
+
 .nav-underline-anim::after {
   content: '';
   position: absolute;
@@ -74,6 +84,7 @@ button {
   transform-origin: bottom right;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .nav-underline-anim:hover::after {
   transform: scaleX(1);
   transform-origin: bottom left;
@@ -84,8 +95,10 @@ button {
   html {
     scroll-behavior: auto !important;
   }
-  
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-delay: -1ms !important;
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
@@ -161,8 +174,13 @@ button {
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .global-back-to-top:hover .global-back-to-top-rotation {
@@ -190,7 +208,128 @@ button {
     width: 66px;
     height: 66px;
   }
+
   .global-back-to-top-arrow {
     font-size: 0.98rem;
+  }
+}
+
+/* ── PRESERVED NAVBARS AND RELEASED CONTENT TRANSITIONS ── */
+main,
+.contentArea,
+.contentWrapper {
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-exit-transition main,
+.page-exit-transition .contentArea,
+.page-exit-transition .contentWrapper {
+  opacity: 0.12 !important;
+  transform: translateY(-10px) !important;
+}
+
+/* ── REUSABLE SAKSHAM-INSPIRED TEXT-BLOCK REVEAL SYSTEM ── */
+.page-transition-content .eyebrow,
+.page-transition-content .headerEyebrow,
+.page-transition-content .pageTitle,
+.page-transition-content .title,
+.page-transition-content .subtitle,
+.page-transition-content .desc {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  opacity: 0;
+  clip-path: inset(0% 100% 0% 0%);
+  animation: tejasTextReveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Moving solid engineering mask block */
+.page-transition-content .eyebrow::after,
+.page-transition-content .headerEyebrow::after,
+.page-transition-content .pageTitle::after,
+.page-transition-content .title::after,
+.page-transition-content .subtitle::after,
+.page-transition-content .desc::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 35%;
+  background-color: #1e1b19; /* TEJAS near-black brand charcoal */
+  z-index: 10;
+  pointer-events: none;
+  left: -35%;
+  animation: tejasBlockSweep 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Stagger sequence choreographies */
+.page-transition-content .eyebrow,
+.page-transition-content .headerEyebrow {
+  animation-delay: 0.15s;
+}
+.page-transition-content .eyebrow::after,
+.page-transition-content .headerEyebrow::after {
+  animation-delay: 0.15s;
+}
+
+.page-transition-content .pageTitle,
+.page-transition-content .title {
+  animation-delay: 0.35s;
+}
+.page-transition-content .pageTitle::after,
+.page-transition-content .title::after {
+  animation-delay: 0.35s;
+}
+
+.page-transition-content .subtitle,
+.page-transition-content .desc {
+  animation-delay: 0.58s;
+}
+.page-transition-content .subtitle::after,
+.page-transition-content .desc::after {
+  animation-delay: 0.58s;
+}
+
+@keyframes tejasTextReveal {
+  0% {
+    opacity: 0;
+    clip-path: inset(0% 100% 0% 0%);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+@keyframes tejasBlockSweep {
+  0% {
+    left: -35%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-content .eyebrow,
+  .page-transition-content .headerEyebrow,
+  .page-transition-content .pageTitle,
+  .page-transition-content .title,
+  .page-transition-content .subtitle,
+  .page-transition-content .desc {
+    opacity: 1 !important;
+    clip-path: none !important;
+    animation: none !important;
+  }
+  .page-transition-content .eyebrow::after,
+  .page-transition-content .headerEyebrow::after,
+  .page-transition-content .pageTitle::after,
+  .page-transition-content .title::after,
+  .page-transition-content .subtitle::after,
+  .page-transition-content .desc::after {
+    display: none !important;
   }
 }

@@ -14,6 +14,7 @@ import {
 } from './data/mockData';
 import type { AssetDetail, TaskRecord } from './data/mockData';
 import styles from './Dashboard.module.css';
+import { PageEntryReveal } from '../../components/PageEntryReveal';
 
 type SectionType =
   | 'overview'
@@ -209,8 +210,14 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Operations Overview</motion.h1>
+                  <PageEntryReveal delay={0.15} duration={1.1}>
+                    <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
+                  </PageEntryReveal>
+                  <div style={{ margin: '4px 0' }}>
+                    <PageEntryReveal delay={0.35} duration={1.25}>
+                      <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Operations Overview</motion.h1>
+                    </PageEntryReveal>
+                  </div>
                   <motion.p variants={headerDescVariants}>High-level summary of active blocks, tasks, and system observations.</motion.p>
                 </div>
                 <div className={styles.headerStatus}>

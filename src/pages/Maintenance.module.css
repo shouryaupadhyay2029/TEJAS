@@ -73,11 +73,11 @@
 }
 
 .pageTitle {
-  font-family: 'Gondens', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 3.8rem);
-  font-weight: 900;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 5.5vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   margin: 0.4rem 0 1rem;
 }
 
@@ -116,9 +116,9 @@
 }
 
 .indicatorValue {
-  font-family: 'Gondens', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.6rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -263,9 +263,9 @@
 }
 
 .priorityCardCount {
-  font-family: 'Gondens', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.8rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .priorityBarTrack {
@@ -808,9 +808,9 @@
 }
 
 .stepCount {
-  font-family: 'Gondens', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.35rem;
-  font-weight: 900;
+  font-weight: 800;
   display: block;
 }
 

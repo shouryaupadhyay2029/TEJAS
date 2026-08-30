@@ -8,6 +8,7 @@ import GradientBackground from '../components/GradientBackground';
 import { Navbar } from './Home/components/Navbar';
 import { ScrollReveal, ScrollLine } from '../components/motion/ScrollSystem';
 import styles from './Maintenance.module.css';
+import { PageEntryReveal } from '../components/PageEntryReveal';
 
 // --- Count-up helper component for clean numerical transitions ---
 const CountUp: React.FC<{ value: number; decimals?: number }> = ({ value, decimals = 0 }) => {
@@ -314,12 +315,20 @@ export const Maintenance: React.FC = () => {
         {/* S01: HERO SECTION */}
         <section className={styles.heroRow}>
           <div className={styles.heroLeft}>
-            <motion.span className={styles.eyebrow} variants={headerEyebrowVariants}>
-              OPERATIONS CONSOLE
-            </motion.span>
-            <motion.h1 className={styles.pageTitle} variants={headerTitleVariants}>
-              Maintenance Control
-            </motion.h1>
+            <PageEntryReveal delay={0.15} duration={1.1}>
+              <motion.span className={styles.eyebrow} variants={headerEyebrowVariants}>
+                OPERATIONS CONSOLE
+              </motion.span>
+            </PageEntryReveal>
+            
+            <div style={{ margin: '4px 0' }}>
+              <PageEntryReveal delay={0.35} duration={1.25}>
+                <motion.h1 className={styles.pageTitle} variants={headerTitleVariants}>
+                  Maintenance Control
+                </motion.h1>
+              </PageEntryReveal>
+            </div>
+            
             <motion.p className={styles.subtitle} variants={headerDescVariants}>
               Prioritize defects, understand asset risk, and move critical maintenance into the right operational window.
             </motion.p>
