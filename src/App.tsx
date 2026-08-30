@@ -22,32 +22,37 @@ const queryClient = new QueryClient({
   },
 });
 
+import { PageTransitionProvider } from './components/PageTransition';
+import { ScrollProvider } from './components/motion/ScrollSystem';
+
 const NonLandingRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <div className="non-landing-page" style={{ minHeight: '100%' }}>{children}</div>;
+  return <div className="non-landing-page page-fade-enter" style={{ minHeight: '100%' }}>{children}</div>;
 };
 
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<NonLandingRoute><Dashboard /></NonLandingRoute>} />
-              <Route path="/maintenance" element={<NonLandingRoute><Maintenance /></NonLandingRoute>} />
-              <Route path="/defects" element={<NonLandingRoute><Defects /></NonLandingRoute>} />
-              <Route path="/block-planning" element={<NonLandingRoute><BlockPlanning /></NonLandingRoute>} />
-              <Route path="/optimization" element={<NonLandingRoute><Optimization /></NonLandingRoute>} />
-              <Route path="/assets" element={<NonLandingRoute><Assets /></NonLandingRoute>} />
-              <Route path="/reports" element={<NonLandingRoute><Reports /></NonLandingRoute>} />
-              <Route path="/login" element={<NonLandingRoute><Auth /></NonLandingRoute>} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-
-
-        </div>
+        <PageTransitionProvider>
+          <ScrollProvider>
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+              <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/dashboard" element={<NonLandingRoute><Dashboard /></NonLandingRoute>} />
+                  <Route path="/maintenance" element={<NonLandingRoute><Maintenance /></NonLandingRoute>} />
+                  <Route path="/defects" element={<NonLandingRoute><Defects /></NonLandingRoute>} />
+                  <Route path="/block-planning" element={<NonLandingRoute><BlockPlanning /></NonLandingRoute>} />
+                  <Route path="/optimization" element={<NonLandingRoute><Optimization /></NonLandingRoute>} />
+                  <Route path="/assets" element={<NonLandingRoute><Assets /></NonLandingRoute>} />
+                  <Route path="/reports" element={<NonLandingRoute><Reports /></NonLandingRoute>} />
+                  <Route path="/login" element={<NonLandingRoute><Auth /></NonLandingRoute>} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+            </div>
+          </ScrollProvider>
+        </PageTransitionProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

@@ -19,6 +19,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'AsteraCasty';
+  src: url('../assets/fonts/astera/AsteraCastyDemoRegular-Jp00E.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: var(--font-size-md);

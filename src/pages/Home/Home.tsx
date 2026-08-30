@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link as RouterLink } from 'react-router-dom';
+import { TransitionLink } from '../../components/PageTransition';
 import GradientBackground from '../../components/GradientBackground';
 import Navbar from './components/Navbar';
 import HomeContent from './HomeContent';
@@ -109,7 +109,7 @@ const benefits = [
 /* ── Component ───────────────────────────────────────── */
 export const Home: React.FC = () => {
   return (
-    <div className={styles.homeContainer}>
+    <div className={`${styles.homeContainer} page-fade-enter`}>
       <div className={styles.heroSection}>
         <GradientBackground
           gradientOrigin="bottom-middle"
@@ -202,24 +202,79 @@ export const Home: React.FC = () => {
               initial="hidden"
               animate="show"
             >
-              TEJAS
+              <span className={styles.titleWrapper}>
+                TEJAS
+                <span className={styles.sealDisc}>
+                  <span className={styles.sealCenterDot} />
+                  <span className={styles.sealTextRotationWrapper}>
+                    <svg viewBox="0 0 100 100" className={styles.sealSvg}>
+                      <path
+                        id="sealCirclePath"
+                        d="M 50, 50 m -38, 0 a 38,38 0 1, 1 76, 0 a 38,38 0 1, 1 -76, 0"
+                        fill="none"
+                      />
+                      <text>
+                        <textPath href="#sealCirclePath" className={styles.sealTextPath}>
+                          FOR INDIAN RAILWAYS • INDIAN RAILWAYS •
+                        </textPath>
+                      </text>
+                    </svg>
+                  </span>
+                </span>
+              </span>
             </motion.h1>
-
             <motion.div
               className={styles.ctaGroup}
               variants={ctaVariant}
               initial="hidden"
               animate="show"
             >
-              <RouterLink to="/login" className={styles.ctaPrimary}>
+              <TransitionLink to="/login" label="ACCESS" className={`${styles.ctaPrimary} interactive-hover`}>
                 ACCESS DASHBOARD
-              </RouterLink>
-              <RouterLink to="/dashboard" className={styles.ctaSecondary}>
+              </TransitionLink>
+              <TransitionLink to="/dashboard" label="DASHBOARD" className={`${styles.ctaSecondary} interactive-hover`}>
                 SEE HOW IT WORKS
-              </RouterLink>
+              </TransitionLink>
             </motion.div>
           </div>
         </GradientBackground>
+      </div>
+
+      {/* Mobile-only features and benefits layout */}
+      <div className={styles.mobileFeaturesSection}>
+        <div className={styles.mobileSectionGroup}>
+          <h3 className={styles.mobileSectionTitle}>Core Capabilities</h3>
+          <div className={styles.mobileCardGrid}>
+            {features.map((f) => (
+              <div key={f.num} className={styles.mobileFeatureCard}>
+                <span className={styles.mobileCardNum}>{f.num}</span>
+                <div className={styles.mobileCardContent}>
+                  <h4 className={styles.mobileCardTitle}>
+                    {f.title.replace('\n', ' ')}
+                  </h4>
+                  <p className={styles.mobileCardDesc}>{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.mobileSectionGroup} style={{ marginTop: '3rem' }}>
+          <h3 className={styles.mobileSectionTitle}>Key Benefits</h3>
+          <div className={styles.mobileCardGrid}>
+            {benefits.map((b) => (
+              <div key={b.num} className={styles.mobileBenefitCard}>
+                <span className={styles.mobileCardNum}>{b.num}</span>
+                <div className={styles.mobileCardContent}>
+                  <h4 className={styles.mobileCardTitle}>
+                    {b.label.replace('\n', ' ')}
+                  </h4>
+                  <p className={styles.mobileCardDesc}>{b.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Content sections below hero ─────────────── */}

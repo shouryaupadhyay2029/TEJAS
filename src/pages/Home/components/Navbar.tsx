@@ -1,7 +1,9 @@
-import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 import styles from '../Home.module.css';
+
+import { TransitionLink } from '../../../components/PageTransition';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -47,53 +49,114 @@ const navLinks = [
 ];
 
 export const Navbar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <motion.nav
-      className={styles.navbar}
-      variants={navVariant}
-      initial="hidden"
-      animate="show"
-    >
-      {/* LEFT — Logo group */}
-      <motion.div className={styles.logoGroup} variants={itemVariant}>
-        <div className={styles.logoWrapper}>
-          {/* Circular logo: scales in */}
-          <motion.div className={styles.logoCircle} variants={circleVariant}>
-            TEJ
-          </motion.div>
-          {/* "AS" text: slides in from left */}
-          <motion.span className={styles.logoTextOutside} variants={logoTextVariant}>
-            AS
+    <>
+      <motion.nav
+        className={styles.navbar}
+        variants={navVariant}
+        initial="hidden"
+        animate="show"
+      >
+        {/* LEFT — Logo group */}
+        <motion.div className={styles.logoGroup} variants={itemVariant}>
+          <div className={styles.logoWrapper}>
+            {/* Circular logo: scales in */}
+            <motion.div className={styles.logoCircle} variants={circleVariant}>
+              TEJ
+            </motion.div>
+            {/* "AS" text: slides in from left */}
+            <motion.span className={styles.logoTextOutside} variants={logoTextVariant}>
+              AS
+            </motion.span>
+          </div>
+          <motion.div className={styles.logoDivider} variants={itemVariant} />
+          <motion.span className={styles.logoTagline} variants={itemVariant}>
+            FOR INDIAN<br />RAILWAYS
           </motion.span>
+        </motion.div>
+
+        {/* CENTER — Nav links: each staggered */}
+        <motion.div
+          className={styles.navLinks}
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
+        >
+          {navLinks.map(({ to, label }) => (
+            <motion.div key={to} variants={linkVariant}>
+              <TransitionLink to={to} label={label} className={`${styles.navLink} nav-underline-anim`}>
+                {label}
+              </TransitionLink>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* RIGHT — CTA pill: fades in last */}
+        <motion.div
+          className={styles.navRight}
+          variants={{ hidden: { opacity: 0, y: -10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.55, ease } } }}
+        >
+          <TransitionLink to="/login" label="ACCESS" className={`${styles.orderButton} interactive-hover`}>
+            ACCESS DASHBOARD
+          </TransitionLink>
+        </motion.div>
+
+        {/* MOBILE HAMBURGER BUTTON */}
+        <div className={styles.hamburgerButton} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X size={24} color="#1e1b19" /> : <Menu size={24} color="#1e1b19" />}
         </div>
-        <motion.div className={styles.logoDivider} variants={itemVariant} />
-        <motion.span className={styles.logoTagline} variants={itemVariant}>
-          FOR INDIAN<br />RAILWAYS
-        </motion.span>
-      </motion.div>
+      </motion.nav>
 
-      {/* CENTER — Nav links: each staggered */}
-      <motion.div
-        className={styles.navLinks}
-        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
-      >
-        {navLinks.map(({ to, label }) => (
-          <motion.div key={to} variants={linkVariant}>
-            <RouterLink to={to} className={styles.navLink}>{label}</RouterLink>
+      {/* MOBILE MENU OVERLAY */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className={styles.mobileMenuOverlay}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.35, ease }}
+          >
+            <div className={styles.mobileMenuInner}>
+              <div className={styles.mobileLinksList}>
+                {navLinks.map(({ to, label }, idx) => (
+                  <motion.div
+                    key={to}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05, duration: 0.4, ease }}
+                  >
+                    <TransitionLink
+                      to={to}
+                      label={label}
+                      className={styles.mobileNavLink}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {label}
+                    </TransitionLink>
+                  </motion.div>
+                ))}
+              </div>
+              <motion.div
+                className={styles.mobileMenuBottom}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <TransitionLink
+                  to="/login"
+                  label="ACCESS"
+                  className={styles.mobileCtaButton}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  ACCESS DASHBOARD
+                </TransitionLink>
+              </motion.div>
+            </div>
           </motion.div>
-        ))}
-      </motion.div>
-
-      {/* RIGHT — CTA pill: fades in last */}
-      <motion.div
-        className={styles.navRight}
-        variants={{ hidden: { opacity: 0, y: -10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.55, ease } } }}
-      >
-        <RouterLink to="/login" className={styles.orderButton}>
-          ACCESS DASHBOARD
-        </RouterLink>
-      </motion.div>
-    </motion.nav>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

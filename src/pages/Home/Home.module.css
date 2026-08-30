@@ -154,7 +154,14 @@
   gap: 0.55rem;
   pointer-events: auto;
   cursor: default;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
 }
+
+.floatingItem:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  z-index: 30;
+}
+
 
 .floatNum {
   font-family: var(--font-sans);
@@ -433,6 +440,98 @@
   border-color: rgba(30, 27, 25, 0.6);
 }
 
+.mobileFeaturesSection {
+  display: none;
+}
+
+/* Mobile Hamburger & Menu Overlay styles */
+.hamburgerButton {
+  display: none;
+  cursor: pointer;
+  z-index: 100;
+  padding: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.hamburgerButton:hover {
+  transform: scale(1.05);
+}
+
+.mobileMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(252, 248, 240, 0.98);
+  backdrop-filter: blur(12px);
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.mobileMenuInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 70%;
+  width: 100%;
+  max-width: 320px;
+  padding: 4rem 2rem 2rem;
+  box-sizing: border-box;
+}
+
+.mobileLinksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.mobileNavLink {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #1e1b19;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  padding: 0.5rem;
+}
+
+.mobileNavLink:hover {
+  opacity: 0.7;
+}
+
+.mobileMenuBottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.mobileCtaButton {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(210, 186, 152, 0.95);
+  background-color: #1e1b19;
+  padding: 0.85rem 2rem;
+  border-radius: 9999px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.2);
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 1024px) {
   .triLayout {
@@ -455,8 +554,174 @@
   .rail { padding-right: 0; order: 2; }
   .railRight { padding-left: 0; order: 3; }
   .heroCenter { order: 1; }
+  
   .navLinks { display: none; }
+  .navRight { display: none; }
+  .hamburgerButton { display: flex; }
+  
   .navbar { padding: 1rem 1.5rem; }
   .featureRowRight { flex-direction: row; text-align: left; }
   .featureRowRight .featureBody { align-items: flex-start; }
+
+  .mobileFeaturesSection {
+    display: block;
+    padding: 4rem 1.5rem;
+    background: transparent;
+  }
+  .mobileSectionGroup {
+    width: 100%;
+  }
+  .mobileSectionTitle {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: rgba(30, 27, 25, 0.45);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(30, 27, 25, 0.15);
+  }
+  .mobileCardGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .mobileFeatureCard, .mobileBenefitCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(30, 27, 25, 0.08);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .mobileCardNum {
+    font-family: 'Gondens', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: rgba(210, 186, 152, 0.95);
+    line-height: 1;
+  }
+  .mobileCardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .mobileCardTitle {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: rgba(30, 27, 25, 0.8);
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mobileCardDesc {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(30, 27, 25, 0.48);
+    line-height: 1.5;
+    margin: 0;
+  }
 }
+
+/* ── HERO ROTATING SEAL ─────────────────────────────── */
+.titleWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.sealDisc {
+  position: absolute;
+  right: -100px;
+  top: -44px;
+  width: 80px;
+  height: 80px;
+  background-color: #1e1b19; /* dark charcoal */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.15);
+  cursor: pointer;
+  z-index: 25;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  pointer-events: auto;
+}
+
+/* Responsive scaling of the seal relative to S size */
+@media (max-width: 1200px) {
+  .sealDisc {
+    width: 66px;
+    height: 66px;
+    right: -82px;
+    top: -36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sealDisc {
+    width: 52px;
+    height: 52px;
+    right: -64px;
+    top: -26px;
+  }
+}
+
+.sealDisc:hover {
+  transform: scale(1.03);
+}
+
+.sealCenterDot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: rgba(210, 186, 152, 0.95); /* brand gold/ivory accent */
+  border-radius: 50%;
+  z-index: 5;
+}
+
+.sealTextRotationWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin-slow 24s linear infinite;
+  transform-origin: center;
+}
+
+.sealSvg {
+  width: 94%;
+  height: 94%;
+}
+
+.sealTextPath {
+  fill: rgba(210, 186, 152, 0.85); /* brand gold/ivory accent */
+  font-family: 'AsteraCasty', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Accelerate rotation on hover */
+.sealDisc:hover .sealTextRotationWrapper {
+  animation-duration: 12s;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sealTextRotationWrapper {
+    animation: none !important;
+  }
+}
+

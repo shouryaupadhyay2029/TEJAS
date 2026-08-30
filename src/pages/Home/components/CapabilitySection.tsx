@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Shield, Zap, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { TransitionLink } from '../../../components/PageTransition';
 import styles from '../Home.module.css';
 
 export const CapabilitySection: React.FC = () => {
@@ -37,18 +37,17 @@ export const CapabilitySection: React.FC = () => {
               TEJAS IS AN INTEGRATED PLATFORM FOR INTELLIGENT RAILWAY MAINTENANCE PLANNING &amp; AUTOMATED BLOCK SCHEDULING OPERATIONS.
             </p>
           </div>
-
           {/* Center Column: 3 Capsule Pills side-by-side */}
           <div className={styles.introCenterCol}>
-            <Link to="/maintenance" className={styles.capsulePill}>
+            <TransitionLink to="/maintenance" label="MAINTENANCE" className={styles.capsulePill}>
               PLAN
-            </Link>
-            <Link to="/optimization" className={styles.capsulePillActive}>
+            </TransitionLink>
+            <TransitionLink to="/optimization" label="OPTIMIZER" className={styles.capsulePillActive}>
               OPTIMIZE
-            </Link>
-            <Link to="/block-planning" className={styles.capsulePill}>
+            </TransitionLink>
+            <TransitionLink to="/block-planning" label="PLANNING" className={styles.capsulePill}>
               EXECUTE
-            </Link>
+            </TransitionLink>
           </div>
 
           {/* Right Column: Three Metrics items with Icons */}

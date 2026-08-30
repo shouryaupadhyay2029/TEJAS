@@ -192,3 +192,101 @@ export const quickActions = [
   { label: 'Generate Block Plan', route: '/block-planning' },
   { label: 'Run Optimization', route: '/optimization' },
 ];
+
+export interface AssetDetail {
+  id: string;
+  name: string;
+  type: string;
+  department: 'Engineering' | 'S&T' | 'Traction';
+  condition: 'Optimal' | 'Degraded' | 'Critical';
+  availability: string;
+  lastMaintenance: string;
+  upcomingMaintenance: string;
+  defectsCount: number;
+  maintenanceHistory: { date: string; action: string; status: string }[];
+  failureHistory: { date: string; description: string }[];
+}
+
+export const mockAssets: AssetDetail[] = [
+  {
+    id: 'AST-101',
+    name: 'Track Segment T1',
+    type: 'Track Line',
+    department: 'Engineering',
+    condition: 'Critical',
+    availability: '94.2%',
+    lastMaintenance: '2026-08-10',
+    upcomingMaintenance: 'Today (Urgent)',
+    defectsCount: 3,
+    maintenanceHistory: [
+      { date: '2026-08-10', action: 'Joint inspection and bolting', status: 'Completed' },
+      { date: '2026-07-15', action: 'Ballast dressing', status: 'Completed' }
+    ],
+    failureHistory: [
+      { date: '2026-06-02', description: 'Minor alignment displacement' },
+      { date: '2026-04-12', description: 'Sleeper cracking' }
+    ]
+  },
+  {
+    id: 'AST-202',
+    name: 'Junction Point 4A',
+    type: 'Point Machine',
+    department: 'S&T',
+    condition: 'Critical',
+    availability: '97.8%',
+    lastMaintenance: '2026-08-20',
+    upcomingMaintenance: 'Today (Urgent)',
+    defectsCount: 1,
+    maintenanceHistory: [
+      { date: '2026-08-20', action: 'Lubrication and calibration', status: 'Completed' }
+    ],
+    failureHistory: [
+      { date: '2026-05-18', description: 'Feedback signal failure' }
+    ]
+  },
+  {
+    id: 'AST-303',
+    name: 'OHE Line 3',
+    type: 'Overhead Equipment',
+    department: 'Traction',
+    condition: 'Degraded',
+    availability: '98.5%',
+    lastMaintenance: '2026-08-15',
+    upcomingMaintenance: 'Tomorrow',
+    defectsCount: 2,
+    maintenanceHistory: [
+      { date: '2026-08-15', action: 'Contact wire height adjustment', status: 'Completed' }
+    ],
+    failureHistory: []
+  },
+  {
+    id: 'AST-404',
+    name: 'Bridge 104',
+    type: 'Structural Bridge',
+    department: 'Engineering',
+    condition: 'Degraded',
+    availability: '99.1%',
+    lastMaintenance: '2026-07-01',
+    upcomingMaintenance: 'In 2 days',
+    defectsCount: 1,
+    maintenanceHistory: [
+      { date: '2026-07-01', action: 'Concrete reinforcement patching', status: 'Completed' }
+    ],
+    failureHistory: []
+  },
+  {
+    id: 'AST-505',
+    name: 'Signal S12',
+    type: 'Color Light Signal',
+    department: 'S&T',
+    condition: 'Optimal',
+    availability: '99.9%',
+    lastMaintenance: '2026-08-01',
+    upcomingMaintenance: 'In 3 days',
+    defectsCount: 0,
+    maintenanceHistory: [
+      { date: '2026-08-01', action: 'LED aspect cluster swap', status: 'Completed' }
+    ],
+    failureHistory: []
+  }
+];

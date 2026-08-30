@@ -1,12 +1,51 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link as RouterLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useInView, animate } from 'framer-motion';
+import { TransitionLink } from '../../components/PageTransition';
 import GradientBackground from '../../components/GradientBackground';
 import { Noise } from '../../components/GradientBackground';
 import styles from './HomeContent.module.css';
 
 /* ── Shared ──────────────────────────────────────────── */
 const ease = [0.16, 1, 0.3, 1] as const;
+
+function AnimatedCounter({ from = 0, to, suffix = '', duration = 1.6, delay = 0 }: { from?: number; to: number; suffix?: string; duration?: number; delay?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-20px' });
+  const [hasRun, setHasRun] = useState(false);
+
+  useEffect(() => {
+    if (inView && !hasRun) {
+      // Respect prefers-reduced-motion
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) {
+        if (ref.current) ref.current.textContent = String(to) + suffix;
+        setHasRun(true);
+        return;
+      }
+
+      const controls = animate(from, to, {
+        duration,
+        delay,
+        ease: 'easeOut',
+        onUpdate(value) {
+          if (ref.current) {
+            ref.current.textContent = Math.floor(value).toLocaleString() + suffix;
+          }
+        },
+        onComplete() {
+          setHasRun(true);
+        }
+      });
+      return () => controls.stop();
+    } else if (!inView && !hasRun) {
+      if (ref.current) {
+        ref.current.textContent = String(from) + suffix;
+      }
+    }
+  }, [inView, from, to, suffix, duration, delay, hasRun]);
+
+  return <span ref={ref}>{from}{suffix}</span>;
+}
 
 function Reveal({
   children,
@@ -22,10 +61,11 @@ function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 20, x }}
+      initial={{ opacity: 0, y: 15, x: x !== 0 ? (x > 0 ? 15 : -15) : 0 }}
       whileInView={{ opacity: 1, y: 0, x: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.7, delay, ease }}
+      exit={{ opacity: 0, y: 15 }}
+      viewport={{ once: false, margin: '-40px' }}
+      transition={{ duration: 0.65, delay, ease }}
     >
       {children}
     </motion.div>
@@ -38,9 +78,10 @@ function Rule({ delay = 0 }: { delay?: number }) {
       className={styles.rule}
       initial={{ scaleX: 0 }}
       whileInView={{ scaleX: 1 }}
-      viewport={{ once: true }}
+      exit={{ scaleX: 0 }}
+      viewport={{ once: false }}
       style={{ originX: 0 }}
-      transition={{ duration: 0.9, delay, ease }}
+      transition={{ duration: 0.8, delay, ease }}
     />
   );
 }
@@ -74,10 +115,10 @@ const capabilities = [
 
 /* ── Value metrics ───────────────────────────────────── */
 const metrics = [
-  { label: 'ASSET AVAILABILITY',       text: 'Better in-service reliability through prioritized, timely maintenance.' },
-  { label: 'BLOCK UTILIZATION',        text: 'Higher utilization of available track time through coordinated scheduling.' },
-  { label: 'MAINTENANCE COORDINATION', text: 'Improved alignment across Engineering, S&T and Traction teams.' },
-  { label: 'PLANNING EFFICIENCY',      text: 'Faster turnaround on block plans with constraint-aware optimization.' },
+  { label: 'ASSET AVAILABILITY',       val: 99.4, suffix: '%',  text: 'Better in-service reliability through prioritized, timely maintenance.' },
+  { label: 'BLOCK UTILIZATION',        val: 92.1, suffix: '%',  text: 'Higher utilization of available track time through coordinated scheduling.' },
+  { label: 'MAINTENANCE ACTIONS',      val: 1240, suffix: '+',  text: 'Improved alignment across Engineering, S&T and Traction teams.' },
+  { label: 'PLANNING TIME REDUCTION',  val: 65,   suffix: '%',  text: 'Faster turnaround on block plans with constraint-aware optimization.' },
 ];
 
 /* ── Before / After ─────────────────────────────────── */
@@ -440,12 +481,15 @@ const HomeContent: React.FC = () => {
             >
               {capabilities.map((cap, i) => (
                 <Reveal key={cap.tag} delay={0.08 + i * 0.06}>
-                  <RouterLink
+                  <TransitionLink
                     to={cap.to}
+                    label={cap.tag}
                     className={styles.capRow}
                     style={{
                       opacity: capHovered === null ? 1 : capHovered === i ? 1 : 0.3,
                       transition: 'opacity 0.3s ease',
+                      display: 'flex',
+                      textDecoration: 'none',
                     }}
                     onMouseEnter={() => setCapHovered(i)}
                   >
@@ -461,7 +505,7 @@ const HomeContent: React.FC = () => {
                     >
                       →
                     </motion.span>
-                  </RouterLink>
+                  </TransitionLink>
                 </Reveal>
               ))}
             </div>
@@ -489,6 +533,9 @@ const HomeContent: React.FC = () => {
             {metrics.map((m, i) => (
               <Reveal key={m.label} delay={0.1 + i * 0.08} className={styles.metricItem}>
                 <Rule delay={0.1 + i * 0.08} />
+                <span className={styles.metricVal}>
+                  <AnimatedCounter to={m.val} suffix={m.suffix} delay={0.25 + i * 0.1} />
+                </span>
                 <span className={styles.metricLabel}>{m.label}</span>
                 <span className={styles.metricText}>{m.text}</span>
               </Reveal>
@@ -539,12 +586,12 @@ const HomeContent: React.FC = () => {
           </Reveal>
           <Reveal delay={0.24}>
             <div className={styles.ctaButtons}>
-              <RouterLink to="/login" className={styles.ctaPrimary}>
+              <TransitionLink to="/login" label="ACCESS" className={`${styles.ctaPrimary} interactive-hover`}>
                 ACCESS DASHBOARD
-              </RouterLink>
-              <RouterLink to="/dashboard" className={styles.ctaSecondary}>
+              </TransitionLink>
+              <TransitionLink to="/dashboard" label="DASHBOARD" className={`${styles.ctaSecondary} interactive-hover`}>
                 EXPLORE THE PLATFORM
-              </RouterLink>
+              </TransitionLink>
             </div>
           </Reveal>
         </div>
@@ -586,11 +633,11 @@ const HomeContent: React.FC = () => {
               </div>
 
               {/* Nav */}
-              <nav className={styles.footerNav}>
+               <nav className={styles.footerNav}>
                 {navLinks.map((link, i) => (
-                  <RouterLink key={link} to={navPaths[i]} className={styles.footerLink}>
+                  <TransitionLink key={link} to={navPaths[i]} label={link} className={`${styles.footerLink} nav-underline-anim`}>
                     {link}
-                  </RouterLink>
+                  </TransitionLink>
                 ))}
               </nav>
             </div>

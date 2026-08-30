@@ -10,6 +10,7 @@
 html, body {
   background-color: var(--color-bg-base);
   min-height: 100vh;
+  scroll-behavior: smooth;
 }
 
 body, button, input, select, textarea, a {
@@ -31,4 +32,165 @@ button {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-mono: 'Inter', monospace;
+}
+
+/* ── PRESETS & GLOBAL MOTIONS ────────────────────────── */
+
+/* Short, elegant, responsive page fade-in/slide transition */
+.page-fade-enter {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: pageFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Global hover effect for interactive elements with consistent 200ms timing */
+.interactive-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+.interactive-hover:hover {
+  transform: translateY(-1.5px);
+}
+
+/* Nav links underline slide effect */
+.nav-underline-anim {
+  position: relative;
+}
+.nav-underline-anim::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom right;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-underline-anim:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* ── ACCESSIBILITY (prefers-reduced-motion) ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  
+  *, *::before, *::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+
+  .page-fade-enter {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* ── GLOBAL BACK TO TOP SCROLL CONTROL ────────────────── */
+.global-back-to-top {
+  position: fixed;
+  bottom: 35px;
+  right: 35px;
+  width: 80px;
+  height: 80px;
+  background-color: #1e1b19;
+  border-radius: 50%;
+  border: 1px solid rgba(210, 186, 152, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999999;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  padding: 0;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.global-back-to-top:focus-visible {
+  border-color: #bc473a;
+  box-shadow: 0 0 0 3px #bc473a;
+}
+
+.global-back-to-top:hover {
+  transform: scale(1.06);
+  border-color: rgba(210, 186, 152, 0.6);
+}
+
+.global-back-to-top-arrow {
+  position: absolute;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: rgba(210, 186, 152, 0.95);
+  z-index: 5;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.global-back-to-top:hover .global-back-to-top-arrow {
+  transform: translateY(-4px);
+  color: #faf6f0;
+}
+
+.global-back-to-top-rotation {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin-slow 24s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.global-back-to-top:hover .global-back-to-top-rotation {
+  animation-duration: 12s;
+}
+
+.global-back-to-top-svg {
+  width: 92%;
+  height: 92%;
+}
+
+.global-back-to-top-textpath {
+  fill: rgba(210, 186, 152, 0.85);
+  font-family: 'AsteraCasty', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .global-back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 66px;
+    height: 66px;
+  }
+  .global-back-to-top-arrow {
+    font-size: 0.98rem;
+  }
 }
