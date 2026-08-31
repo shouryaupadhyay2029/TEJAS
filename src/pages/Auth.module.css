@@ -1,0 +1,358 @@
+.authContainer {
+  min-height: 100vh;
+  background-color: transparent;
+  color: #1e1b19;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.navbarRelativeWrap {
+  position: relative;
+  z-index: 100;
+}
+
+.contentWrapper {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 8rem 2.5rem 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.twoColLayout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 5rem;
+  width: 100%;
+  align-items: center;
+}
+
+/* ── LEFT PANEL ── */
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 520px;
+}
+
+.authEyebrow {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #bc473a; /* Muted railway red */
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.authTitle {
+  font-family: 'Feldora', serif;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #1e1b19;
+  margin: 0 0 1.5rem 0;
+  text-transform: uppercase;
+}
+
+.authTitleHighlight {
+  display: block;
+  font-weight: 900;
+  color: #1e1b19;
+  letter-spacing: -0.02em;
+}
+
+.authDesc {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.95rem;
+  color: rgba(30, 27, 25, 0.6);
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+.statusIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(30, 27, 25, 0.03);
+  padding: 6px 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(30, 27, 25, 0.05);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #bc473a;
+  box-shadow: 0 0 4px rgba(188, 71, 58, 0.4);
+}
+
+.statusText {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #1e1b19;
+  text-transform: uppercase;
+}
+
+/* ── RIGHT PANEL & FORM ── */
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+  border-top: 1.5px solid rgba(30, 27, 25, 0.15);
+  border-bottom: 1.5px solid rgba(30, 27, 25, 0.15);
+  padding: 2.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.formHeader {
+  margin-bottom: 0.5rem;
+}
+
+.formTitle {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #1e1b19;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.formGroup label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: rgba(30, 27, 25, 0.48);
+  text-transform: uppercase;
+}
+
+.inputField {
+  background-color: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(30, 27, 25, 0.14);
+  border-radius: 2px;
+  color: #1e1b19;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.inputField:focus {
+  border-color: #1e1b19;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 1px #1e1b19, inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.inputField::placeholder {
+  color: rgba(30, 27, 25, 0.3);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+/* Chrome / Safari / Edge Autofill Override to kill default browser blue box */
+.inputField:-webkit-autofill,
+.inputField:-webkit-autofill:hover,
+.inputField:-webkit-autofill:focus,
+.inputField:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #f4eee6 inset !important;
+  -webkit-text-fill-color: #1e1b19 !important;
+  transition: background-color 5000s ease-in-out 0s;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.82rem !important;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.2rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxInput {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(30, 27, 25, 0.3);
+  border-radius: 1px;
+  background: transparent;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checkboxInput:checked {
+  background-color: #1e1b19;
+  border-color: #1e1b19;
+}
+
+.checkboxInput:checked::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background-color: #faf6f0;
+  display: block;
+}
+
+.checkboxLabel {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: rgba(30, 27, 25, 0.5);
+  text-transform: uppercase;
+}
+
+.submitBtn {
+  background-color: #1e1b19;
+  border: none;
+  border-radius: 9999px;
+  color: #faf6f0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.85rem 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.2);
+  transition: background-color 0.25s ease, transform 0.25s ease;
+  width: fit-content;
+  margin-top: 0.5rem;
+}
+
+.submitBtn:hover {
+  background-color: #2c2826;
+}
+
+.submitBtn:hover .btnArrow {
+  transform: translateX(2px);
+}
+
+.btnArrow {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+}
+
+.formFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 1.5rem;
+}
+
+.formFooterText {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.65rem;
+  color: rgba(30, 27, 25, 0.45);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── TRACK GRAPHIC ── */
+.routeGraphicContainer {
+  margin-top: 3.5rem;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.trackSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ── SYSTEM MESSAGE INDICATORS ── */
+.authStatusPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 1.5rem;
+  background-color: rgba(30, 27, 25, 0.03);
+  border: 1px dashed rgba(30, 27, 25, 0.15);
+  margin-top: 0.5rem;
+}
+
+.authStatusHeader {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #bc473a;
+  text-transform: uppercase;
+}
+
+.authStatusBody {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e1b19;
+}
+
+/* ── RESPONSIVE DESIGN ── */
+@media (max-width: 1024px) {
+  .twoColLayout {
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentWrapper {
+    padding-top: 6.5rem;
+  }
+  .twoColLayout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .leftPanel {
+    max-width: 100%;
+  }
+  .formContainer {
+    max-width: 100%;
+  }
+  .routeGraphicContainer {
+    margin-top: 2rem;
+    height: 36px;
+  }
+}

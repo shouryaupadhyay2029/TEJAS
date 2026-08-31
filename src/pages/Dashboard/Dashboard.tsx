@@ -29,62 +29,27 @@ type SectionType =
 
 // --- Premium Motion Variations ---
 const pageVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 6 },
   visible: {
     opacity: 1,
+    y: 0,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05
+      duration: 0.35,
+      ease: [0.22, 1, 0.36, 1],
+      staggerChildren: 0.05,
     }
   },
   exit: {
-    opacity: 0,
-    transition: { duration: 0.2 }
-  }
-};
-
-const headerEyebrowVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
-  }
-};
-
-const headerTitleVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.08 }
-  }
-};
-
-const headerDescVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.16 }
-  }
-};
-
-const headerDividerVariants = {
-  hidden: { scaleX: 0 },
-  visible: {
-    scaleX: 1,
-    transition: { duration: 0.5, ease: 'easeInOut', delay: 0.22 }
+    opacity: 1
   }
 };
 
 const childVariants = {
-  hidden: { opacity: 0, y: 14, scale: 0.985 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
   }
 };
 
@@ -211,21 +176,21 @@ export const Dashboard: React.FC = () => {
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
                   <PageEntryReveal delay={0.15} duration={1.1}>
-                    <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
+                    <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
                   </PageEntryReveal>
                   <div style={{ margin: '4px 0' }}>
                     <PageEntryReveal delay={0.35} duration={1.25}>
-                      <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Operations Overview</motion.h1>
+                      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Operations Overview</h1>
                     </PageEntryReveal>
                   </div>
-                  <motion.p variants={headerDescVariants}>High-level summary of active blocks, tasks, and system observations.</motion.p>
+                  <p>High-level summary of active blocks, tasks, and system observations.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span className={styles.headerStatusDot} />
                   <span>SYSTEM STATUS: OPERATIONAL</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               {/* KPI Strip */}
               <motion.div variants={childVariants} className={styles.kpiGrid} style={{ marginTop: '2.5rem' }}>
@@ -284,15 +249,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Maintenance Intelligence</motion.h1>
-                  <motion.p variants={headerDescVariants}>ML-driven task priority distribution and failure risk explanations.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Maintenance Intelligence</h1>
+                  <p>ML-driven task priority distribution and failure risk explanations.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>UPDATED: JUST NOW</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <div className={styles.maintenanceGrid} style={{ marginTop: '2.5rem' }}>
                 {/* Task List */}
@@ -442,15 +407,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Asset Intelligence</motion.h1>
-                  <motion.p variants={headerDescVariants}>Search, trace condition indices, and audit asset service records.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Asset Intelligence</h1>
+                  <p>Search, trace condition indices, and audit asset service records.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>5 TOTAL ASSETS AUDITED</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <motion.div variants={childVariants} style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem' }}>
                 <Search size={18} style={{ alignSelf: 'center', color: 'var(--color-text-muted)' }} />
@@ -589,15 +554,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Block Planning Timeline</motion.h1>
-                  <motion.p variants={headerDescVariants}>Trace scheduled, active, and conflicting blocks across departments.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Block Planning Timeline</h1>
+                  <p>Trace scheduled, active, and conflicting blocks across departments.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>DAILY VIEW</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <div className={styles.planningWorkspace} style={{ marginTop: '2.5rem' }}>
                 <motion.div variants={childVariants} className={styles.timelineCard}>
@@ -678,16 +643,16 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>TEJAS Optimizer</motion.h1>
-                  <motion.p variants={headerDescVariants}>Review solver constraints, variables, and optimized coordinate plans.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>TEJAS Optimizer</h1>
+                  <p>Review solver constraints, variables, and optimized coordinate plans.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span className={styles.headerStatusDot} />
                   <span>SOLVER: {isOptimizing ? 'RESOLVING...' : 'ACTIVE'}</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               {/* Solver Workflow Pipeline */}
               <motion.div variants={childVariants} style={{ marginTop: '2.5rem', position: 'relative', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -857,15 +822,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Coordination Center</motion.h1>
-                  <motion.p variants={headerDescVariants}>Cross-department compatibility and joint maintenance tracking.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Coordination Center</h1>
+                  <p>Cross-department compatibility and joint maintenance tracking.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>3 ACTIVE SUGGESTIONS</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <div className={styles.coordinationView} style={{ marginTop: '2.5rem' }}>
                 {/* SVG Connected Nodes */}
@@ -980,8 +945,8 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Live Operations</motion.h1>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Live Operations</h1>
                   <p>Chronological feed of real-time events, telemetry alarms, and block updates.</p>
                 </div>
                 <div className={styles.headerStatus}>
@@ -989,7 +954,7 @@ export const Dashboard: React.FC = () => {
                   <span>LIVE TRACKING ACTIVE</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               {/* Timeline Feed */}
               <motion.div variants={childVariants} className={styles.liveTimeline}>
@@ -1035,15 +1000,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Analytics & Reports</motion.h1>
-                  <motion.p variants={headerDescVariants}>Trace asset trends, department workloads, and optimizer cost benefits.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Analytics &amp; Reports</h1>
+                  <p>Trace asset trends, department workloads, and optimizer cost benefits.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>GENERATED: TODAY</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               {/* Performance Summary Metrics */}
               <motion.div variants={childVariants} style={{ marginTop: '2.5rem', display: 'flex', gap: '3rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '24px' }}>
@@ -1153,15 +1118,15 @@ export const Dashboard: React.FC = () => {
             >
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
-                  <motion.span variants={headerEyebrowVariants} className={styles.headerEyebrow}>OPERATIONS CONSOLE</motion.span>
-                  <motion.h1 variants={headerTitleVariants} style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Alerts & Action Center</motion.h1>
-                  <motion.p variants={headerDescVariants}>Operational anomalies requiring operator acknowledgement or approval.</motion.p>
+                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Alerts &amp; Action Center</h1>
+                  <p>Operational anomalies requiring operator acknowledgement or approval.</p>
                 </div>
                 <div className={styles.headerStatus}>
                   <span>3 PENDING ITEMS</span>
                 </div>
               </div>
-              <motion.div variants={headerDividerVariants} style={{ originX: 0, height: '1.5px', backgroundColor: 'var(--color-border)' }} />
+              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <div className={styles.alertsGrid} style={{ marginTop: '2.5rem' }}>
                 <motion.div variants={childVariants} className={`${styles.alertCard} ${styles.alertCardCritical}`}>
