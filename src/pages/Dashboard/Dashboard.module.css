@@ -22,12 +22,19 @@
 /* Secondary horizontal navbar */
 .secondaryNavbar {
   width: 100%;
-  background-color: transparent;
+  background-color: #faf6f0; /* Solid cream base to block scrolled text */
   border-bottom: 1.5px solid var(--color-border);
   position: sticky;
-  top: 94px; /* Sticks directly below the primary navbar */
+  top: 94px; /* Sticks directly below the primary navbar on desktop */
   z-index: 99;
   box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .secondaryNavbar {
+    top: 0 !important; /* Stick to the very top on mobile */
+    background-color: #faf6f0 !important;
+  }
 }
 
 .secondaryNavContainer {
@@ -459,12 +466,16 @@
 
 .assetsTableWrapper {
   border: 1px solid var(--color-border);
-  overflow-hidden: true;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 2px;
 }
 
 .assetsTable {
   width: 100%;
   border-collapse: collapse;
+  min-width: 680px; /* Ensure columns don't compress on narrow screens */
 }
 
 .assetsTable th {
@@ -581,6 +592,9 @@
   border: 1.5px solid var(--color-border);
   padding: var(--space-6) 0 var(--space-4);
   box-sizing: border-box;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .timelineTimelineGrid {
@@ -588,6 +602,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  min-width: 680px; /* Ensure timeline doesn't compress and clip content on mobile */
 }
 
 .timelineHeader {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import styles from '../Home.module.css';
@@ -40,16 +41,25 @@ const linkVariant = {
 };
 
 const navLinks = [
-  { to: '/',              label: 'HOME' },
-  { to: '/dashboard',     label: 'DASHBOARD' },
-  { to: '/maintenance',   label: 'MAINTENANCE' },
-  { to: '/block-planning',label: 'PLANNING' },
-  { to: '/assets',        label: 'ASSETS' },
-  { to: '/reports',       label: 'REPORTS' },
+  { to: '/',              label: 'HOME',        num: '01' },
+  { to: '/dashboard',     label: 'DASHBOARD',   num: '02' },
+  { to: '/maintenance',   label: 'MAINTENANCE', num: '03' },
+  { to: '/block-planning',label: 'PLANNING',    num: '04' },
+  { to: '/assets',        label: 'ASSETS',      num: '05' },
+  { to: '/reports',       label: 'REPORTS',     num: '06' },
 ];
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Find active node based on current path
+  const activeLinkObj = navLinks.find(link => link.to === currentPath) || navLinks[0];
+  const activeNum = activeLinkObj.num;
+  const activeLabel = activeLinkObj.label;
 
   return (
     <>
@@ -112,46 +122,87 @@ export const Navbar: React.FC = () => {
         {mobileMenuOpen && (
           <motion.div
             className={styles.mobileMenuOverlay}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.35, ease }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease }}
           >
-            <div className={styles.mobileMenuInner}>
-              <div className={styles.mobileLinksList}>
-                {navLinks.map(({ to, label }, idx) => (
+            {/* Header section in overlay */}
+            <div className={styles.mobileMenuHeader}>
+              <div className={styles.logoGroup} style={{ opacity: 1 }}>
+                <div className={styles.logoWrapper}>
+                  <div className={styles.logoCircle}>TEJ</div>
+                  <span className={styles.logoTextOutside}>AS</span>
+                </div>
+                <div className={styles.logoDivider} />
+                <span className={styles.logoTagline}>
+                  FOR INDIAN<br />RAILWAYS
+                </span>
+              </div>
+              <div className={styles.hamburgerButtonClose} onClick={() => setMobileMenuOpen(false)}>
+                <X size={24} color="#1e1b19" />
+              </div>
+            </div>
+
+            {/* Content section */}
+            <div className={styles.mobileMenuContent}>
+              {/* Leftaligned index list */}
+              <motion.div 
+                className={styles.mobileLinksList}
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } }
+                }}
+                initial="hidden"
+                animate="show"
+              >
+                {navLinks.map(({ to, label, num }, idx) => (
                   <motion.div
                     key={to}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05, duration: 0.4, ease }}
+                    variants={{
+                      hidden: { y: 24, opacity: 0 },
+                      show: { y: 0, opacity: 1, transition: { duration: 0.7, ease } }
+                    }}
+                    style={{ width: '100%' }}
                   >
                     <TransitionLink
                       to={to}
                       label={label}
-                      className={styles.mobileNavLink}
+                      className={`${styles.mobileMenuRow} ${hoveredIdx === idx ? styles.mobileMenuRowActive : ''}`}
+                      style={{
+                        paddingLeft: hoveredIdx === idx ? '8px' : '0px',
+                        opacity: hoveredIdx === null ? 1 : hoveredIdx === idx ? 1 : 0.4
+                      }}
+                      onMouseEnter={() => setHoveredIdx(idx)}
+                      onMouseLeave={() => setHoveredIdx(null)}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {label}
+                      <span className={styles.mobileMenuNum}>{num}</span>
+                      <span className={styles.mobileMenuLabel}>{label}</span>
+                      <span className={styles.menuWipeLine} />
                     </TransitionLink>
                   </motion.div>
                 ))}
-              </div>
-              <motion.div
-                className={styles.mobileMenuBottom}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <TransitionLink
-                  to="/login"
-                  label="ACCESS"
-                  className={styles.mobileCtaButton}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  ACCESS DASHBOARD
-                </TransitionLink>
               </motion.div>
+
+              {/* Current active section elements */}
+              <div className={styles.mobileMenuPosition}>
+                <div className={styles.mobileMenuPositionLine} />
+                <span className={styles.mobileMenuPosNum}>TEJAS / {activeNum}</span>
+                <span className={styles.mobileMenuPosLabel}>{activeLabel}</span>
+              </div>
+            </div>
+
+            {/* Bottom compact dashboard button */}
+            <div className={styles.mobileCtaWrapper}>
+              <TransitionLink
+                to="/login"
+                label="ACCESS"
+                className={styles.mobileMenuCta}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ACCESS DASHBOARD →
+              </TransitionLink>
             </div>
           </motion.div>
         )}

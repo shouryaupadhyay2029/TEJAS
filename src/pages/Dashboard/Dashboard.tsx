@@ -873,7 +873,7 @@ export const Dashboard: React.FC = () => {
                   <svg style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
                     {/* Left node connection line */}
                     <motion.line
-                      x1="25%" y1="50%" x2="50%" y2="50%"
+                      x1="20%" y1="50%" x2="50%" y2="50%"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.2 }}
@@ -883,7 +883,7 @@ export const Dashboard: React.FC = () => {
                     />
                     {/* Right node connection line */}
                     <motion.line
-                      x1="75%" y1="50%" x2="50%" y2="50%"
+                      x1="80%" y1="50%" x2="50%" y2="50%"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.25 }}
@@ -893,7 +893,7 @@ export const Dashboard: React.FC = () => {
                     />
                     {/* Top node connection line */}
                     <motion.line
-                      x1="50%" y1="15%" x2="50%" y2="50%"
+                      x1="50%" y1="20%" x2="50%" y2="50%"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.3 }}
@@ -919,7 +919,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div style={{ position: 'absolute', top: '5%', zIndex: 1 }}
+                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '5%', zIndex: 1 }}
                        onMouseEnter={() => setHoveredCoordDept('Traction')}
                        onMouseLeave={() => setHoveredCoordDept(null)}>
                     <div className={styles.coordCircle} style={hoveredCoordDept === 'Traction' ? { borderColor: 'var(--color-primary)', background: '#faf6f0' } : {}}>
@@ -927,7 +927,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div style={{ position: 'absolute', top: '40%', zIndex: 1 }}>
+                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '40%', zIndex: 1 }}>
                     <div className={`${styles.coordCircle} ${styles.coordCenterHub}`}>
                       TEJAS Coordinated
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, animate } from 'framer-motion';
+import { motion, useInView, animate, useScroll, useTransform } from 'framer-motion';
 import { TransitionLink } from '../../components/PageTransition';
 import GradientBackground from '../../components/GradientBackground';
 import { Noise } from '../../components/GradientBackground';
@@ -141,6 +141,97 @@ const after = [
 const navLinks = ['HOME', 'DASHBOARD', 'MAINTENANCE', 'PLANNING', 'ASSETS', 'REPORTS'];
 const navPaths = ['/', '/dashboard', '/maintenance', '/block-planning', '/assets', '/reports'];
 
+/* ── WORKFLOW MILESTONE COMPONENT ────────────────────── */
+interface MilestoneProps {
+  step: {
+    num: string;
+    label: string;
+    img: string;
+    offset: number;
+  };
+}
+
+const WorkflowMilestone: React.FC<MilestoneProps> = ({ step }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  
+  // Track scroll position of this card relative to viewport
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  // Interpolate scale: 0.97 -> 1.02 -> 0.97
+  const scrollScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.97, 1.02, 0.97]);
+
+  // Interpolate subtle parallax vertical offset: offset + 12 -> offset -> offset - 12
+  const scrollY = useTransform(scrollYProgress, [0, 0.5, 1], [step.offset + 12, step.offset, step.offset - 12]);
+
+  // Interpolate image glide position inside the container: -8% to 8%
+  const imgY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
+
+  // Subtle contrast: 0.95 -> 1.05 -> 0.95
+  const scrollContrast = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1.05, 0.95]);
+
+  // Subtle border definition opacity: 0.08 -> 0.25 -> 0.08
+  const scrollBorderOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.08, 0.25, 0.08]);
+
+  // Subtle shadow intensity factor: 0.02 -> 0.08 -> 0.02
+  const scrollShadowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.02, 0.08, 0.02]);
+
+  return (
+    <motion.div
+      ref={ref}
+      className={styles.milestoneItem}
+      style={{
+        y: scrollY,
+        scale: scrollScale
+      }}
+      variants={{
+        hidden: { opacity: 0, y: step.offset + 30 },
+        show: { opacity: 1, y: step.offset, transition: { duration: 0.8, ease } }
+      }}
+    >
+      {/* Image Container with desaturated on-hover transition */}
+      <motion.div 
+        className={styles.imageContainer}
+        style={{
+          boxShadow: useTransform(scrollShadowOpacity, (val: number) => `0 6px 24px rgba(30, 27, 25, ${val})`),
+          borderColor: useTransform(scrollBorderOpacity, (val: number) => `rgba(30, 27, 25, ${val})`),
+          filter: useTransform(scrollContrast, (val: number) => `contrast(${val})`),
+          borderWidth: '1px',
+          borderStyle: 'solid'
+        }}
+      >
+        <motion.img 
+          src={step.img} 
+          alt={step.label} 
+          className={styles.workflowImage} 
+          style={{
+            y: imgY,
+            scale: 1.15
+          }}
+          whileHover={{
+            scale: 1.20
+          }}
+          transition={{ duration: 0.8, ease }}
+        />
+      </motion.div>
+
+      {/* Label Group */}
+      <motion.div 
+        className={styles.milestoneLabelWrap}
+        variants={{
+          hidden: { opacity: 0, y: 8 },
+          show: { opacity: 1, y: 0, transition: { duration: 0.4, ease, delay: 0.15 } }
+        }}
+      >
+        <span className={styles.milestoneNum}>{step.num}</span>
+        <span className={styles.milestoneLabel}>{step.label}</span>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 /* ── COMPONENT ───────────────────────────────────────── */
 const HomeContent: React.FC = () => {
   const [capHovered, setCapHovered] = useState<number | null>(null);
@@ -161,65 +252,14 @@ const HomeContent: React.FC = () => {
       <div className={styles.sectionsWrap}>
 
       {/* ═══════════════════════════════════════════════════
-          S01 — THE PROBLEM
-      ═══════════════════════════════════════════════════ */}
-      <section className={styles.section} id="problem">
-        <div className={styles.sectionInner}>
-          <Rule />
-          <div className={styles.problemGrid}>
-            <div className={styles.problemLeft}>
-              <Reveal delay={0.05}>
-                <SectionLabel num="01" label="THE PROBLEM" />
-              </Reveal>
-              <Reveal delay={0.12}>
-                <h2 className={styles.problemStatement}>
-                  Railway maintenance isn't just about fixing assets.
-                  <em> It's about finding the right time to fix them.</em>
-                </h2>
-              </Reveal>
-            </div>
-
-            <div className={styles.problemRight}>
-              <Reveal delay={0.2}>
-                <p className={styles.problemBody}>
-                  Maintenance activities across Engineering, S&T and Traction
-                  departments compete for a limited supply of railway blocks —
-                  tightly controlled windows when track sections can be taken
-                  out of service.
-                </p>
-                <p className={styles.problemBody} style={{ marginTop: '1.25rem' }}>
-                  At the same time, asset condition, defect urgency, traffic
-                  requirements and operational constraints are constantly
-                  shifting. Without a unified system, coordination remains
-                  manual, visibility is fragmented and opportunities for
-                  efficient combined maintenance are missed.
-                </p>
-              </Reveal>
-
-              <Reveal delay={0.28}>
-                <div className={styles.indicators}>
-                  {['Asset Condition Tracking', 'Multi-Department Scheduling', 'Block Window Optimization'].map((ind, i) => (
-                    <div key={i} className={styles.indicator}>
-                      <span className={styles.indicatorDot} />
-                      <span className={styles.indicatorLabel}>{ind}</span>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          S02 — THE APPROACH
+          S01 — THE APPROACH
       ═══════════════════════════════════════════════════ */}
       <section className={styles.section} id="approach">
         <div className={styles.sectionInner}>
           <Rule />
           <div className={styles.approachHeader}>
             <Reveal delay={0.05}>
-              <SectionLabel num="02" label="THE TEJAS APPROACH" />
+              <SectionLabel num="01" label="THE TEJAS APPROACH" />
             </Reveal>
             <Reveal delay={0.12}>
               <h2 className={styles.approachHeadline}>
@@ -247,92 +287,52 @@ const HomeContent: React.FC = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          S03 — WHY TEJAS
+          S02 — HOW IT WORKS
       ═══════════════════════════════════════════════════ */}
-      <section className={styles.section} id="why">
-        <div className={styles.sectionInner}>
-          <Rule />
-          <Reveal delay={0.05}>
-            <SectionLabel num="03" label="WHY TEJAS" />
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h2 className={styles.whyHeadline}>
-              One system.&nbsp; Three departments.&nbsp; One coordinated plan.
-            </h2>
-          </Reveal>
-
-          <div className={styles.deptDiagram}>
-            {/* Left — three departments */}
-            <div className={styles.deptList}>
-              {['ENGINEERING', 'S&T', 'TRACTION'].map((dept, i) => (
-                <Reveal key={dept} delay={0.15 + i * 0.1} className={styles.deptItem}>
-                  <span className={styles.deptLabel}>{dept}</span>
-                  <span className={styles.deptConnector} />
-                </Reveal>
-              ))}
-            </div>
-
-            {/* Center — optimizer */}
-            <Reveal delay={0.35} className={styles.deptCenter}>
-              <div className={styles.optimizerBox}>
-                <span className={styles.optimizerEyebrow}>TEJAS</span>
-                <span className={styles.optimizerTitle}>OPTIMIZER</span>
-              </div>
-            </Reveal>
-
-            {/* Right — output */}
-            <Reveal delay={0.45} className={styles.deptOutput} x={20}>
-              <span className={styles.deptOutputArrow}>→</span>
-              <div>
-                <span className={styles.deptOutputTitle}>COORDINATED PLAN</span>
-                <p className={styles.deptOutputDesc}>
-                  Instead of planning each department independently, TEJAS identifies opportunities to combine compatible maintenance work into shared block windows — reducing conflicts and maximising the use of available track time.
-                </p>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          S04 — HOW IT WORKS
-      ═══════════════════════════════════════════════════ */}
-      <section className={styles.section} id="how">
-        <div className={styles.sectionInner}>
+      <section className={styles.section} id="how" style={{ overflow: 'visible' }}>
+        <div className={styles.sectionInner} style={{ overflow: 'visible' }}>
           <Rule />
           <div className={styles.howHeader}>
             <Reveal delay={0.05}>
-              <SectionLabel num="04" label="HOW IT WORKS" />
+              <SectionLabel num="02" label="HOW IT WORKS" />
             </Reveal>
             <Reveal delay={0.1}>
-              <h2 className={styles.howHeadline}>Four steps from task to plan.</h2>
+              <h2 className={styles.howHeadline}>The operational journey from data to resolution.</h2>
             </Reveal>
           </div>
 
-          <div className={styles.timeline}>
-            {[
-              { n: '01', title: 'CAPTURE',    body: 'Maintenance tasks, asset information, defect records and operational constraints enter the system from all departments.' },
-              { n: '02', title: 'PRIORITIZE', body: 'AI-assisted analysis evaluates asset condition, defect severity and urgency to determine which tasks require greater attention.' },
-              { n: '03', title: 'COORDINATE', body: 'Tasks from Engineering, S&T and Traction are evaluated for compatible work windows and combined scheduling opportunities.' },
-              { n: '04', title: 'OPTIMIZE',   body: 'Constraint-aware scheduling using CP-SAT generates feasible, efficient block plans that respect traffic and operational requirements.' },
-            ].map((step, i) => (
-              <Reveal key={step.n} delay={0.08 + i * 0.1} className={styles.timelineStep}>
-                <div className={styles.timelineLeft}>
-                  <span className={styles.timelineNum}>{step.n}</span>
-                  {i < 3 && <span className={styles.timelineTrack} />}
-                </div>
-                <div className={styles.timelineRight}>
-                  <h4 className={styles.timelineTitle}>{step.title}</h4>
-                  <p className={styles.timelineBody}>{step.body}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          <motion.div 
+            className={styles.workflowContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.15
+                }
+              }
+            }}
+          >
+            <div className={styles.milestonesWrap}>
+              {[
+                { num: '01', label: 'COLLECT DATA', img: '/DATA.png', offset: -24 },
+                { num: '02', label: 'BUILD ASSET PROFILE', img: '/ASSET.png', offset: 24 },
+                { num: '03', label: 'DETECT DEFECTS', img: '/DETECTION.png', offset: -12 },
+                { num: '04', label: 'ASSESS RISK', img: '/PRIORITY.png', offset: 12 },
+                { num: '05', label: 'COORDINATE WORK', img: '/3_STEP.png', offset: -24 },
+                { num: '06', label: 'EXECUTE & MONITOR', img: '/FINAL.png', offset: 24 },
+              ].map((step) => (
+                <WorkflowMilestone step={step} key={step.num} />
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          S05 — INTELLIGENCE LAYER
+          S03 — INTELLIGENCE LAYER
       ═══════════════════════════════════════════════════ */}
       <section className={styles.section} id="intelligence">
         <div className={styles.sectionInner}>
@@ -340,7 +340,7 @@ const HomeContent: React.FC = () => {
           <div className={styles.intelGrid}>
             <div className={styles.intelLeft}>
               <Reveal delay={0.05}>
-                <SectionLabel num="05" label="THE INTELLIGENCE LAYER" />
+                <SectionLabel num="03" label="THE INTELLIGENCE LAYER" />
               </Reveal>
               <Reveal delay={0.1}>
                 <h2 className={styles.intelHeadline}>
@@ -394,13 +394,13 @@ const HomeContent: React.FC = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          S06 — WHAT CHANGES
+          S04 — WHAT CHANGES
       ═══════════════════════════════════════════════════ */}
       <section className={styles.section} id="changes">
         <div className={styles.sectionInner}>
           <Rule />
           <Reveal delay={0.05}>
-            <SectionLabel num="06" label="WHAT CHANGES" />
+            <SectionLabel num="04" label="WHAT CHANGES" />
           </Reveal>
 
           <div className={styles.changeGrid}>
@@ -446,7 +446,7 @@ const HomeContent: React.FC = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          S07 — PLATFORM CAPABILITIES
+          S05 — PLATFORM CAPABILITIES
       ═══════════════════════════════════════════════════ */}
       <section className={styles.sectionCapabilities} id="capabilities">
         <GradientBackground
@@ -469,7 +469,7 @@ const HomeContent: React.FC = () => {
           <div className={styles.sectionInner} style={{ padding: '7rem 4rem' }}>
             <Rule />
             <Reveal delay={0.05}>
-              <SectionLabel num="07" label="PLATFORM CAPABILITIES" />
+              <SectionLabel num="05" label="PLATFORM CAPABILITIES" />
             </Reveal>
             <Reveal delay={0.1}>
               <h2 className={styles.capHeadline}>Everything in one operational platform.</h2>
@@ -514,13 +514,13 @@ const HomeContent: React.FC = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════
-          S08 — OPERATIONAL VALUE
+          S06 — OPERATIONAL VALUE
       ═══════════════════════════════════════════════════ */}
       <section className={styles.section} id="value">
         <div className={styles.sectionInner}>
           <Rule />
           <Reveal delay={0.05}>
-            <SectionLabel num="08" label="OPERATIONAL VALUE" />
+            <SectionLabel num="06" label="OPERATIONAL VALUE" />
           </Reveal>
           <Reveal delay={0.1}>
             <h2 className={styles.valueHeadline}>Designed to improve what matters.</h2>
@@ -541,59 +541,6 @@ const HomeContent: React.FC = () => {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          S09 — BUILT FOR RAILWAY
-      ═══════════════════════════════════════════════════ */}
-      <section className={styles.section} id="railway">
-        <div className={styles.sectionInner}>
-          <Rule />
-          <Reveal delay={0.05}>
-            <SectionLabel num="09" label="BUILT FOR RAILWAY OPERATIONS" />
-          </Reveal>
-          <Reveal delay={0.12}>
-            <h2 className={styles.statementHeadline}>
-              Maintenance doesn't happen in isolation.
-            </h2>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <p className={styles.statementBody}>
-              Railway maintenance operates within a network of assets,
-              departments, traffic requirements, safety considerations
-              and limited work windows — all of which must be accounted
-              for in every plan. TEJAS is built with this complexity in mind.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          S10 — FINAL CTA
-      ═══════════════════════════════════════════════════ */}
-      <section className={styles.ctaSection} id="cta">
-        <div className={styles.sectionInner}>
-          <Rule />
-          <Reveal delay={0.08}>
-            <h2 className={styles.ctaHeadline}>Ready to plan the next block?</h2>
-          </Reveal>
-          <Reveal delay={0.16}>
-            <p className={styles.ctaBody}>
-              Explore how TEJAS brings maintenance prioritization, coordinated planning
-              and optimization into one operational platform.
-            </p>
-          </Reveal>
-          <Reveal delay={0.24}>
-            <div className={styles.ctaButtons}>
-              <TransitionLink to="/login" label="ACCESS" className={`${styles.ctaPrimary} interactive-hover`}>
-                ACCESS DASHBOARD
-              </TransitionLink>
-              <TransitionLink to="/dashboard" label="DASHBOARD" className={`${styles.ctaSecondary} interactive-hover`}>
-                EXPLORE THE PLATFORM
-              </TransitionLink>
-            </div>
-          </Reveal>
         </div>
       </section>
 

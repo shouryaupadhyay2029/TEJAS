@@ -181,15 +181,18 @@
 .timelineCard {
   border: 1px solid rgba(30, 27, 25, 0.08);
   background-color: #faf6f0;
-  overflow: visible;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   position: relative;
   padding-bottom: 2rem;
+  width: 100%;
 }
 
 .timeHeader {
   display: flex;
   border-bottom: 1.5px solid rgba(30, 27, 25, 0.1);
   background-color: rgba(30, 27, 25, 0.02);
+  min-width: 720px; /* Ensure timeline doesn't compress and overlap content on mobile */
 }
 
 .laneLabelHeader {
@@ -234,6 +237,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  min-width: 720px; /* Match width of timeHeader to ensure perfect alignment */
 }
 
 .verticalGuides {
@@ -565,6 +569,9 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .requestRow {
@@ -574,6 +581,7 @@
   padding: 1.1rem 0.5rem;
   border-bottom: 1px solid rgba(30, 27, 25, 0.06);
   transition: all 0.25s ease;
+  min-width: 680px; /* Prevent column collision on narrow screens */
 }
 
 .requestRow:hover {

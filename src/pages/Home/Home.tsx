@@ -240,43 +240,6 @@ export const Home: React.FC = () => {
         </GradientBackground>
       </div>
 
-      {/* Mobile-only features and benefits layout */}
-      <div className={styles.mobileFeaturesSection}>
-        <div className={styles.mobileSectionGroup}>
-          <h3 className={styles.mobileSectionTitle}>Core Capabilities</h3>
-          <div className={styles.mobileCardGrid}>
-            {features.map((f) => (
-              <div key={f.num} className={styles.mobileFeatureCard}>
-                <span className={styles.mobileCardNum}>{f.num}</span>
-                <div className={styles.mobileCardContent}>
-                  <h4 className={styles.mobileCardTitle}>
-                    {f.title.replace('\n', ' ')}
-                  </h4>
-                  <p className={styles.mobileCardDesc}>{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.mobileSectionGroup} style={{ marginTop: '3rem' }}>
-          <h3 className={styles.mobileSectionTitle}>Key Benefits</h3>
-          <div className={styles.mobileCardGrid}>
-            {benefits.map((b) => (
-              <div key={b.num} className={styles.mobileBenefitCard}>
-                <span className={styles.mobileCardNum}>{b.num}</span>
-                <div className={styles.mobileCardContent}>
-                  <h4 className={styles.mobileCardTitle}>
-                    {b.label.replace('\n', ' ')}
-                  </h4>
-                  <p className={styles.mobileCardDesc}>{b.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* ── Content sections below hero ─────────────── */}
       <HomeContent />
 

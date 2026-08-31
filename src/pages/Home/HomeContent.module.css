@@ -10,16 +10,14 @@
   width: 100%;
   overflow-x: hidden;
   background:
-    linear-gradient(
-      0deg,
-      rgba(252,248,240,1)  0%,
-      rgba(248,240,228,1) 30%,
-      rgba(245,233,215,1) 55%,
-      rgba(240,224,200,1) 72%,
-      rgba(232,212,182,1) 85%,
-      rgba(222,200,168,1) 93%,
-      rgba(210,186,152,1) 100%
-    );
+    linear-gradient(0deg,
+      rgba(252, 248, 240, 1) 0%,
+      rgba(248, 240, 228, 1) 30%,
+      rgba(245, 233, 215, 1) 55%,
+      rgba(240, 224, 200, 1) 72%,
+      rgba(232, 212, 182, 1) 85%,
+      rgba(222, 200, 168, 1) 93%,
+      rgba(210, 186, 152, 1) 100%);
   position: relative;
 }
 
@@ -33,7 +31,10 @@
      sizing to viewport width/height via parentElement.getBoundingClientRect() */
 }
 
-.content > * { position: relative; z-index: 1; }
+.content>* {
+  position: relative;
+  z-index: 1;
+}
 
 /* sectionsWrap is now just a plain block — no GradientBackground */
 .sectionsWrap {
@@ -415,77 +416,100 @@
   max-width: 480px;
 }
 
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+/* --- Visual Workflow Progress --- */
+.workflowContainer {
+  position: relative;
+  width: 100%;
+  padding: 5rem 0;
+  overflow: visible;
+  margin-top: 2rem;
 }
 
-.timelineStep {
+.milestonesWrap {
   display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 2.5rem;
-  align-items: flex-start;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem 3rem;
+  position: relative;
+  z-index: 2;
+  width: 100%;
 }
 
-.timelineStep:hover {
-  transform: translateX(4px);
-}
-
-.timelineLeft {
+.milestoneItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 0.15rem;
+  position: relative;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.timelineNum {
-  font-family: 'Gondens', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: rgba(30, 27, 25, 0.18);
-  line-height: 1;
-  display: block;
-  margin-bottom: 0.5rem;
-  transition: color 0.25s ease;
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+  border-radius: 2px;
+  margin-bottom: 2rem;
+  box-shadow: 0 6px 24px rgba(30, 27, 25, 0.05);
 }
 
-.timelineStep:hover .timelineNum {
-  color: rgba(210, 186, 152, 0.85);
+.workflowImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(0.9);
+  transition: filter 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center center;
 }
 
-
-.timelineTrack {
-  width: 1px;
-  flex: 1;
-  min-height: 48px;
-  background: rgba(30, 27, 25, 0.1);
-  display: block;
+.milestoneItem:hover .workflowImage {
+  filter: grayscale(0) contrast(1.04);
+  transform: scale(1.03);
 }
 
-.timelineRight {
-  padding-bottom: 3rem;
+.milestoneLabelWrap {
+  margin-top: 1rem;
+  text-align: center;
 }
 
-.timelineTitle {
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
+.milestoneNum {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.13em;
-  color: rgba(30, 27, 25, 0.8);
-  text-transform: uppercase;
-  margin: 0 0 0.75rem;
+  color: var(--color-railway-red);
+  letter-spacing: 0.08em;
+  display: block;
+  margin-bottom: 4px;
 }
 
-.timelineBody {
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: rgba(30, 27, 25, 0.48);
-  line-height: 1.75;
-  margin: 0;
-  max-width: 600px;
+.milestoneLabel {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Mobile responsive */
+@media (max-width: 1024px) {
+  .workflowContainer {
+    padding: 2rem 0;
+  }
+  .milestonesWrap {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
+  .railwayLine {
+    display: none;
+  }
+  .milestoneItem {
+    transform: none !important;
+  }
+  .milestoneNode {
+    display: none;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -815,7 +839,8 @@
   font-family: var(--font-sans);
   font-size: clamp(2rem, 4vw, 4rem);
   font-weight: 300;
-  color: rgba(30, 27, 25, 0.9); /* dark on cream */
+  color: rgba(30, 27, 25, 0.9);
+  /* dark on cream */
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: 0 0 2rem;
@@ -826,7 +851,8 @@
   font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 400;
-  color: rgba(30, 27, 25, 0.48); /* muted charcoal on cream */
+  color: rgba(30, 27, 25, 0.48);
+  /* muted charcoal on cream */
   line-height: 1.8;
   max-width: 560px;
   margin: 0;
@@ -1038,51 +1064,127 @@
     RESPONSIVE — TABLET
 ═══════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .sectionInner { padding: 0 2.5rem; }
+  .sectionInner {
+    padding: 0 2.5rem;
+  }
 
-  .problemGrid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .problemGrid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
 
-  .processFlow { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .processFlow {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
 
-  .deptDiagram { grid-template-columns: 1fr; gap: 2rem; }
-  .deptCenter { justify-content: flex-start; }
-  .deptOutput { flex-direction: column; }
-  .deptConnector { display: none; }
-  .deptOutputArrow { transform: rotate(90deg); display: inline-block; }
+  .deptDiagram {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 
-  .intelGrid { grid-template-columns: 1fr; gap: 3rem; }
+  .deptCenter {
+    justify-content: flex-start;
+  }
 
-  .changeGrid { grid-template-columns: 1fr; gap: 2rem; }
-  .changeDivider { display: none; }
+  .deptOutput {
+    flex-direction: column;
+  }
 
-  .metricsGrid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .deptConnector {
+    display: none;
+  }
 
-  .footerTop { grid-template-columns: 1fr; gap: 2.5rem; }
+  .deptOutputArrow {
+    transform: rotate(90deg);
+    display: inline-block;
+  }
 
-  .capRow { grid-template-columns: 100px 1fr 32px; gap: 1.25rem; }
+  .intelGrid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .changeGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .changeDivider {
+    display: none;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .footerTop {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .capRow {
+    grid-template-columns: 100px 1fr 32px;
+    gap: 1.25rem;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
     RESPONSIVE — MOBILE
 ═══════════════════════════════════════════════════════ */
 @media (max-width: 680px) {
-  .section { padding: 5rem 0; }
-  .sectionStatement { padding: 5rem 0; }
-  .ctaSection { padding: 6rem 0; }
-  .sectionInner { padding: 0 1.5rem; }
+  .section {
+    padding: 5rem 0;
+  }
 
-  .processFlow { grid-template-columns: 1fr; }
-  .processStep { padding-right: 0; }
-  .processLine { display: none; }
+  .sectionStatement {
+    padding: 5rem 0;
+  }
 
-  .metricsGrid { grid-template-columns: 1fr; gap: 0; }
+  .ctaSection {
+    padding: 6rem 0;
+  }
+
+  .sectionInner {
+    padding: 0 1.5rem;
+  }
+
+  .processFlow {
+    grid-template-columns: 1fr;
+  }
+
+  .processStep {
+    padding-right: 0;
+  }
+
+  .processLine {
+    display: none;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 
   .capRow {
     grid-template-columns: 1fr 32px;
     gap: 0.75rem;
   }
-  .capTag { display: none; }
 
-  .footerInner { padding: 0 1.5rem; }
-  .footerNav { gap: 0.5rem 1.5rem; }
+  .capTag {
+    display: none;
+  }
+
+  .footerInner {
+    padding: 0 1.5rem;
+  }
+
+  .footerNav {
+    gap: 0.5rem 1.5rem;
+  }
+}
+
+#how .sectionInner {
+  max-width: 1520px;
 }
