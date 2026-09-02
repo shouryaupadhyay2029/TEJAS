@@ -10,8 +10,10 @@
 }
 
 html,
-body {
-  background-color: var(--color-bg-base);
+body,
+#root {
+  background-color: #1e1b19 !important;
+  color: #faf6f0;
   min-height: 100vh;
   scroll-behavior: smooth;
 }
@@ -264,7 +266,8 @@ main,
   top: -4px;
   bottom: -4px;
   width: 35%;
-  background-color: #1e1b19; /* TEJAS near-black brand charcoal */
+  background-color: #1e1b19;
+  /* TEJAS near-black brand charcoal */
   z-index: 10;
   pointer-events: none;
   left: -35%;
@@ -276,6 +279,7 @@ main,
 .page-transition-content .headerEyebrow {
   animation-delay: 0.15s;
 }
+
 .page-transition-content .eyebrow::after,
 .page-transition-content .headerEyebrow::after {
   animation-delay: 0.15s;
@@ -285,6 +289,7 @@ main,
 .page-transition-content .title {
   animation-delay: 0.35s;
 }
+
 .page-transition-content .pageTitle::after,
 .page-transition-content .title::after {
   animation-delay: 0.35s;
@@ -294,6 +299,7 @@ main,
 .page-transition-content .desc {
   animation-delay: 0.58s;
 }
+
 .page-transition-content .subtitle::after,
 .page-transition-content .desc::after {
   animation-delay: 0.58s;
@@ -303,6 +309,7 @@ main,
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -312,12 +319,14 @@ main,
   0% {
     left: -35%;
   }
+
   100% {
     left: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .page-transition-content .eyebrow,
   .page-transition-content .headerEyebrow,
   .page-transition-content .pageTitle,
@@ -328,6 +337,7 @@ main,
     clip-path: none !important;
     animation: none !important;
   }
+
   .page-transition-content .eyebrow::after,
   .page-transition-content .headerEyebrow::after,
   .page-transition-content .pageTitle::after,

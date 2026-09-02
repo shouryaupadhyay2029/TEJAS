@@ -12,14 +12,18 @@ const ease = [0.16, 1, 0.3, 1] as const;
 /* ── Variants ────────────────────────────────────────── */
 const titleVariant = {
   hidden: { opacity: 0, scale: 0.82, y: 12 },
-  show:   { opacity: 1, scale: 1, y: 0,
-    transition: { duration: 0.9, delay: 0.25, ease } },
+  show: {
+    opacity: 1, scale: 1, y: 0,
+    transition: { duration: 0.9, delay: 0.25, ease }
+  },
 };
 
 const ctaVariant = {
   hidden: { opacity: 0, y: 14 },
-  show:   { opacity: 1, y: 0,
-    transition: { duration: 0.6, delay: 0.65, ease } },
+  show: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.6, delay: 0.65, ease }
+  },
 };
 
 /* ── Floating feature data with positions & drift ──── */
@@ -30,7 +34,7 @@ const features = [
     desc: 'Rank maintenance tasks by asset condition, defects, urgency and operational factors.',
     // position: left-side, upper
     style: { top: '18%', left: '2.5%' },
-    drift: { y: [0, -11, 0],    duration: 5.2, delay: 0 },
+    drift: { y: [0, -11, 0], duration: 5.2, delay: 0 },
   },
   {
     num: '02',
@@ -38,7 +42,7 @@ const features = [
     desc: 'Centralize asset condition, defect history and maintenance records.',
     // position: left-side, mid
     style: { top: '44%', left: '4%' },
-    drift: { y: [0, -8, 0],     duration: 4.5, delay: 0.9 },
+    drift: { y: [0, -8, 0], duration: 4.5, delay: 0.9 },
   },
   {
     num: '03',
@@ -46,7 +50,7 @@ const features = [
     desc: 'Align Engineering, S&T and Traction activities within shared work windows.',
     // position: left-side, lower
     style: { top: '67%', left: '2%' },
-    drift: { y: [0, -13, 0],    duration: 6.0, delay: 1.8 },
+    drift: { y: [0, -13, 0], duration: 6.0, delay: 1.8 },
   },
   {
     num: '04',
@@ -54,7 +58,7 @@ const features = [
     desc: 'CP-SAT constraint solving finds feasible, efficient block schedules.',
     // position: left-center, near bottom
     style: { top: '76%', left: '22%' },
-    drift: { y: [0, -9, 0],     duration: 4.8, delay: 0.5 },
+    drift: { y: [0, -9, 0], duration: 4.8, delay: 0.5 },
   },
   {
     num: '05',
@@ -62,7 +66,7 @@ const features = [
     desc: 'Data-driven visibility for better planning and faster decisions.',
     // position: between left and center, mid-low
     style: { top: '33%', left: '15%' },
-    drift: { y: [0, -10, 0],    duration: 5.6, delay: 1.4 },
+    drift: { y: [0, -10, 0], duration: 5.6, delay: 1.4 },
   },
 ];
 
@@ -80,7 +84,7 @@ const benefits = [
     label: 'BETTER ASSET\nAVAILABILITY',
     sub: 'Higher in-service reliability across the fleet.',
     style: { top: '36%', right: '7%' },
-    drift: { y: [0, -8,  0], duration: 5.5, delay: 1.1 },
+    drift: { y: [0, -8, 0], duration: 5.5, delay: 1.1 },
   },
   {
     num: '03',
@@ -94,7 +98,7 @@ const benefits = [
     label: 'OPTIMIZED\nBLOCK WINDOWS',
     sub: 'Maximum utilization of available track time.',
     style: { top: '70%', right: '9%' },
-    drift: { y: [0, -9,  0], duration: 4.6, delay: 1.6 },
+    drift: { y: [0, -9, 0], duration: 4.6, delay: 1.6 },
   },
   {
     num: '05',

@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build
 node_modules
 dist
 dist-ssr
@@ -22,3 +23,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python & Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+ENV/
+.pytest_cache/
+
+# Large compressed data archives
+*.zip
+*.tar.gz

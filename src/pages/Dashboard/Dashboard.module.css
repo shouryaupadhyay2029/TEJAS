@@ -1,15 +1,15 @@
 /* ── LAYOUT & SHELL ──────────────────────────────────── */
 .dashboardContainer {
-  /* Override variables for light cream theme */
-  --color-bg-base: transparent;
-  --color-text-primary: #1e1b19;
-  --color-text-secondary: #bc473a;
-  --color-text-muted: rgba(30, 27, 25, 0.58);
-  --color-border: rgba(30, 27, 25, 0.1);
-  --color-bg-surface: rgba(255, 255, 255, 0.35);
-  --color-bg-surface-raised: rgba(255, 255, 255, 0.65);
+  /* Dark theme palette matching TEJAS brand */
+  --color-bg-base: #1e1b19;
+  --color-text-primary: #faf6f0;
+  --color-text-secondary: #d2b48c;
+  --color-text-muted: rgba(250, 246, 240, 0.65);
+  --color-border: rgba(210, 180, 140, 0.2);
+  --color-bg-surface: #2c2826;
+  --color-bg-surface-raised: #3a3532;
 
-  background-color: transparent;
+  background-color: #1e1b19;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@
 /* Secondary horizontal navbar */
 .secondaryNavbar {
   width: 100%;
-  background-color: #faf6f0; /* Solid cream base to block scrolled text */
+  background-color: #2c2826; /* Dark surface base */
   border-bottom: 1.5px solid var(--color-border);
   position: sticky;
   top: 94px; /* Sticks directly below the primary navbar on desktop */
@@ -33,7 +33,7 @@
 @media (max-width: 768px) {
   .secondaryNavbar {
     top: 0 !important; /* Stick to the very top on mobile */
-    background-color: #faf6f0 !important;
+    background-color: #2c2826 !important;
   }
 }
 
@@ -441,9 +441,9 @@
 .searchBar {
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.5);
+  background: #2c2826;
   border: 1.5px solid var(--color-border);
-  color: var(--color-text-primary);
+  color: #faf6f0;
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
@@ -454,8 +454,8 @@
 }
 
 .searchBar:focus {
-  border-color: #1e1b19;
-  background-color: #faf6f0;
+  border-color: #d2b48c;
+  background-color: #3a3532;
 }
 
 .assetsFlexLayout {
