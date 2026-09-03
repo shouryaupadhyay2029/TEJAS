@@ -19,41 +19,41 @@ const navVariant = {
 /* Each section of the navbar fades+slides down */
 const itemVariant = {
   hidden: { opacity: 0, y: -14 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
 };
 
 /* Logo circle: scale in from 0 */
 const circleVariant = {
   hidden: { opacity: 0, scale: 0.5 },
-  show:   { opacity: 1, scale: 1, transition: { duration: 0.55, ease } },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.55, ease } },
 };
 
 /* "AS" text beside circle: slide in from left */
 const logoTextVariant = {
   hidden: { opacity: 0, x: -10 },
-  show:   { opacity: 1, x: 0, transition: { duration: 0.45, delay: 0.1, ease } },
+  show: { opacity: 1, x: 0, transition: { duration: 0.45, delay: 0.1, ease } },
 };
 
 /* Each nav link: staggered fade up */
 const linkVariant = {
   hidden: { opacity: 0, y: -8 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease } },
 };
 
 const navLinks = [
-  { to: '/',              label: 'HOME',            num: '01' },
-  { to: '/dashboard',     label: 'DASHBOARD',       num: '02' },
-  { to: '/maintenance',   label: 'MAINTENANCE',     num: '03' },
-  { to: '/block-planning',label: 'PLANNING',        num: '04' },
-  { to: '/assets',        label: 'ASSETS',          num: '05' },
-  { to: '/report',        label: 'INCIDENT REPORT', num: '06' },
-  { to: '/reports',       label: 'REPORTS',         num: '07' },
+  { to: '/', label: 'HOME', num: '01' },
+  { to: '/dashboard', label: 'DASHBOARD', num: '02' },
+  { to: '/maintenance', label: 'MAINTENANCE', num: '03' },
+  { to: '/block-planning', label: 'PLANNING', num: '04' },
+  { to: '/assets', label: 'ASSETS', num: '05' },
+  { to: '/report', label: 'INCIDENT REPORT', num: '06' },
+  { to: '/reports', label: 'REPORTS', num: '07' },
 ];
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  
+
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -148,7 +148,7 @@ export const Navbar: React.FC = () => {
             {/* Content section */}
             <div className={styles.mobileMenuContent}>
               {/* Leftaligned index list */}
-              <motion.div 
+              <motion.div
                 className={styles.mobileLinksList}
                 variants={{
                   hidden: {},
@@ -192,18 +192,6 @@ export const Navbar: React.FC = () => {
                 <span className={styles.mobileMenuPosNum}>TEJAS / {activeNum}</span>
                 <span className={styles.mobileMenuPosLabel}>{activeLabel}</span>
               </div>
-            </div>
-
-            {/* Bottom compact dashboard button */}
-            <div className={styles.mobileCtaWrapper}>
-              <TransitionLink
-                to="/login"
-                label="ACCESS"
-                className={styles.mobileMenuCta}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ACCESS DASHBOARD →
-              </TransitionLink>
             </div>
           </motion.div>
         )}

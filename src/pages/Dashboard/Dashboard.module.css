@@ -1,15 +1,14 @@
 /* ── LAYOUT & SHELL ──────────────────────────────────── */
 .dashboardContainer {
-  /* Dark theme palette matching TEJAS brand */
-  --color-bg-base: #1e1b19;
-  --color-text-primary: #faf6f0;
-  --color-text-secondary: #d2b48c;
-  --color-text-muted: rgba(250, 246, 240, 0.65);
-  --color-border: rgba(210, 180, 140, 0.2);
-  --color-bg-surface: #2c2826;
-  --color-bg-surface-raised: #3a3532;
+  --color-bg-base: transparent;
+  --color-text-primary: #1e1b19;
+  --color-text-secondary: #bc473a;
+  --color-text-muted: rgba(30, 27, 25, 0.65);
+  --color-border: rgba(30, 27, 25, 0.12);
+  --color-bg-surface: rgba(255, 255, 255, 0.45);
+  --color-bg-surface-raised: rgba(255, 255, 255, 0.75);
 
-  background-color: #1e1b19;
+  background-color: transparent;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -22,18 +21,19 @@
 /* Secondary horizontal navbar */
 .secondaryNavbar {
   width: 100%;
-  background-color: #2c2826; /* Dark surface base */
+  background-color: rgba(255, 255, 255, 0.45);
   border-bottom: 1.5px solid var(--color-border);
   position: sticky;
   top: 94px; /* Sticks directly below the primary navbar on desktop */
   z-index: 99;
   box-sizing: border-box;
+  backdrop-filter: blur(8px);
 }
 
 @media (max-width: 768px) {
   .secondaryNavbar {
-    top: 0 !important; /* Stick to the very top on mobile */
-    background-color: #2c2826 !important;
+    top: 0 !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
   }
 }
 
@@ -87,7 +87,7 @@
   left: 0;
   right: 0;
   height: 2.2px;
-  background-color: var(--color-primary, #d2b48c);
+  background-color: #1e1b19;
 }
 
 .secondaryAlertBadge {
@@ -120,9 +120,7 @@
 .contentArea {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 6.5rem var(--space-6) var(--space-12);
+  padding: 4rem 4% 6rem 4%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

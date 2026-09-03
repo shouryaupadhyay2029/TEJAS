@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
 import app.models
-from app.routers import sections, tasks, schedule
+from app.routers import sections, tasks, schedule, network, optimizer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -51,6 +51,8 @@ app.add_middleware(
 app.include_router(sections.router)
 app.include_router(tasks.router)
 app.include_router(schedule.router)
+app.include_router(network.router)
+app.include_router(optimizer.router)
 
 @app.get("/health", tags=["health"])
 def health_check():

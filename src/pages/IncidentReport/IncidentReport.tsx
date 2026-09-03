@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  TrainTrack, 
   AlertTriangle, 
   Sparkles, 
   RotateCcw, 
-  Activity, 
-  ShieldAlert, 
-  Layers, 
-  Search,
-  Database
+  Layers 
 } from 'lucide-react';
 import { Navbar } from '../Home/components/Navbar';
 import GradientBackground from '../../components/GradientBackground';
@@ -130,79 +125,88 @@ export const IncidentReport: React.FC = () => {
   };
 
   // Compute Priority Tier & Colors from Score (Scale 0-100)
-  // Assumption: ML Teammate Severity Band Ranges: <30 LOW, 30-55 MEDIUM, 55-78 HIGH, 78+ CRITICAL
   const getTierFromScore = (score: number | null | undefined) => {
-    if (score === null || score === undefined) return { label: 'PENDING', cssClass: styles.tierMEDIUM, color: '#38bdf8' };
+    if (score === null || score === undefined) return { label: 'PENDING', cssClass: styles.tierMEDIUM, color: '#faf6f0' };
     const score100 = score * 100.0;
-    if (score100 >= 78) return { label: 'CRITICAL', cssClass: styles.tierCRITICAL, color: '#f87171' };
-    if (score100 >= 55) return { label: 'HIGH', cssClass: styles.tierHIGH, color: '#fbbf24' };
-    if (score100 >= 30) return { label: 'MEDIUM', cssClass: styles.tierMEDIUM, color: '#38bdf8' };
+    if (score100 >= 78) return { label: 'CRITICAL', cssClass: styles.tierCRITICAL, color: '#bc473a' };
+    if (score100 >= 55) return { label: 'HIGH', cssClass: styles.tierHIGH, color: '#c98e3b' };
+    if (score100 >= 30) return { label: 'MEDIUM', cssClass: styles.tierMEDIUM, color: '#faf6f0' };
     return { label: 'LOW', cssClass: styles.tierLOW, color: '#4ade80' };
   };
 
   return (
     <PageEntryReveal>
-      <div className={styles.container}>
-        <GradientBackground />
-        <Navbar />
+      <div className={styles.dashboardContainer}>
+        {/* Exact Warm Gradient Background used across Dashboard */}
+        <GradientBackground
+          gradientOrigin="bottom-middle"
+          noiseIntensity={0.65}
+          noisePatternAlpha={30}
+          noisePatternSize={90}
+          noisePatternRefreshInterval={2}
+          colors={[
+            { color: 'rgba(210,186,152,1)', stop: '10.5%' },
+            { color: 'rgba(222,200,168,1)', stop: '16%' },
+            { color: 'rgba(232,212,182,1)', stop: '17.5%' },
+            { color: 'rgba(240,224,200,1)', stop: '25%' },
+            { color: 'rgba(245,233,215,1)', stop: '40%' },
+            { color: 'rgba(248,240,228,1)', stop: '65%' },
+            { color: 'rgba(252,248,240,1)', stop: '100%' },
+          ]}
+          style={{ position: 'fixed', inset: 0, zIndex: -1 }}
+        />
 
-        <div className={styles.mainContent}>
-          {/* Top Bar Header */}
-          <div className={styles.topHeader}>
-            <div className={styles.headerTitleBox}>
-              <div className={styles.trainIconBadge}>
-                <TrainTrack size={24} />
-              </div>
-              <div>
-                <h1 className={styles.mainTitle}>
-                  Indian Railways — AI Automatic Block Planning
-                  <span className={styles.sihBadge}>TEJAS SIH26027</span>
-                </h1>
-                <p className={styles.subtitle}>
-                  Field Officer Maintenance Incident Reporting & Automated Telemetry Resolution
-                </p>
-              </div>
+        {/* PRIMARY NAVBAR */}
+        <div className={styles.navbarRelativeWrap}>
+          <Navbar />
+        </div>
+
+        {/* MAIN WORKSPACE CONTENT */}
+        <main className={styles.contentArea}>
+          {/* Hero Row Header */}
+          <div className={styles.heroRow}>
+            <div className={styles.heroLeft}>
+              <span className={styles.eyebrow}>FIELD OFFICER INCIDENT REPORTING</span>
+              <h1 className={styles.pageTitle}>AI Incident Assessment</h1>
+              <p className={styles.subtitle}>
+                Field Officer Maintenance Incident Reporting & Automated Infrastructure Telemetry Resolution
+              </p>
             </div>
 
-            <div className={styles.engineStatusBadge}>
-              <span className={styles.statusDot} />
-              <span>TEJAS Engine Ready (3,216 Registered Assets | Live ML Connected)</span>
+            <div className={styles.headerStatus}>
+              <span className={styles.headerStatusDot} />
+              <span className={styles.headerStatusText}>TEJAS ML ENGINE READY (3,216 ASSETS LOADED)</span>
             </div>
           </div>
 
           {/* Quick Incident Scenario Chips */}
-          <div className={styles.scenariosBar}>
+          <div className={styles.scenariosCard}>
             <div className={styles.scenariosTitle}>⚡ QUICK INCIDENT SCENARIOS (REAL PILOT RAILWAY ASSETS):</div>
             <div className={styles.scenarioChips}>
               {PRESETS.map((p) => (
-                <button key={p.id} onClick={() => applyPreset(p)} className={styles.chip}>
+                <button key={p.id} onClick={() => applyPreset(p)} className={styles.presetChip}>
                   <span>{p.name}</span>
-                  <span className={styles.chipTag}>[{p.tag}]</span>
+                  <span className={styles.presetTag}>[{p.tag}]</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Grid Workspace */}
-          <div className={styles.workspaceGrid}>
-            {/* Left Panel: Form Input & Telemetry */}
-            <div className={styles.panelCard}>
-              <div className={styles.panelHeader}>
-                <div className={styles.panelTitle}>
-                  <Layers size={18} color="#0084ff" />
-                  Section A & B: Incident Reporting & Asset Telemetry
-                </div>
-                <span className={styles.tagBadge}>OFFICER MINIMAL INPUT WORKFLOW</span>
+          {/* Workspace Split Layout */}
+          <div className={styles.workspaceSplit}>
+            {/* Left Form Panel */}
+            <div className={styles.formCard}>
+              <div className={styles.cardHeader}>
+                <h3 className={styles.cardTitle}>Section A & B: Incident Reporting</h3>
+                <span className={styles.headerTag}>OFFICER MINIMAL INPUT WORKFLOW</span>
               </div>
 
               <form onSubmit={handleRunAssessment}>
                 {/* Step 1: Asset Lookup */}
-                <div className={styles.stepBlock}>
-                  <div className={styles.stepTitle}>
-                    <Search size={14} /> 1. IDENTIFY RAILWAY ASSET
-                  </div>
-                  <div className={styles.inputGroupRow}>
-                    <div className={styles.inputField}>
+                <div className={styles.stepSection}>
+                  <div className={styles.stepTitle}>1. IDENTIFY RAILWAY ASSET</div>
+                  <div className={styles.inputGrid}>
+                    <div className={styles.fieldGroup}>
                       <label>Asset ID / Tag</label>
                       <input 
                         type="text" 
@@ -211,7 +215,7 @@ export const IncidentReport: React.FC = () => {
                         placeholder="e.g. AST-001877" 
                       />
                     </div>
-                    <div className={styles.inputField}>
+                    <div className={styles.fieldGroup}>
                       <label>Database Section ID</label>
                       <input 
                         type="number" 
@@ -223,11 +227,9 @@ export const IncidentReport: React.FC = () => {
                 </div>
 
                 {/* Step 2: Auto-Resolved Infrastructure Telemetry */}
-                <div className={styles.stepBlock}>
-                  <div className={styles.stepTitle}>
-                    <Database size={14} color="#38bdf8" /> 2. TEJAS Auto-Resolved Infrastructure Telemetry (READ-ONLY • VERIFIED DB)
-                  </div>
-                  <div className={styles.telemetryGrid}>
+                <div className={styles.stepSection} style={{ marginTop: '1.25rem' }}>
+                  <div className={styles.stepTitle}>2. TEJAS AUTO-RESOLVED INFRASTRUCTURE TELEMETRY (READ-ONLY DB)</div>
+                  <div className={styles.telemetryBox}>
                     <div className={styles.telemetryCell}>
                       <span className={styles.telemetryLabel}>Department</span>
                       <span className={styles.telemetryVal}>Engineering</span>
@@ -250,7 +252,7 @@ export const IncidentReport: React.FC = () => {
                     </div>
                     <div className={styles.telemetryCell}>
                       <span className={styles.telemetryLabel}>Criticality Tier</span>
-                      <span className={`${styles.telemetryVal} ${styles.telemetryValHighlight}`}>HIGH (64.5/100)</span>
+                      <span className={`${styles.telemetryVal} ${styles.telemetryValCritical}`}>HIGH (64.5/100)</span>
                     </div>
                     <div className={styles.telemetryCell}>
                       <span className={styles.telemetryLabel}>Daily Traffic</span>
@@ -268,13 +270,11 @@ export const IncidentReport: React.FC = () => {
                 </div>
 
                 {/* Step 3: Observed Defect & Findings */}
-                <div className={styles.stepBlock}>
-                  <div className={styles.stepTitle}>
-                    <ShieldAlert size={14} color="#fbbf24" /> 3. OBSERVED DEFECT & FIELD FINDINGS
-                  </div>
+                <div className={styles.stepSection} style={{ marginTop: '1.25rem' }}>
+                  <div className={styles.stepTitle}>3. OBSERVED DEFECT & FIELD FINDINGS</div>
 
-                  <div className={styles.inputGroupRow} style={{ marginBottom: '0.85rem' }}>
-                    <div className={styles.inputField}>
+                  <div className={styles.inputGrid} style={{ marginBottom: '0.85rem' }}>
+                    <div className={styles.fieldGroup}>
                       <label>Observed Defect Type</label>
                       <select value={defectType} onChange={(e) => setDefectType(e.target.value)}>
                         <option value="structural crack indication">structural crack indication</option>
@@ -285,7 +285,7 @@ export const IncidentReport: React.FC = () => {
                       </select>
                     </div>
 
-                    <div className={styles.inputField}>
+                    <div className={styles.fieldGroup}>
                       <label>Observed Defect Severity</label>
                       <select 
                         value={defectSeverity} 
@@ -299,7 +299,7 @@ export const IncidentReport: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className={styles.inputField} style={{ marginBottom: '0.85rem' }}>
+                  <div className={styles.fieldGroup} style={{ marginBottom: '0.85rem' }}>
                     <label>Officer Field Observations / Notes</label>
                     <textarea 
                       value={officerNotes} 
@@ -308,8 +308,8 @@ export const IncidentReport: React.FC = () => {
                     />
                   </div>
 
-                  <div className={styles.inputGroupRow}>
-                    <div className={styles.inputField}>
+                  <div className={styles.inputGrid}>
+                    <div className={styles.fieldGroup}>
                       <label>Inspection Date & Time</label>
                       <input 
                         type="datetime-local" 
@@ -317,7 +317,7 @@ export const IncidentReport: React.FC = () => {
                         onChange={(e) => setInspectionDatetime(e.target.value)} 
                       />
                     </div>
-                    <div className={styles.inputField}>
+                    <div className={styles.fieldGroup}>
                       <label>Days Since Defect Detected</label>
                       <input 
                         type="number" 
@@ -328,14 +328,14 @@ export const IncidentReport: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className={styles.actionRow}>
+                {/* Form Action Buttons */}
+                <div className={styles.buttonRow} style={{ marginTop: '1.25rem' }}>
                   <button 
                     type="submit" 
                     disabled={isSubmitting} 
-                    className={styles.submitBtn}
+                    className={styles.runBtn}
                   >
-                    <Sparkles size={18} />
+                    <Sparkles size={14} />
                     {isSubmitting ? 'EXECUTING TEJAS ML ASSESSMENT...' : 'RUN TEJAS ASSESSMENT'}
                   </button>
                   <button 
@@ -343,141 +343,134 @@ export const IncidentReport: React.FC = () => {
                     onClick={handleReset} 
                     className={styles.resetBtn}
                   >
-                    <RotateCcw size={16} /> Reset
+                    <RotateCcw size={14} /> Reset
                   </button>
                 </div>
               </form>
             </div>
 
-            {/* Right Panel: Section E & F Output */}
-            <div className={styles.panelCard}>
-              <div className={styles.panelHeader}>
-                <div className={styles.panelTitle}>
-                  <Activity size={18} color="#eab308" />
-                  Section E & F: TEJAS AI Decision Output
+            {/* Right Output Panel (TEJAS AI Decision Output Deck) */}
+            <div className={styles.outputCard}>
+              <div className={styles.outputHeader}>
+                <span className={styles.outputEyebrow}>TEJAS INTELLIGENCE ENGINE</span>
+                <h3 className={styles.outputTitle}>Section E & F: AI Decision Output</h3>
+              </div>
+
+              {/* State 1: Loading */}
+              {isSubmitting && (
+                <div className={styles.loadingBox}>
+                  <div className={styles.spinner} />
+                  <div style={{ fontSize: '0.85rem', color: '#faf6f0', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    Executing TEJAS Urgency Engine...
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'rgba(250, 246, 240, 0.6)' }}>
+                    Resolving 30+ infrastructure parameters & evaluating HistGradientBoosting ML model.
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className={styles.outputContainer}>
-                {/* State 1: Loading */}
-                {isSubmitting && (
-                  <div className={styles.loadingState}>
-                    <div className={styles.loadingSpinner} />
-                    <h3 style={{ color: '#f1f5f9', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                      Executing TEJAS Urgency Engine...
-                    </h3>
-                    <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                      Resolving 30+ infrastructure parameters & evaluating HistGradientBoosting ML model.
-                    </p>
-                  </div>
-                )}
+              {/* State 2: Error */}
+              {!isSubmitting && errorMessage && (
+                <div className={styles.placeholderState}>
+                  <AlertTriangle size={40} color="#bc473a" style={{ marginBottom: '1rem' }} />
+                  <div className={styles.placeholderTitle} style={{ color: '#bc473a' }}>Assessment Error</div>
+                  <div className={styles.placeholderText} style={{ marginBottom: '1.5rem' }}>{errorMessage}</div>
+                  <button onClick={() => handleRunAssessment()} className={styles.runBtn}>
+                    Retry Assessment
+                  </button>
+                </div>
+              )}
 
-                {/* State 2: Error */}
-                {!isSubmitting && errorMessage && (
-                  <div className={styles.errorCard}>
-                    <AlertTriangle size={32} style={{ margin: '0 auto 0.75rem auto' }} />
-                    <div className={styles.errorTitle}>Incident Submission Error</div>
-                    <div className={styles.errorText}>{errorMessage}</div>
-                    <button onClick={() => handleRunAssessment()} className={styles.submitBtn} style={{ margin: '0 auto' }}>
-                      Retry Assessment
-                    </button>
-                  </div>
-                )}
+              {/* State 3: Empty Placeholder */}
+              {!isSubmitting && !errorMessage && !assessmentResult && (
+                <div className={styles.placeholderState}>
+                  <Layers className={styles.placeholderIcon} />
+                  <div className={styles.placeholderTitle}>Awaiting Incident Submission</div>
+                  <p className={styles.placeholderText}>
+                    Enter an Asset ID and observed defect severity on the left, then click <strong>RUN TEJAS ASSESSMENT</strong>. TEJAS will auto-resolve parameters, execute champion models, and return the decision support deck.
+                  </p>
+                </div>
+              )}
 
-                {/* State 3: Empty Awaiting Submission */}
-                {!isSubmitting && !errorMessage && !assessmentResult && (
-                  <div className={styles.awaitingState}>
-                    <Layers className={styles.awaitingIcon} />
-                    <div className={styles.awaitingTitle}>Awaiting Incident Submission</div>
-                    <p className={styles.awaitingText}>
-                      Enter an Asset ID and observed defect severity on the left, then click <strong>RUN TEJAS ASSESSMENT</strong>. TEJAS will auto-resolve infrastructure parameters, execute champion models, and return the decision support deck.
-                    </p>
-                  </div>
-                )}
+              {/* State 4: Decision Output Results */}
+              {!isSubmitting && !errorMessage && assessmentResult && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={styles.deckResults}
+                >
+                  <div className={styles.scoreGaugeBox}>
+                    <div className={styles.scoreLabel}>EVALUATED ML URGENCY SCORE</div>
 
-                {/* State 4: Decision Output Results */}
-                {!isSubmitting && !errorMessage && assessmentResult && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={styles.decisionDeck}
-                  >
-                    {/* Urgency Gauge Card */}
-                    <div className={styles.scoreGaugeCard}>
-                      <div className={styles.scoreHeader}>EVALUATED ML URGENCY SCORE</div>
+                    {(() => {
+                      const score100 = assessmentResult.urgency_score !== null && assessmentResult.urgency_score !== undefined
+                        ? (assessmentResult.urgency_score * 100.0).toFixed(1)
+                        : '50.0';
+                      const tier = getTierFromScore(assessmentResult.urgency_score);
 
-                      {(() => {
-                        const score100 = assessmentResult.urgency_score !== null && assessmentResult.urgency_score !== undefined
-                          ? (assessmentResult.urgency_score * 100.0).toFixed(1)
-                          : '50.0';
-                        const tier = getTierFromScore(assessmentResult.urgency_score);
-
-                        return (
-                          <>
-                            <div className={styles.scoreMeterDisplay}>
-                              <span className={styles.scoreNum} style={{ color: tier.color }}>
-                                {score100}
-                              </span>
-                              <span className={styles.scoreMax}>/100</span>
-                            </div>
-                            <span className={`${styles.tierBadge} ${tier.cssClass}`}>
-                              {tier.label} PRIORITY TIER
+                      return (
+                        <>
+                          <div className={styles.scoreDisplay}>
+                            <span className={styles.scoreNumber} style={{ color: tier.color }}>
+                              {score100}
                             </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Task Context Data */}
-                    <div className={styles.recordContextCard}>
-                      <div className={styles.contextRow}>
-                        <span className={styles.contextKey}>DATABASE TASK ID</span>
-                        <span className={styles.contextVal}>#TSK-{assessmentResult.task_id}</span>
-                      </div>
-                      <div className={styles.contextRow}>
-                        <span className={styles.contextKey}>SECTION CODE</span>
-                        <span className={styles.contextVal}>{assessmentResult.section_code || 'N/A'}</span>
-                      </div>
-                      <div className={styles.contextRow}>
-                        <span className={styles.contextKey}>STATION SPAN</span>
-                        <span className={styles.contextVal}>{assessmentResult.from_station_name} ➔ {assessmentResult.to_station_name}</span>
-                      </div>
-                      <div className={styles.contextRow}>
-                        <span className={styles.contextKey}>DEPARTMENT</span>
-                        <span className={styles.contextVal}>{assessmentResult.department}</span>
-                      </div>
-                      <div className={styles.contextRow}>
-                        <span className={styles.contextKey}>DEFECT SEVERITY</span>
-                        <span className={styles.contextVal}>{assessmentResult.defect_severity_label} (Level {assessmentResult.defect_severity})</span>
-                      </div>
-                    </div>
-
-                    {/* CP-SAT Optimizer Status Box */}
-                    <div className={styles.cpsatBox}>
-                      {assessmentResult.status === 'SCORED' ? (
-                        <>
-                          <span className={styles.cpsatDotSuccess} />
-                          <div>
-                            <div className={styles.cpsatTitle}>Scored — Ready for Optimizer Scheduling</div>
-                            <div className={styles.cpsatSub}>Task score saved to DB. Ready for CP-SAT 30-day window allocation.</div>
+                            <span className={styles.scoreDenom}>/100</span>
                           </div>
+                          <span className={`${styles.tierBadge} ${tier.cssClass}`}>
+                            {tier.label} PRIORITY TIER
+                          </span>
                         </>
-                      ) : (
-                        <>
-                          <span className={styles.cpsatDotWarning} />
-                          <div>
-                            <div className={styles.cpsatTitle} style={{ color: '#fbbf24' }}>Scoring pending — ML service unreachable, will retry</div>
-                            <div className={styles.cpsatSub}>Task saved to DB as PENDING. Will be scored during next batch run.</div>
-                          </div>
-                        </>
-                      )}
+                      );
+                    })()}
+                  </div>
+
+                  <div className={styles.metaGrid}>
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaKey}>DATABASE TASK ID</span>
+                      <span className={styles.metaVal}>#TSK-{assessmentResult.task_id}</span>
                     </div>
-                  </motion.div>
-                )}
-              </div>
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaKey}>SECTION CODE</span>
+                      <span className={styles.metaVal}>{assessmentResult.section_code || 'N/A'}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaKey}>STATION SPAN</span>
+                      <span className={styles.metaVal}>{assessmentResult.from_station_name} ➔ {assessmentResult.to_station_name}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaKey}>DEPARTMENT</span>
+                      <span className={styles.metaVal}>{assessmentResult.department}</span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className={styles.metaKey}>DEFECT SEVERITY</span>
+                      <span className={styles.metaVal}>{assessmentResult.defect_severity_label} (Level {assessmentResult.defect_severity})</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.cpsatStatusBox}>
+                    {assessmentResult.status === 'SCORED' ? (
+                      <>
+                        <span className={styles.cpsatDot} style={{ backgroundColor: '#4ade80' }} />
+                        <div>
+                          <div className={styles.cpsatTextTitle}>Scored — Ready for Optimizer Scheduling</div>
+                          <div className={styles.cpsatTextSub}>Task saved to DB. Ready for CP-SAT 30-day window allocation.</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className={styles.cpsatDot} style={{ backgroundColor: '#c98e3b' }} />
+                        <div>
+                          <div className={styles.cpsatTextTitle} style={{ color: '#c98e3b' }}>Scoring pending — ML service unreachable, will retry</div>
+                          <div className={styles.cpsatTextSub}>Task saved to DB as PENDING. Will be scored during next batch run.</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </PageEntryReveal>
   );

@@ -233,11 +233,11 @@ export const Home: React.FC = () => {
               initial="hidden"
               animate="show"
             >
-              <TransitionLink to="/login" label="ACCESS" className={`${styles.ctaPrimary} interactive-hover`}>
-                ACCESS DASHBOARD
+              <TransitionLink to="/dashboard" label="DASHBOARD" className={`${styles.ctaPrimary} interactive-hover`}>
+                OPEN DASHBOARD
               </TransitionLink>
-              <TransitionLink to="/dashboard" label="DASHBOARD" className={`${styles.ctaSecondary} interactive-hover`}>
-                SEE HOW IT WORKS
+              <TransitionLink to="/maintenance" label="MAINTENANCE" className={`${styles.ctaSecondary} interactive-hover`}>
+                VIEW MAINTENANCE TASKS
               </TransitionLink>
             </motion.div>
           </div>

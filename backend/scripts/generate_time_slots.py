@@ -17,7 +17,21 @@ from app.models import Section, SectionTrainMovement, SectionTimeSlot
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("generate_time_slots")
 
+def parse_time_obj(t):
+    if isinstance(t, str):
+        try:
+            parts = [int(p) for p in t.split(':')]
+            return datetime.time(parts[0], parts[1], parts[2] if len(parts) > 2 else 0)
+        except Exception:
+            return datetime.time(0, 0, 0)
+    return t
+
 def movement_overlaps_hour(dep_time, arr_time, slot_hour: int, buffer_minutes: int) -> bool:
+    dep_time = parse_time_obj(dep_time)
+    arr_time = parse_time_obj(arr_time)
+    if not dep_time or not arr_time:
+        return False
+
     buf_sec = buffer_minutes * 60
     dep_sec = dep_time.hour * 3600 + dep_time.minute * 60 + dep_time.second
     arr_sec = arr_time.hour * 3600 + arr_time.minute * 60 + arr_time.second
@@ -130,32 +144,40 @@ def generate_and_insert_slots(db: Session, templates: dict, start_date: datetime
     )
     db.commit()
     
-    logger.info("Formatting time slots buffer for high-performance COPY import...")
-    buf = io.StringIO()
-    count = 0
+    logger.info("Streaming time slot batches into database...")
+    insert_sql = text("""
+        INSERT INTO section_time_slots (section_id, slot_date, slot_hour, is_free, train_count_in_slot)
+        VALUES (:section_id, :slot_date, :slot_hour, :is_free, :train_count_in_slot)
+    """)
+    
+    batch = []
+    total_inserted = 0
+    batch_size = 50000
+    
     for d in dates:
-        d_str = d.isoformat()
         for sec_id, hours_data in templates.items():
             for h, is_free, cnt in hours_data:
-                free_str = 't' if is_free else 'f'
-                buf.write(f"{sec_id}\t{d_str}\t{h}\t{free_str}\t{cnt}\n")
-                count += 1
-                
-    buf.seek(0)
-    
-    logger.info(f"Executing PostgreSQL COPY for {count:,} time slot records...")
-    raw_conn = db.connection().connection
-    cursor = raw_conn.cursor()
-    cursor.copy_from(
-        buf,
-        "section_time_slots",
-        columns=("section_id", "slot_date", "slot_hour", "is_free", "train_count_in_slot")
-    )
-    raw_conn.commit()
-    cursor.close()
-    
-    logger.info("Successfully populated section_time_slots table.")
-    return count
+                batch.append({
+                    "section_id": sec_id,
+                    "slot_date": d,
+                    "slot_hour": h,
+                    "is_free": is_free,
+                    "train_count_in_slot": cnt
+                })
+                if len(batch) >= batch_size:
+                    db.execute(insert_sql, batch)
+                    db.commit()
+                    total_inserted += len(batch)
+                    logger.info(f"Inserted {total_inserted:,} time slot records...")
+                    batch = []
+                    
+    if batch:
+        db.execute(insert_sql, batch)
+        db.commit()
+        total_inserted += len(batch)
+        
+    logger.info(f"Successfully populated {total_inserted:,} section_time_slots records.")
+    return total_inserted
 
 def main():
     parser = argparse.ArgumentParser(description="Generate hourly time slots for section availability in TEJAS.")

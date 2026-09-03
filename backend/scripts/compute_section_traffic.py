@@ -54,20 +54,24 @@ def compute_and_upsert_traffic_summary(db: Session):
 
     logger.info(f"Upserting log-scale traffic metrics for {len(df)} sections into section_traffic_summary...")
     
-    # Perform UPSERT into section_traffic_summary
-    upsert_query = text("""
-        INSERT INTO section_traffic_summary (section_id, daily_train_count, criticality_score, last_computed_at)
-        VALUES (:section_id, :daily_train_count, :criticality_score, NOW())
-        ON CONFLICT (section_id) DO UPDATE SET
-            daily_train_count = EXCLUDED.daily_train_count,
-            criticality_score = EXCLUDED.criticality_score,
-            last_computed_at = NOW();
-    """)
+    import datetime
+    db.query(SectionTrafficSummary).delete()
+    db.commit()
+    now_dt = datetime.datetime.now()
     
     records = df[["section_id", "daily_train_count", "criticality_score"]].to_dict(orient="records")
+    summary_objs = [
+        SectionTrafficSummary(
+            section_id=int(r["section_id"]),
+            daily_train_count=int(r["daily_train_count"]),
+            criticality_score=float(r["criticality_score"]),
+            last_computed_at=now_dt
+        )
+        for r in records
+    ]
     batch_size = 5000
-    for i in range(0, len(records), batch_size):
-        db.execute(upsert_query, records[i:i+batch_size])
+    for i in range(0, len(summary_objs), batch_size):
+        db.bulk_save_objects(summary_objs[i:i+batch_size])
         db.commit()
         
     stats = {

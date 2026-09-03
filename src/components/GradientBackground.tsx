@@ -45,14 +45,8 @@ const Noise: React.FC<NoiseProps> = ({
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      let newCssWidth = window.innerWidth;
-      let newCssHeight = window.innerHeight;
-
-      if (canvas.parentElement) {
-        const parentRect = canvas.parentElement.getBoundingClientRect();
-        newCssWidth = parentRect.width;
-        newCssHeight = parentRect.height;
-      }
+      const newCssWidth = Math.max(window.innerWidth, document.documentElement.clientWidth, canvas.parentElement?.clientWidth || 0);
+      const newCssHeight = Math.max(window.innerHeight, document.documentElement.clientHeight, canvas.parentElement?.clientHeight || 0);
       
       canvasCssSizeRef.current = { width: newCssWidth, height: newCssHeight };
 

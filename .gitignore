@@ -34,6 +34,9 @@ venv/
 ENV/
 .pytest_cache/
 
-# Large compressed data archives
+# Large compressed data archives & SQLite databases
 *.zip
 *.tar.gz
+*.db
+*.sqlite
+*.sqlite3

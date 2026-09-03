@@ -168,3 +168,43 @@ class IncidentReportResultOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class NetworkGraphNode(BaseModel):
+    station_id: int
+    station_code: str
+    station_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class NetworkGraphTaskItem(BaseModel):
+    task_id: int
+    urgency_score: Optional[float] = None
+    department: str
+    defect_type: str
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class NetworkGraphEdge(BaseModel):
+    section_id: int
+    section_code: Optional[str] = None
+    from_station_id: int
+    to_station_id: int
+    criticality_score: float
+    task_count: int
+    max_urgency_score: Optional[float] = None
+    tasks: List[NetworkGraphTaskItem]
+    has_more_tasks: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+class NetworkGraphMeta(BaseModel):
+    total_sections_available: int
+    limit_applied: int
+    department_filter: Optional[str] = None
+
+class NetworkGraphResponse(BaseModel):
+    nodes: List[NetworkGraphNode]
+    edges: List[NetworkGraphEdge]
+    meta: NetworkGraphMeta
+
+

@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import (
     Column, Integer, String, Numeric, Boolean, Date, Time, DateTime,
-    ForeignKey, UniqueConstraint, CheckConstraint, func, SmallInteger
+    ForeignKey, UniqueConstraint, CheckConstraint, func, SmallInteger, JSON
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
@@ -49,7 +49,7 @@ class RawTimetableStaging(Base):
     __tablename__ = "raw_timetable_staging"
 
     id = Column(Integer, primary_key=True, index=True)
-    raw_row = Column(JSONB, nullable=True)
+    raw_row = Column(JSON().with_variant(JSONB, 'postgresql'), nullable=True)
     loaded_at = Column(DateTime, server_default=func.now())
     processed = Column(Boolean, default=False)
 
