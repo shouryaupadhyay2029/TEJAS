@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -10,6 +10,7 @@ import GradientBackground from '../components/GradientBackground';
 import { ScrollReveal } from '../components/motion/ScrollSystem';
 import styles from './BlockPlanning.module.css';
 import { PageEntryReveal } from '../components/PageEntryReveal';
+import { fetchBlockSchedule, approveBlockSchedule, type BlockScheduleDetail } from '../services/api';
 
 interface PlanningBlock {
   id: string;
@@ -93,7 +94,36 @@ export const BlockPlanning: React.FC = () => {
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
   const [isOptimized, setIsOptimized] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const activeDate = '29 AUG 2026';
+  const activeDate = '2026-09-03';
+
+  // Live Backend API States
+  const [liveBlocks, setLiveBlocks] = useState<BlockScheduleDetail[]>([]);
+  const [approvingBlockId, setApprovingBlockId] = useState<number | null>(null);
+
+  const loadLiveSchedule = async () => {
+    try {
+      const data = await fetchBlockSchedule('MONTHLY');
+      setLiveBlocks(data);
+    } catch (err) {
+      console.warn('Block schedule API fetch warning, using fallback timeline:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveSchedule();
+  }, []);
+
+  const handleApproveBlock = async (blockId: number) => {
+    try {
+      setApprovingBlockId(blockId);
+      await approveBlockSchedule(blockId);
+      await loadLiveSchedule();
+    } catch (err) {
+      console.error('Failed to approve block schedule:', err);
+    } finally {
+      setApprovingBlockId(null);
+    }
+  };
 
   // Trigger optimized state transitions
   const handleOptimize = () => {
@@ -421,24 +451,51 @@ export const BlockPlanning: React.FC = () => {
             <div className={styles.requestsHeader}>
               <h3 className={styles.requestsTitle}>Line Block Requests</h3>
               <span style={{ fontSize: '0.72rem', color: '#8c827a', fontFamily: 'var(--font-mono)' }}>
-                4 PENDING OPERATIONS
+                {liveBlocks.length > 0 ? `${liveBlocks.length} SCHEDULED BLOCKS IN DB` : '4 PENDING OPERATIONS'}
               </span>
             </div>
 
             <div className={styles.requestRows}>
-              {mockRequests.map((req) => (
-                <div key={req.id} className={styles.requestRow}>
-                  <span className={styles.requestId}>{req.id}</span>
-                  <span className={styles.requestTask}>{req.task}</span>
-                  <span className={styles.requestDept}>{req.dept}</span>
-                  <span className={styles.requestWindow}>{req.window}</span>
-                  <span className={styles.requestDuration}>{req.duration}</span>
-                  <span className={`${styles.priorityBadge} ${req.priority === 'HIGH' ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
-                    {req.priority}
-                  </span>
-                  <span className={styles.statusPending}>{req.status}</span>
-                </div>
-              ))}
+              {liveBlocks.length > 0 ? (
+                liveBlocks.map((b) => (
+                  <div key={b.block_id} className={styles.requestRow}>
+                    <span className={styles.requestId}>BLK-{b.block_id}</span>
+                    <span className={styles.requestTask}>{b.defect_type} ({b.from_station_name}—{b.to_station_name})</span>
+                    <span className={styles.requestDept}>{b.department}</span>
+                    <span className={styles.requestWindow}>{b.slot_date} ({b.start_hour}:00 - {b.end_hour}:00)</span>
+                    <span className={styles.requestDuration}>{b.end_hour - b.start_hour}h</span>
+                    <span className={`${styles.priorityBadge} ${b.defect_severity >= 4 ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
+                      {b.urgency_score ? (b.urgency_score * 100).toFixed(0) : '85'} SCORE
+                    </span>
+                    {b.approved_by_control_office ? (
+                      <span className={styles.statusPending} style={{ color: 'var(--color-primary)' }}>APPROVED</span>
+                    ) : (
+                      <button
+                        onClick={() => handleApproveBlock(b.block_id)}
+                        disabled={approvingBlockId === b.block_id}
+                        className={styles.statusPending}
+                        style={{ cursor: 'pointer', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px' }}
+                      >
+                        {approvingBlockId === b.block_id ? 'APPROVING...' : 'APPROVE SIGN-OFF'}
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                mockRequests.map((req) => (
+                  <div key={req.id} className={styles.requestRow}>
+                    <span className={styles.requestId}>{req.id}</span>
+                    <span className={styles.requestTask}>{req.task}</span>
+                    <span className={styles.requestDept}>{req.dept}</span>
+                    <span className={styles.requestWindow}>{req.window}</span>
+                    <span className={styles.requestDuration}>{req.duration}</span>
+                    <span className={`${styles.priorityBadge} ${req.priority === 'HIGH' ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
+                      {req.priority}
+                    </span>
+                    <span className={styles.statusPending}>{req.status}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </ScrollReveal>

@@ -12,6 +12,7 @@ import Optimization from './pages/Optimization';
 import Assets from './pages/Assets';
 import Reports from './pages/Reports';
 import Auth from './pages/Auth';
+import { IncidentReport } from './pages/IncidentReport/IncidentReport';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ export const App: React.FC = () => {
                   <Route path="/block-planning" element={<NonLandingRoute><BlockPlanning /></NonLandingRoute>} />
                   <Route path="/optimization" element={<NonLandingRoute><Optimization /></NonLandingRoute>} />
                   <Route path="/assets" element={<NonLandingRoute><Assets /></NonLandingRoute>} />
+                  <Route path="/report" element={<NonLandingRoute><IncidentReport /></NonLandingRoute>} />
                   <Route path="/reports" element={<NonLandingRoute><Reports /></NonLandingRoute>} />
                   <Route path="/login" element={<NonLandingRoute><Auth /></NonLandingRoute>} />
                   <Route path="*" element={<Navigate to="/" replace />} />

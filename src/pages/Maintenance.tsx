@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -9,6 +9,7 @@ import { Navbar } from './Home/components/Navbar';
 import { ScrollReveal, ScrollLine } from '../components/motion/ScrollSystem';
 import styles from './Maintenance.module.css';
 import { PageEntryReveal } from '../components/PageEntryReveal';
+import { fetchMaintenanceTasks } from '../services/api';
 
 // --- Count-up helper component for clean numerical transitions ---
 const CountUp: React.FC<{ value: number; decimals?: number }> = ({ value, decimals = 0 }) => {
@@ -229,14 +230,60 @@ const workflowSteps = [
 ];
 
 export const Maintenance: React.FC = () => {
+  const [tasksList, setTasksList] = useState<TaskRecord[]>(mockTasks);
   const [selectedTask, setSelectedTask] = useState<TaskRecord>(mockTasks[0]);
   const [filterPriority, setFilterPriority] = useState<PriorityType>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [deptFilter, setDeptFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
 
+  useEffect(() => {
+    async function loadTasks() {
+      try {
+        const rawTasks = await fetchMaintenanceTasks({ limit: 200 });
+        if (rawTasks && rawTasks.length > 0) {
+          const mapped: TaskRecord[] = rawTasks.map((t) => {
+            const score = t.urgency_score ?? 0.5;
+            let priority = 'Medium';
+            if (score >= 0.75) priority = 'Critical';
+            else if (score >= 0.50) priority = 'High';
+            else if (score >= 0.25) priority = 'Medium';
+            else priority = 'Low';
+
+            let deptName = 'Engineering';
+            if (t.department === 'SIGNAL_TELECOM') deptName = 'S&T';
+            else if (t.department === 'TRACTION_DISTRIBUTION') deptName = 'Traction';
+
+            return {
+              id: `TSK-${t.task_id}`,
+              asset: `${t.from_station_name} — ${t.to_station_name} (${t.section_code || `SEC-${t.section_id}`})`,
+              defect: t.defect_type,
+              dept: deptName,
+              priority: priority,
+              due: `${t.days_overdue} days overdue`,
+              status: t.status,
+              criticality: Math.round(score * 100),
+              severity: t.defect_severity >= 4 ? 'High' : t.defect_severity >= 3 ? 'Medium' : 'Low',
+              overdue: t.days_overdue,
+              frequency: `${t.defect_severity} severity level`,
+              traffic: 'Real Density',
+              recommendWindow: '10:00 — 12:00',
+              compatible: 'Multi-Department Coordinated Window',
+              downtime: `${t.defect_severity >= 4 ? 3 : 2} Hours`
+            };
+          });
+          setTasksList(mapped);
+          setSelectedTask(mapped[0]);
+        }
+      } catch (err) {
+        console.warn('Backend API connection warning for tasks, using mock list:', err);
+      }
+    }
+    loadTasks();
+  }, []);
+
   // Filter tasks based on triage selections, search text, and dropdowns
-  const filteredTasks = mockTasks.filter(task => {
+  const filteredTasks = tasksList.filter(task => {
     const matchesPriority = filterPriority === 'All' || task.priority.toLowerCase() === filterPriority.toLowerCase();
     const matchesSearch = task.asset.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           task.defect.toLowerCase().includes(searchTerm.toLowerCase()) || 

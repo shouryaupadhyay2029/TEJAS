@@ -1,17 +1,158 @@
+import datetime
+import os
+import requests
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import MaintenanceTask
+from app.models import MaintenanceTask, Section
 from app.schemas import (
     MaintenanceTaskForOptimizerOut,
     MaintenanceTaskUrgencyUpdate,
-    MaintenanceTaskBatchUrgencyResponse
+    MaintenanceTaskBatchUrgencyResponse,
+    NewIncidentReport,
+    IncidentReportResultOut
 )
 
 router = APIRouter(prefix="/maintenance-tasks", tags=["maintenance-tasks"])
+
+SEVERITY_STR_TO_INT = {
+    "LOW": 2,
+    "MEDIUM": 3,
+    "HIGH": 4,
+    "CRITICAL": 5
+}
+
+def infer_department(defect_type: str, explicit_dept: Optional[str] = None) -> str:
+    if explicit_dept and explicit_dept.upper() in ["ENGINEERING", "SIGNAL_TELECOM", "TRACTION_DISTRIBUTION"]:
+        return explicit_dept.upper()
+        
+    dt_lower = defect_type.lower()
+    if any(k in dt_lower for k in ["weld", "rail", "track", "sleeper", "formation", "bridge", "subgrade", "geometry"]):
+        return "ENGINEERING"
+    elif any(k in dt_lower for k in ["signal", "point", "interlocking", "cable", "gate", "communication", "aspect"]):
+        return "SIGNAL_TELECOM"
+    elif any(k in dt_lower for k in ["ohe", "feeder", "breaker", "traction", "pantograph", "insulator", "substation", "catenary", "mast"]):
+        return "TRACTION_DISTRIBUTION"
+    return "ENGINEERING"
+
+@router.post("/report", response_model=IncidentReportResultOut)
+def report_maintenance_incident(
+    report: NewIncidentReport,
+    db: Session = Depends(get_db)
+):
+    """
+    Submits a new maintenance incident report from a field officer, inserts into PostgreSQL,
+    and immediately invokes the live ML API's /predict endpoint to score and update the task synchronously.
+    """
+    # 1. Validate section_id exists in sections table
+    section_query = text("""
+        SELECT 
+            sec.section_id,
+            sec.section_code,
+            sf.station_name AS from_station_name,
+            st_to.station_name AS to_station_name,
+            sts.criticality_score,
+            sts.daily_train_count
+        FROM sections sec
+        JOIN stations sf ON sec.from_station_id = sf.station_id
+        JOIN stations st_to ON sec.to_station_id = st_to.station_id
+        LEFT JOIN section_traffic_summary sts ON sec.section_id = sts.section_id
+        WHERE sec.section_id = :section_id;
+    """)
+    sec_row = db.execute(section_query, {"section_id": report.section_id}).mappings().first()
+    if not sec_row:
+        raise HTTPException(status_code=404, detail=f"Section ID {report.section_id} not found in railway database")
+
+    # 2. Map defect severity string to integer (LOW->2, MEDIUM->3, HIGH->4, CRITICAL->5)
+    sev_str = report.defect_severity.upper()
+    sev_int = SEVERITY_STR_TO_INT.get(sev_str, 3)
+
+    # Infer department
+    dept = infer_department(report.defect_type, report.department)
+
+    # 3. Create & insert new task row
+    reported_time = report.inspection_datetime or datetime.datetime.now()
+    new_task = MaintenanceTask(
+        department=dept,
+        section_id=report.section_id,
+        defect_type=report.defect_type,
+        defect_severity=sev_int,
+        days_overdue=report.days_since_detected,
+        reported_at=reported_time,
+        urgency_score=None,
+        status='PENDING'
+    )
+    db.add(new_task)
+    db.flush()  # Generate task_id
+
+    # 4. Synchronous Live ML API Call
+    ml_base_url = os.getenv("ML_API_URL", "http://192.168.1.104:8000")
+    clean_url = ml_base_url.rstrip('/')
+    if clean_url.endswith('/predict'):
+        ml_endpoint = clean_url
+    else:
+        ml_endpoint = f"{clean_url}/predict"
+
+    daily_trains = sec_row["daily_train_count"] or 15
+    criticality = float(sec_row["criticality_score"] or 0.5) * 100.0
+
+    ml_payload = {
+        "task_id": str(new_task.task_id),
+        "defect_severity_label": sev_str,
+        "days_overdue": report.days_since_detected,
+        "trains_per_day": int(daily_trains),
+        "asset_criticality_score": criticality,
+        "failures_last_365d": 0.0,
+        "is_real_traffic_data": True
+    }
+
+    ml_succeeded = False
+    try:
+        resp = requests.post(ml_endpoint, json=ml_payload, timeout=(1.0, 2.0))
+        if resp.status_code == 200:
+            data = resp.json()
+            raw_score = None
+            if "urgency_score" in data:
+                raw_score = float(data["urgency_score"])
+            elif "priority_score" in data:
+                raw_score = float(data["priority_score"])
+            elif "score" in data:
+                raw_score = float(data["score"])
+            elif isinstance(data, (int, float)):
+                raw_score = float(data)
+
+            if raw_score is not None:
+                # Rescale score 0-100 -> 0.0-1.0
+                rescaled_score = raw_score / 100.0 if raw_score > 1.0 else raw_score
+                new_task.urgency_score = round(rescaled_score, 4)
+                new_task.status = 'SCORED'
+                ml_succeeded = True
+    except Exception:
+        # Graceful fallback: Keep task as PENDING in DB
+        pass
+
+    db.commit()
+
+    return {
+        "task_id": new_task.task_id,
+        "department": new_task.department,
+        "section_id": new_task.section_id,
+        "section_code": sec_row["section_code"],
+        "from_station_name": sec_row["from_station_name"],
+        "to_station_name": sec_row["to_station_name"],
+        "defect_type": new_task.defect_type,
+        "defect_severity": new_task.defect_severity,
+        "defect_severity_label": sev_str,
+        "days_overdue": new_task.days_overdue,
+        "officer_notes": report.officer_notes,
+        "reported_at": new_task.reported_at,
+        "urgency_score": new_task.urgency_score,
+        "status": new_task.status,
+        "ml_scoring_succeeded": ml_succeeded
+    }
 
 @router.get("/pending/for-optimizer", response_model=List[MaintenanceTaskForOptimizerOut])
 def get_pending_tasks_for_optimizer(db: Session = Depends(get_db)):
@@ -138,3 +279,4 @@ def get_all_maintenance_tasks(
     
     rows = db.execute(text(sql_str), params).mappings().all()
     return list(rows)
+

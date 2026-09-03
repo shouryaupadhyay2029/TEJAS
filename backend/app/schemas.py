@@ -139,3 +139,32 @@ class BlockScheduleDetailOut(BaseModel):
 class BlockScheduleBatchCreateResponse(BaseModel):
     created: List[int]
     skipped: List[TaskSkippedItem]
+
+class NewIncidentReport(BaseModel):
+    section_id: int
+    defect_type: str
+    defect_severity: str  # LOW, MEDIUM, HIGH, CRITICAL
+    department: Optional[str] = None
+    officer_notes: Optional[str] = None
+    inspection_datetime: Optional[datetime.datetime] = None
+    days_since_detected: int = 0
+
+class IncidentReportResultOut(BaseModel):
+    task_id: int
+    department: str
+    section_id: int
+    section_code: Optional[str] = None
+    from_station_name: str
+    to_station_name: str
+    defect_type: str
+    defect_severity: int
+    defect_severity_label: str
+    days_overdue: int
+    officer_notes: Optional[str] = None
+    reported_at: Optional[datetime.datetime] = None
+    urgency_score: Optional[float] = None
+    status: str
+    ml_scoring_succeeded: bool
+
+    model_config = ConfigDict(from_attributes=True)
+

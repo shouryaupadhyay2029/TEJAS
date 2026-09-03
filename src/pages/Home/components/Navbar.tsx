@@ -41,12 +41,13 @@ const linkVariant = {
 };
 
 const navLinks = [
-  { to: '/',              label: 'HOME',        num: '01' },
-  { to: '/dashboard',     label: 'DASHBOARD',   num: '02' },
-  { to: '/maintenance',   label: 'MAINTENANCE', num: '03' },
-  { to: '/block-planning',label: 'PLANNING',    num: '04' },
-  { to: '/assets',        label: 'ASSETS',      num: '05' },
-  { to: '/reports',       label: 'REPORTS',     num: '06' },
+  { to: '/',              label: 'HOME',            num: '01' },
+  { to: '/dashboard',     label: 'DASHBOARD',       num: '02' },
+  { to: '/maintenance',   label: 'MAINTENANCE',     num: '03' },
+  { to: '/block-planning',label: 'PLANNING',        num: '04' },
+  { to: '/assets',        label: 'ASSETS',          num: '05' },
+  { to: '/report',        label: 'INCIDENT REPORT', num: '06' },
+  { to: '/reports',       label: 'REPORTS',         num: '07' },
 ];
 
 export const Navbar: React.FC = () => {
