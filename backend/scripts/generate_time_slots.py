@@ -137,47 +137,77 @@ def generate_and_insert_slots(db: Session, templates: dict, start_date: datetime
     min_date = dates[0]
     max_date = dates[-1]
     
-    logger.info(f"Clearing existing section_time_slots from {min_date} to {max_date}...")
-    db.execute(
-        text("DELETE FROM section_time_slots WHERE slot_date >= :min_date AND slot_date <= :max_date;"),
-        {"min_date": min_date, "max_date": max_date}
-    )
+    logger.info("Truncating section_time_slots table...")
+    try:
+        db.execute(text("TRUNCATE TABLE section_time_slots RESTART IDENTITY;"))
+    except Exception:
+        db.execute(text("DELETE FROM section_time_slots;"))
     db.commit()
     
-    logger.info("Streaming time slot batches into database...")
-    insert_sql = text("""
-        INSERT INTO section_time_slots (section_id, slot_date, slot_hour, is_free, train_count_in_slot)
-        VALUES (:section_id, :slot_date, :slot_hour, :is_free, :train_count_in_slot)
-    """)
+    is_postgres = "postgresql" in db.bind.dialect.name
     
-    batch = []
-    total_inserted = 0
-    batch_size = 50000
-    
-    for d in dates:
-        for sec_id, hours_data in templates.items():
-            for h, is_free, cnt in hours_data:
-                batch.append({
-                    "section_id": sec_id,
-                    "slot_date": d,
-                    "slot_hour": h,
-                    "is_free": is_free,
-                    "train_count_in_slot": cnt
-                })
-                if len(batch) >= batch_size:
-                    db.execute(insert_sql, batch)
-                    db.commit()
-                    total_inserted += len(batch)
-                    logger.info(f"Inserted {total_inserted:,} time slot records...")
-                    batch = []
-                    
-    if batch:
-        db.execute(insert_sql, batch)
-        db.commit()
-        total_inserted += len(batch)
+    if is_postgres:
+        raw_conn = db.connection().connection
+        cursor = raw_conn.cursor()
+        total_inserted = 0
+        logger.info("Streaming daily COPY chunks into PostgreSQL...")
+        for idx, d in enumerate(dates, 1):
+            d_str = d.isoformat()
+            buf = io.StringIO()
+            day_count = 0
+            for sec_id, hours_data in templates.items():
+                for h, is_free, cnt in hours_data:
+                    free_str = 't' if is_free else 'f'
+                    buf.write(f"{sec_id}\t{d_str}\t{h}\t{free_str}\t{cnt}\n")
+                    day_count += 1
+            buf.seek(0)
+            cursor.copy_from(
+                buf,
+                "section_time_slots",
+                columns=("section_id", "slot_date", "slot_hour", "is_free", "train_count_in_slot")
+            )
+            total_inserted += day_count
+            logger.info(f"Streamed Day {idx}/{len(dates)} ({d_str}): {total_inserted:,} total records...")
+            
+        raw_conn.commit()
+        cursor.close()
+        logger.info(f"Successfully populated {total_inserted:,} section_time_slots records via PostgreSQL COPY.")
+        return total_inserted
+    else:
+        logger.info("Streaming time slot batches into SQLite database...")
+        insert_sql = text("""
+            INSERT INTO section_time_slots (section_id, slot_date, slot_hour, is_free, train_count_in_slot)
+            VALUES (:section_id, :slot_date, :slot_hour, :is_free, :train_count_in_slot)
+        """)
         
-    logger.info(f"Successfully populated {total_inserted:,} section_time_slots records.")
-    return total_inserted
+        batch = []
+        total_inserted = 0
+        batch_size = 50000
+        
+        for d in dates:
+            for sec_id, hours_data in templates.items():
+                for h, is_free, cnt in hours_data:
+                    batch.append({
+                        "section_id": sec_id,
+                        "slot_date": d,
+                        "slot_hour": h,
+                        "is_free": is_free,
+                        "train_count_in_slot": cnt
+                    })
+                    if len(batch) >= batch_size:
+                        db.execute(insert_sql, batch)
+                        db.commit()
+                        total_inserted += len(batch)
+                        logger.info(f"Inserted {total_inserted:,} time slot records...")
+                        batch = []
+                        
+        if batch:
+            db.execute(insert_sql, batch)
+            db.commit()
+            total_inserted += len(batch)
+            
+        logger.info(f"Successfully populated {total_inserted:,} section_time_slots records.")
+        return total_inserted
 
 def main():
     parser = argparse.ArgumentParser(description="Generate hourly time slots for section availability in TEJAS.")

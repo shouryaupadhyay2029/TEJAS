@@ -100,25 +100,25 @@ def fetch_section_time_slots(db: Session, section_ids: List[int], start_date: da
 
     slots_map: Dict[Tuple[int, datetime.date, int], bool] = {}
     
-    # Query in batches if section_ids is large
+    # Query in batches using SQLAlchemy ORM to ensure cross-database IN clause handling
     batch_size = 500
     for i in range(0, len(section_ids), batch_size):
         batch = section_ids[i:i + batch_size]
-        query = text("""
-            SELECT section_id, slot_date, slot_hour, is_free
-            FROM section_time_slots
-            WHERE section_id IN :section_ids
-              AND slot_date >= :start_date
-              AND slot_date < :end_date;
-        """)
-        rows = db.execute(query, {
-            "section_ids": tuple(batch),
-            "start_date": start_date,
-            "end_date": end_date
-        }).fetchall()
+        rows = db.query(
+            SectionTimeSlot.section_id,
+            SectionTimeSlot.slot_date,
+            SectionTimeSlot.slot_hour,
+            SectionTimeSlot.is_free
+        ).filter(
+            SectionTimeSlot.section_id.in_(batch),
+            SectionTimeSlot.slot_date >= start_date,
+            SectionTimeSlot.slot_date < end_date
+        ).all()
         
         for r in rows:
             sec_id, s_date, s_hour, is_free = r[0], r[1], int(r[2]), bool(r[3])
+            if isinstance(s_date, str):
+                s_date = datetime.date.fromisoformat(s_date[:10])
             slots_map[(sec_id, s_date, s_hour)] = is_free
             
     logger.info(f"Loaded {len(slots_map)} total section-hour availability slots.")
@@ -128,7 +128,14 @@ def find_earliest_slot_date(db: Session) -> datetime.date:
     """Find the earliest slot_date available in section_time_slots or fallback to today."""
     row = db.execute(text("SELECT MIN(slot_date) FROM section_time_slots;")).fetchone()
     if row and row[0]:
-        return row[0]
+        val = row[0]
+        if isinstance(val, str):
+            try:
+                return datetime.date.fromisoformat(val[:10])
+            except Exception:
+                pass
+        elif isinstance(val, datetime.date):
+            return val
     return datetime.date.today()
 
 class CandidateWindow:

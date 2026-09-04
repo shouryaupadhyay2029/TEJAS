@@ -15,17 +15,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 db_url = settings.DATABASE_URL
-# Fallback to SQLite if PostgreSQL isn't active on host
-if "postgresql" in db_url:
-    try:
-        engine = create_engine(db_url, connect_args={"connect_timeout": 2})
-        with engine.connect() as conn:
-            pass
-    except Exception:
-        db_url = "sqlite:///./tejas.db"
-        engine = create_engine(db_url, connect_args={"check_same_thread": False})
-else:
-    engine = create_engine(db_url, connect_args={"check_same_thread": False} if "sqlite" in db_url else {})
+engine = create_engine(db_url, connect_args={"check_same_thread": False} if "sqlite" in db_url else {})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
