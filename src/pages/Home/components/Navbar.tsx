@@ -43,17 +43,15 @@ const navLinks = [
   { to: '/maintenance', label: 'MAINTENANCE', num: '03' },
   { to: '/block-planning', label: 'PLANNING', num: '04' },
   { to: '/optimization', label: 'OPTIMIZATION', num: '05' },
-  { to: '/assets', label: 'ASSETS', num: '06' },
-  { to: '/defects', label: 'DEFECTS', num: '07' },
-  { to: '/reports', label: 'REPORTS', num: '08' },
+  { to: '/traffic', label: 'TRAFFIC', num: '06' },
+  { to: '/assets', label: 'ASSETS', num: '07' },
+  { to: '/reports', label: 'REPORTS', num: '09' },
 ];
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-
-  const location = useLocation();
 
   const handleLogout = () => {
     logout();

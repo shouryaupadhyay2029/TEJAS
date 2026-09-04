@@ -36,7 +36,7 @@ def get_all_section_traffic(
         JOIN sections sec ON st.section_id = sec.section_id
         JOIN stations sf ON sec.from_station_id = sf.station_id
         JOIN stations st_to ON sec.to_station_id = st_to.station_id
-        ORDER BY st.section_id ASC;
+        ORDER BY st.daily_train_count DESC, st.criticality_score DESC;
     """)
     
     rows = db.execute(query).mappings().all()

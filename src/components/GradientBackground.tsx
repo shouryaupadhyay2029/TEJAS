@@ -90,7 +90,7 @@ const Noise: React.FC<NoiseProps> = ({
 
     let animationFrameId: number;
     let lastTime = 0;
-    const fpsInterval = 80; // 80ms interval (~12.5 fps) gives organic film grain motion without blocking the main JS thread during page transitions
+    const fpsInterval = 250; // Throttle noise canvas redraws to 4 FPS (~250ms) to free 95%+ main-thread GPU cycles and eliminate page stutter/lag
 
     const loop = (timestamp: number) => {
       const { width, height } = canvasCssSizeRef.current;

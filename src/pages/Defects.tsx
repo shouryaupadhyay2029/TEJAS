@@ -170,6 +170,7 @@ export const Defects: React.FC = () => {
 
   const getSeverityBadge = (sev: number) => {
     switch (sev) {
+      case 6: return <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(188, 71, 58, 0.25)', color: '#bc473a', border: '1px solid #bc473a', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '0.05em' }}>🚨 EMERGENCY (6)</span>;
       case 5: return <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.75rem', fontWeight: 700 }}>CRITICAL (5)</span>;
       case 4: return <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(249, 115, 22, 0.15)', color: '#f97316', border: '1px solid rgba(249, 115, 22, 0.3)', fontSize: '0.75rem', fontWeight: 700 }}>HIGH (4)</span>;
       case 3: return <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', border: '1px solid rgba(234, 179, 8, 0.3)', fontSize: '0.75rem', fontWeight: 700 }}>MEDIUM (3)</span>;
@@ -377,6 +378,7 @@ export const Defects: React.FC = () => {
                       <option value="MEDIUM">MEDIUM (Severity 3)</option>
                       <option value="HIGH">HIGH (Severity 4)</option>
                       <option value="CRITICAL">CRITICAL (Severity 5)</option>
+                      <option value="EMERGENCY">🚨 EMERGENCY (Level 6 - CP-SAT Bypass)</option>
                     </select>
                   </div>
                 </div>

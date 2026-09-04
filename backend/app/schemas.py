@@ -173,7 +173,7 @@ class BlockScheduleBatchCreateResponse(BaseModel):
 class NewIncidentReport(BaseModel):
     section_id: int
     defect_type: str
-    defect_severity: str  # LOW, MEDIUM, HIGH, CRITICAL
+    defect_severity: str  # LOW, MEDIUM, HIGH, CRITICAL, EMERGENCY
     department: Optional[str] = None
     officer_notes: Optional[str] = None
     inspection_datetime: Optional[datetime.datetime] = None

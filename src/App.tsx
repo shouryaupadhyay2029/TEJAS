@@ -14,6 +14,7 @@ import Defects from './pages/Defects';
 import BlockPlanning from './pages/BlockPlanning';
 import Optimization from './pages/Optimization';
 import Assets from './pages/Assets';
+import Traffic from './pages/Traffic';
 import Reports from './pages/Reports';
 import Auth from './pages/Auth';
 import { IncidentReport } from './pages/IncidentReport/IncidentReport';
@@ -73,6 +74,11 @@ export const App: React.FC = () => {
                     <Route path="/optimization" element={
                       <ProtectedRoute>
                         <NonLandingRoute><Optimization /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/traffic" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Traffic /></NonLandingRoute>
                       </ProtectedRoute>
                     } />
                     <Route path="/assets" element={

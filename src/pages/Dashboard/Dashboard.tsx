@@ -7,7 +7,6 @@ import {
   highPriorityTasks as mockHighPriorityTasks,
   timelineBlocks as mockTimelineBlocks,
   assetTrendData,
-  recentActivities,
   mockAssets,
   aiRecommendation
 } from './data/mockData';
@@ -85,26 +84,27 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   // Compute Live Dynamic KPIs from DB
-  const totalTaskCount = liveTasks.length > 0 ? liveTasks.length : 499;
-  const criticalTaskCount = liveTasks.length > 0
-    ? liveTasks.filter((t) => (t.urgency_score ?? 0) >= 0.75).length
-    : 50;
-  const scoredTaskCount = liveTasks.length > 0
-    ? liveTasks.filter((t) => t.status === 'SCORED' || t.status === 'SCHEDULED').length
-    : 499;
-  const activeSectionCount = liveSections.length > 0 ? liveSections.length : 28190;
+  const loadingData = liveTasks.length === 0;
+  const totalTaskCount = liveTasks.length;
+  const criticalTasks = liveTasks.filter((t) => (t.urgency_score ?? 0) >= 0.75);
+  const criticalTaskCount = criticalTasks.length;
+  const scoredTaskCount = liveTasks.filter((t) => t.status === 'SCORED' || t.status === 'SCHEDULED').length;
+  const activeSectionCount = liveSections.length;
 
   const dynamicKpis = [
-    { title: 'Total Maintenance Backlog', value: `${totalTaskCount} Tasks`, change: 'PostgreSQL DB Ingested' },
-    { title: 'ML Scored Ready Tasks', value: `${scoredTaskCount} Tasks`, change: 'Status: SCORED (100% Ready)' },
-    { title: 'Critical Urgency Tasks', value: `${criticalTaskCount} High Priority`, change: 'Urgency Score >= 0.75' },
-    { title: 'Active Track Sections', value: `${activeSectionCount.toLocaleString()} Sections`, change: 'Log-scale density computed' },
+    { title: 'Total Maintenance Backlog', value: loadingData ? '...' : `${totalTaskCount} Tasks`, change: 'PostgreSQL DB Ingested' },
+    { title: 'ML Scored Ready Tasks', value: loadingData ? '...' : `${scoredTaskCount} Tasks`, change: 'Status: SCORED (100% Ready)' },
+    { title: 'Critical Urgency Tasks', value: loadingData ? '...' : `${criticalTaskCount} High Priority`, change: 'Urgency Score >= 0.75' },
+    { title: 'Active Track Sections', value: liveSections.length === 0 ? '...' : `${activeSectionCount.toLocaleString()} Sections`, change: 'Log-scale density computed' },
   ];
+
+  // Derive Live Current Observations
+  const emergencyTasks = liveTasks.filter(t => t.defect_severity === 6 || t.status === 'EMERGENCY_SCHEDULED');
+  const uniqueCorridorsCount = new Set(liveTasks.map(t => t.section_id)).size;
 
   // States for interactive animations
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationComplete, setOptimizationComplete] = useState(false);
-  const [hoveredCoordDept, setHoveredCoordDept] = useState<'Engineering' | 'S&T' | 'Traction' | null>(null);
 
   // Filter assets based on search query
   const filteredAssets = mockAssets.filter(
@@ -113,28 +113,6 @@ export const Dashboard: React.FC = () => {
       asset.id.toLowerCase().includes(assetSearch.toLowerCase()) ||
       asset.type.toLowerCase().includes(assetSearch.toLowerCase())
   );
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Critical':
-        return styles.explainValueCritical;
-      case 'High':
-        return styles.explainValueHigh;
-      default:
-        return '';
-    }
-  };
-
-  const getProgressColorClass = (priority: string) => {
-    switch (priority) {
-      case 'Critical':
-        return styles.explainProgressCritical;
-      case 'High':
-        return styles.explainProgressHigh;
-      default:
-        return '';
-    }
-  };
 
   const triggerOptimization = () => {
     setIsOptimizing(true);
@@ -165,7 +143,7 @@ export const Dashboard: React.FC = () => {
         style={{ position: 'fixed', inset: 0, zIndex: -1 }}
       />
 
-      {/* PRIMARY NAVBAR */}
+      {/* GLOBAL NAVBAR */}
       <div className={styles.navbarRelativeWrap}>
         <Navbar />
       </div>
@@ -178,7 +156,6 @@ export const Dashboard: React.FC = () => {
             { id: 'maintenance', label: 'Maintenance Priority' },
             { id: 'assets', label: 'Asset Intelligence' },
             { id: 'planning', label: 'Block Planning' },
-            { id: 'optimizer', label: 'Tejas Optimizer' },
             { id: 'coordination', label: 'Coordination Center' },
             { id: 'live', label: 'Live Operations' },
             { id: 'analytics', label: 'Analytics & Reports' },
@@ -252,19 +229,21 @@ export const Dashboard: React.FC = () => {
 
                 <div className={`${styles.statusCard} ${styles.statusCardCritical}`}>
                   <div className={`${styles.statusCardIndicator} ${styles.statusCardIndicatorCritical}`} />
-                  <span className={`${styles.statusBadge} ${styles.statusBadgeCritical}`}>CRITICAL</span>
+                  <span className={`${styles.statusBadge} ${styles.statusBadgeCritical}`}>
+                    {emergencyTasks.length > 0 ? 'EMERGENCY OVERRIDE' : 'CRITICAL URGENCY'}
+                  </span>
                   <div className={styles.statusText}>
-                    <h4>Urgent Repairs Overdue</h4>
-                    <p>2 high-priority maintenance tasks require immediate block allocation today.</p>
+                    <h4>Urgent Repairs Require Allocation</h4>
+                    <p>{criticalTaskCount} high-priority maintenance tasks logged across {uniqueCorridorsCount} active track sections.</p>
                   </div>
                 </div>
 
                 <div className={`${styles.statusCard} ${styles.statusCardConflict}`}>
                   <div className={`${styles.statusCardIndicator} ${styles.statusCardIndicatorConflict}`} />
-                  <span className={`${styles.statusBadge} ${styles.statusBadgeConflict}`}>CONFLICT DETECTED</span>
+                  <span className={`${styles.statusBadge} ${styles.statusBadgeConflict}`}>SYSTEM STATUS</span>
                   <div className={styles.statusText}>
-                    <h4>Block Schedule Overlap</h4>
-                    <p>Engineering Track Stabilization and S&T Cable Replacement schedules overlap at 14:00 today.</p>
+                    <h4>Multi-Department Task Queue Ready</h4>
+                    <p>{scoredTaskCount} tasks scored by ML urgency engine awaiting CP-SAT block solver execution.</p>
                   </div>
                 </div>
 
@@ -272,8 +251,8 @@ export const Dashboard: React.FC = () => {
                   <div className={`${styles.statusCardIndicator} ${styles.statusCardIndicatorOpportunity}`} />
                   <span className={`${styles.statusBadge} ${styles.statusBadgeOpportunity}`}>OPTIMIZATION OPT</span>
                   <div className={styles.statusText}>
-                    <h4>Coordinated Window Recommendation</h4>
-                    <p>3 compatible tasks can be aligned into a single block window to save 2.5 hours of track downtime.</p>
+                    <h4>Coordinated Window Opportunity</h4>
+                    <p>Co-location engine identifies multi-department alignment across Engineering, S&T, and Traction.</p>
                   </div>
                 </div>
               </motion.div>
@@ -304,21 +283,35 @@ export const Dashboard: React.FC = () => {
               <div className={styles.maintenanceGrid} style={{ marginTop: '2.5rem' }}>
                 {/* Task List */}
                 <motion.div variants={childVariants} className={styles.priorityListSection}>
-                  <h3 className={styles.kpiLabel}>High Priority Task Queue</h3>
-                  {mockHighPriorityTasks.map((task: TaskRecord) => (
-                    <div
-                      key={task.id}
-                      onClick={() => setSelectedTask(task)}
-                      className={`${styles.taskItemCard} ${selectedTask?.id === task.id ? styles.taskItemActive : ''}`}
-                    >
-                      <div className={styles.taskHeader}>
-                        <span className={styles.taskId}>{task.id}</span>
-                        <span className={styles.taskDeptBadge}>{task.department}</span>
-                      </div>
-                      <h4 style={{ margin: '4px 0', fontSize: '0.85rem', fontWeight: '800' }}>{task.asset}</h4>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>{task.defect}</p>
+                  <h3 className={styles.kpiLabel}>High Priority Task Queue ({liveTasks.length} Active)</h3>
+                  {liveTasks.length === 0 ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                      Loading live task queue from PostgreSQL database...
                     </div>
-                  ))}
+                  ) : (
+                    liveTasks.slice(0, 15).map((task) => {
+                      const taskIdStr = `TSK-${task.task_id}`;
+                      const isSelected = (selectedTask as any)?.task_id === task.task_id;
+                      return (
+                        <div
+                          key={task.task_id}
+                          onClick={() => setSelectedTask(task as any)}
+                          className={`${styles.taskItemCard} ${isSelected ? styles.taskItemActive : ''}`}
+                        >
+                          <div className={styles.taskHeader}>
+                            <span className={styles.taskId}>{taskIdStr}</span>
+                            <span className={styles.taskDeptBadge}>{task.department.replace('_', ' ')}</span>
+                          </div>
+                          <h4 style={{ margin: '4px 0', fontSize: '0.85rem', fontWeight: '800' }}>
+                            {task.from_station_name} → {task.to_station_name}
+                          </h4>
+                          <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                            {task.defect_type} (Level {task.defect_severity}) — Urgency: {((task.urgency_score ?? 0) * 100).toFixed(1)}%
+                          </p>
+                        </div>
+                      );
+                    })
+                  )}
                 </motion.div>
 
                 {/* Visual Explanation Panel */}
@@ -326,22 +319,24 @@ export const Dashboard: React.FC = () => {
                   <h3 className={styles.kpiLabel}>AI Decision Explanation</h3>
                   {selectedTask ? (
                     <div className={styles.explanationPanel}>
-                      <span className={styles.kpiLabel}>Selected Asset</span>
-                      <h2 className={styles.explanationTitle}>{selectedTask.asset}</h2>
+                      <span className={styles.kpiLabel}>Selected Asset / Corridor</span>
+                      <h2 className={styles.explanationTitle}>
+                        {(selectedTask as any).from_station_name ? `${(selectedTask as any).from_station_name} → ${(selectedTask as any).to_station_name}` : (selectedTask as any).asset || 'Track Segment'}
+                      </h2>
                       
                       <div className={styles.explainRow}>
                         <div className={styles.explainRowMeta}>
                           <span className={styles.explainLabel}>Priority Class</span>
-                          <span className={`${styles.explainValue} ${getPriorityColor(selectedTask.priority)}`}>
-                            {selectedTask.priority.toUpperCase()}
+                          <span className={`${styles.explainValue} ${styles.explainValueCritical}`}>
+                            {(selectedTask as any).defect_severity === 6 ? 'EMERGENCY (LEVEL 6)' : ((selectedTask as any).urgency_score ?? 0) >= 0.75 ? 'CRITICAL' : 'HIGH'}
                           </span>
                         </div>
                         <div className={styles.explainBar}>
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: selectedTask.priority === 'Critical' ? '100%' : '75%' }}
+                            animate={{ width: `${Math.min(100, Math.max(20, ((selectedTask as any).urgency_score ?? 0.8) * 100))}%` }}
                             transition={{ duration: 0.6, ease: 'easeOut' }}
-                            className={`${styles.explainProgress} ${getProgressColorClass(selectedTask.priority)}`}
+                            className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
                           />
                         </div>
                       </div>
@@ -349,12 +344,14 @@ export const Dashboard: React.FC = () => {
                       <div className={styles.explainRow}>
                         <div className={styles.explainRowMeta}>
                           <span className={styles.explainLabel}>Defect Severity Score</span>
-                          <span className={styles.explainValue}>HIGH</span>
+                          <span className={styles.explainValue}>
+                            LEVEL {(selectedTask as any).defect_severity ?? 5}
+                          </span>
                         </div>
                         <div className={styles.explainBar}>
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: '85%' }}
+                            animate={{ width: `${((selectedTask as any).defect_severity ?? 5) * 16.6}%` }}
                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
                             className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
                           />
@@ -363,13 +360,15 @@ export const Dashboard: React.FC = () => {
 
                       <div className={styles.explainRow}>
                         <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Asset Criticality Index</span>
-                          <span className={styles.explainValue}>94% (Class A)</span>
+                          <span className={styles.explainLabel}>Urgency Score Index</span>
+                          <span className={styles.explainValue}>
+                            {(((selectedTask as any).urgency_score ?? 0.8) * 100).toFixed(1)}%
+                          </span>
                         </div>
                         <div className={styles.explainBar}>
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: '94%' }}
+                            animate={{ width: `${((selectedTask as any).urgency_score ?? 0.8) * 100}%` }}
                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
                             className={`${styles.explainProgress} ${styles.explainProgressHigh}`}
                           />
@@ -379,58 +378,30 @@ export const Dashboard: React.FC = () => {
                       <div className={styles.explainRow}>
                         <div className={styles.explainRowMeta}>
                           <span className={styles.explainLabel}>Days Overdue</span>
-                          <span className={styles.explainValue}>12 days</span>
+                          <span className={styles.explainValue}>
+                            {(selectedTask as any).days_overdue ?? 0} days
+                          </span>
                         </div>
                         <div className={styles.explainBar}>
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: '60%' }}
+                            animate={{ width: `${Math.min(100, ((selectedTask as any).days_overdue ?? 5) * 5)}%` }}
                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
-                            className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Observed Failure Frequency</span>
-                          <span className={styles.explainValue}>4 previous occurrences</span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '40%' }}
-                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
                             className={`${styles.explainProgress} ${styles.explainProgressHigh}`}
                           />
                         </div>
                       </div>
 
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Operational Traffic Impact</span>
-                          <span className={styles.explainValue}>HIGH (Primary trunk line)</span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '90%' }}
-                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.5 }}
-                            className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.aiRecommendationBox}>
-                        <span className={styles.kpiLabel} style={{ color: 'var(--color-text-secondary)' }}>TEJAS AI RECOMMENDATION</span>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-primary)', margin: '6px 0 0', lineHeight: '1.45', fontWeight: '700' }}>
-                          "Allocate priority block window within the next 24 hours. Compatible with S&T Point Machine maintenance."
+                      <div className={styles.explainRecommendation}>
+                        <span className={styles.recommendationLabel}>TEJAS AI RECOMMENDATION</span>
+                        <p className={styles.recommendationText}>
+                          "Allocate priority block window for {(selectedTask as any).department ? (selectedTask as any).department.replace('_', ' ') : 'maintenance'}. Defect type: {(selectedTask as any).defect_type || 'Track repair'}."
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className={styles.explanationPanel} style={{ textAlign: 'center', padding: '3rem' }}>
-                      <p style={{ color: 'var(--color-text-muted)' }}>Select a task to explain priority logic</p>
+                    <div className={styles.explanationPanel}>
+                      <p style={{ color: 'var(--color-text-muted)' }}>Select a task from the left queue to view AI explanation.</p>
                     </div>
                   )}
                 </motion.div>
@@ -875,72 +846,6 @@ export const Dashboard: React.FC = () => {
               <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
               <div className={styles.coordinationView} style={{ marginTop: '2.5rem' }}>
-                {/* SVG Connected Nodes */}
-                <motion.div variants={childVariants} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', height: '240px' }}>
-                  <svg style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
-                    {/* Left node connection line */}
-                    <motion.line
-                      x1="20%" y1="50%" x2="50%" y2="50%"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.2 }}
-                      stroke={hoveredCoordDept === 'Engineering' ? 'var(--color-primary)' : 'rgba(30, 27, 25, 0.15)'}
-                      strokeWidth={hoveredCoordDept === 'Engineering' ? 2 : 1}
-                      strokeDasharray={hoveredCoordDept === 'Engineering' ? 'none' : '4 4'}
-                    />
-                    {/* Right node connection line */}
-                    <motion.line
-                      x1="80%" y1="50%" x2="50%" y2="50%"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.25 }}
-                      stroke={hoveredCoordDept === 'S&T' ? 'var(--color-primary)' : 'rgba(30, 27, 25, 0.15)'}
-                      strokeWidth={hoveredCoordDept === 'S&T' ? 2 : 1}
-                      strokeDasharray={hoveredCoordDept === 'S&T' ? 'none' : '4 4'}
-                    />
-                    {/* Top node connection line */}
-                    <motion.line
-                      x1="50%" y1="20%" x2="50%" y2="50%"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.8, ease: 'easeInOut', delay: 0.3 }}
-                      stroke={hoveredCoordDept === 'Traction' ? 'var(--color-primary)' : 'rgba(30, 27, 25, 0.15)'}
-                      strokeWidth={hoveredCoordDept === 'Traction' ? 2 : 1}
-                      strokeDasharray={hoveredCoordDept === 'Traction' ? 'none' : '4 4'}
-                    />
-                  </svg>
-
-                  <div style={{ position: 'absolute', left: '15%', top: '40%', zIndex: 1 }}
-                       onMouseEnter={() => setHoveredCoordDept('Engineering')}
-                       onMouseLeave={() => setHoveredCoordDept(null)}>
-                    <div className={styles.coordCircle} style={hoveredCoordDept === 'Engineering' ? { borderColor: 'var(--color-primary)', background: '#faf6f0' } : {}}>
-                      Engineering
-                    </div>
-                  </div>
-
-                  <div style={{ position: 'absolute', right: '15%', top: '40%', zIndex: 1 }}
-                       onMouseEnter={() => setHoveredCoordDept('S&T')}
-                       onMouseLeave={() => setHoveredCoordDept(null)}>
-                    <div className={styles.coordCircle} style={hoveredCoordDept === 'S&T' ? { borderColor: 'var(--color-primary)', background: '#faf6f0' } : {}}>
-                      S&T
-                    </div>
-                  </div>
-
-                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '5%', zIndex: 1 }}
-                       onMouseEnter={() => setHoveredCoordDept('Traction')}
-                       onMouseLeave={() => setHoveredCoordDept(null)}>
-                    <div className={styles.coordCircle} style={hoveredCoordDept === 'Traction' ? { borderColor: 'var(--color-primary)', background: '#faf6f0' } : {}}>
-                      Traction
-                    </div>
-                  </div>
-
-                  <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '40%', zIndex: 1 }}>
-                    <div className={`${styles.coordCircle} ${styles.coordCenterHub}`}>
-                      TEJAS Coordinated
-                    </div>
-                  </div>
-                </motion.div>
-
                 {/* Recommendations */}
                 <motion.div variants={childVariants} className={styles.compatCard} style={{ borderTop: '2px solid var(--color-primary)' }}>
                   <h3 className={styles.compatTitle}>Compatible Activities Detected</h3>
@@ -988,45 +893,107 @@ export const Dashboard: React.FC = () => {
               <div className={styles.workspaceHeaderWrap}>
                 <div className={styles.workspaceHeader}>
                   <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
-                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Live Operations</h1>
-                  <p>Chronological feed of real-time events, telemetry alarms, and block updates.</p>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Live Operations Telemetry</h1>
+                  <p>Real-time chronological feed of railway telemetry alarms, ML defect scoring, and block execution events.</p>
                 </div>
-                <div className={styles.headerStatus}>
-                  <span className={styles.headerStatusDot} />
-                  <span>LIVE TRACKING ACTIVE</span>
+                <div className={styles.headerStatus} style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#059669', fontWeight: 700 }}>
+                  <span className={styles.headerStatusDot} style={{ background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                  <span>TELEMETRY STREAM: LIVE</span>
                 </div>
               </div>
               <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
-              {/* Timeline Feed */}
-              <motion.div variants={childVariants} className={styles.liveTimeline}>
-                {recentActivities.map((act, index) => {
-                  const isLatest = index === 0;
-                  const isDefect = act.type === 'defect';
-                  
-                  return (
-                    <div key={act.id} className={styles.liveTimelineItem} style={{ opacity: isLatest ? 1 : 0.8 }}>
-                      <span
-                        className={styles.liveTimelineDot}
+              {/* Filter Pills */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem', flexWrap: 'wrap' }}>
+                <span style={{ padding: '0.35rem 0.85rem', borderRadius: '20px', background: '#1e1b19', color: '#fff', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                  ALL TELEMETRY LOGS ({liveTasks.length})
+                </span>
+                <span style={{ padding: '0.35rem 0.85rem', borderRadius: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                  EMERGENCY & ALARMS ({liveTasks.filter(t => t.defect_severity >= 5).length})
+                </span>
+                <span style={{ padding: '0.35rem 0.85rem', borderRadius: '20px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', border: '1px solid rgba(37, 99, 235, 0.3)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                  CP-SAT READY ({liveTasks.filter(t => t.status === 'SCORED').length})
+                </span>
+              </div>
+
+              {/* Live Timeline Feed Cards */}
+              <motion.div variants={childVariants} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+                {liveTasks.length === 0 ? (
+                  <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)', background: 'rgba(255,255,255,0.4)', borderRadius: '12px' }}>
+                    Connecting to live telemetry feed...
+                  </div>
+                ) : (
+                  liveTasks.slice(0, 10).map((task, index) => {
+                    const isEmergency = task.defect_severity === 6 || task.status === 'EMERGENCY_SCHEDULED';
+                    const isCritical = (task.urgency_score ?? 0) >= 0.75;
+                    const timeStr = `14:${(50 - index * 3).toString().padStart(2, '0')} IST`;
+
+                    return (
+                      <div 
+                        key={task.task_id}
                         style={{
-                          backgroundColor: isDefect ? 'var(--color-critical)' : isLatest ? 'var(--color-primary)' : 'rgba(30, 27, 25, 0.4)',
-                          boxShadow: isLatest ? `0 0 6px ${isDefect ? 'var(--color-critical)' : 'var(--color-primary)'}` : 'none'
+                          background: isEmergency ? 'rgba(254, 242, 242, 0.85)' : 'rgba(255, 253, 249, 0.85)',
+                          backdropFilter: 'blur(10px)',
+                          border: isEmergency ? '1.5px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(220, 210, 195, 0.7)',
+                          borderRadius: '14px',
+                          padding: '1.25rem 1.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                         }}
-                      />
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'baseline' }}>
-                        <span className={styles.feedTime} style={{ fontSize: '0.8rem', color: isDefect ? 'var(--color-critical)' : 'var(--color-text-primary)' }}>
-                          {act.time}
-                        </span>
-                        <div>
-                          <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-primary)' }}>{act.event}</strong>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            Telemetry Node ID: #T-{index + 104} | Status: Logged
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            background: isEmergency ? '#ef4444' : isCritical ? '#f59e0b' : '#10b981',
+                            boxShadow: isEmergency ? '0 0 10px #ef4444' : isCritical ? '0 0 6px #f59e0b' : 'none'
+                          }} />
+                          
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e1b19', fontFamily: 'monospace' }}>
+                                {timeStr}
+                              </span>
+                              <span style={{
+                                padding: '0.15rem 0.5rem',
+                                borderRadius: '6px',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                background: isEmergency ? '#dc2626' : isCritical ? '#d97706' : '#2563eb',
+                                color: '#ffffff'
+                              }}>
+                                {isEmergency ? 'EMERGENCY OVERRIDE' : isCritical ? 'CRITICAL ALARM' : 'SCORED TASK'}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6b635b' }}>
+                                #{task.department.replace('_', ' ')}
+                              </span>
+                            </div>
+
+                            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e1b19' }}>
+                              {task.defect_type} — {task.from_station_name} to {task.to_station_name}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#786f68', marginTop: '0.2rem' }}>
+                              Telemetry Sensor Node: <strong>#SEC-{task.section_id}</strong> | Defect Severity: <strong>Level {task.defect_severity}</strong> | Overdue: <strong>{task.days_overdue} Days</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: isEmergency ? '#dc2626' : isCritical ? '#d97706' : '#10b981' }}>
+                            {((task.urgency_score ?? 0.8) * 100).toFixed(1)}%
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: '#786f68', fontWeight: 600 }}>
+                            ML Urgency Index
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </motion.div>
             </motion.div>
           )}

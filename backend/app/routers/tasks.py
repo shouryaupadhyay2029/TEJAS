@@ -26,7 +26,8 @@ SEVERITY_STR_TO_INT = {
     "LOW": 2,
     "MEDIUM": 3,
     "HIGH": 4,
-    "CRITICAL": 5
+    "CRITICAL": 5,
+    "EMERGENCY": 6
 }
 
 FIELD_OFFICER_ROLE_TO_DEPT = {
@@ -57,7 +58,7 @@ def report_maintenance_incident(
     """
     Submits a new maintenance incident report from a field officer, inserts into PostgreSQL,
     and immediately invokes the live ML API's /predict endpoint to score and update the task synchronously.
-    Enforces department boundary matching for field officers.
+    If defect_severity == 'EMERGENCY', BYPASSES CP-SAT solver and instantly creates an emergency BlockSchedule.
     """
     # Department restriction for Field Officers
     target_dept = infer_department(report.defect_type, report.department)
@@ -69,10 +70,6 @@ def report_maintenance_incident(
                 detail=f"Field officer with role {current_user.role} can only report tasks for department {allowed_dept}, but task was mapped to {target_dept}"
             )
 
-    """
-    Submits a new maintenance incident report from a field officer, inserts into PostgreSQL,
-    and immediately invokes the live ML API's /predict endpoint to score and update the task synchronously.
-    """
     # 1. Validate section_id exists in sections table
     section_query = text("""
         SELECT 
@@ -92,7 +89,7 @@ def report_maintenance_incident(
     if not sec_row:
         raise HTTPException(status_code=404, detail=f"Section ID {report.section_id} not found in railway database")
 
-    # 2. Map defect severity string to integer (LOW->2, MEDIUM->3, HIGH->4, CRITICAL->5)
+    # 2. Map defect severity string to integer (LOW->2, MEDIUM->3, HIGH->4, CRITICAL->5, EMERGENCY->6)
     sev_str = report.defect_severity.upper()
     sev_int = SEVERITY_STR_TO_INT.get(sev_str, 3)
 
@@ -108,11 +105,50 @@ def report_maintenance_incident(
         defect_severity=sev_int,
         days_overdue=report.days_since_detected,
         reported_at=reported_time,
-        urgency_score=None,
-        status='PENDING'
+        urgency_score=1.0000 if sev_str == "EMERGENCY" else None,
+        status='SCHEDULED' if sev_str == "EMERGENCY" else 'PENDING'
     )
     db.add(new_task)
     db.flush()  # Generate task_id
+
+    # 4. EMERGENCY BYPASS LOGIC: Auto-schedule nearest block window directly in DB
+    if sev_str == "EMERGENCY":
+        now = datetime.datetime.now()
+        start_h = (now.hour + 1) % 24
+        duration = 2 if dept == "ENGINEERING" else 1 if dept == "SIGNAL_TELECOM" else 3
+        end_h = min(24, start_h + duration)
+
+        from app.models import BlockSchedule
+        emergency_block = BlockSchedule(
+            task_id=new_task.task_id,
+            section_id=new_task.section_id,
+            slot_date=now.date(),
+            start_hour=start_h,
+            end_hour=end_h,
+            horizon="EMERGENCY_OVERRIDE",
+            approved_by_control_office=False
+        )
+        db.add(emergency_block)
+        db.commit()
+        db.refresh(new_task)
+
+        return {
+            "task_id": new_task.task_id,
+            "department": new_task.department,
+            "section_id": new_task.section_id,
+            "section_code": sec_row["section_code"],
+            "from_station_name": sec_row["from_station_name"],
+            "to_station_name": sec_row["to_station_name"],
+            "defect_type": new_task.defect_type,
+            "defect_severity": new_task.defect_severity,
+            "defect_severity_label": "EMERGENCY",
+            "days_overdue": new_task.days_overdue,
+            "officer_notes": report.officer_notes,
+            "reported_at": new_task.reported_at,
+            "urgency_score": 1.0000,
+            "status": "SCHEDULED",
+            "ml_scoring_succeeded": True
+        }
 
     # 4. Synchronous Live ML API Call
     ml_base_url = os.getenv("ML_API_URL", "http://192.168.1.104:8000")

@@ -252,6 +252,17 @@ export const Optimization: React.FC = () => {
         </PageEntryReveal>
 
         {/* Notifications */}
+        {blocks.some(b => b.horizon === 'EMERGENCY_OVERRIDE' && !b.approved_by_control_office) && (
+          <div style={{ padding: '14px 18px', backgroundColor: 'rgba(188,71,58,0.18)', border: '2px solid #bc473a', borderRadius: '10px', color: '#bc473a', fontSize: '0.88rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 14px rgba(188,71,58,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <ShieldAlert size={22} color="#bc473a" />
+              <span>CRITICAL EMERGENCY OVERRIDE: Level 6 Defect auto-scheduled bypassing solver pool! Immediate DRM Sign-off required.</span>
+            </div>
+            <span style={{ fontSize: '0.72rem', background: '#bc473a', color: '#fff', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+              SOLVER BYPASSED (100% URGENCY)
+            </span>
+          </div>
+        )}
         {error && (
           <div style={{ padding: '12px 16px', backgroundColor: 'rgba(188,71,58,0.1)', border: '1px solid rgba(188,71,58,0.3)', borderRadius: '8px', color: '#bc473a', fontSize: '0.85rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={18} />
@@ -472,7 +483,7 @@ export const Optimization: React.FC = () => {
                         <td style={{ padding: '12px 16px', fontWeight: 600 }}>{b.section_code || `SEC-${b.section_id}`}</td>
                         <td style={{ padding: '12px 16px', color: '#444' }}>{b.defect_type}</td>
                         <td style={{ padding: '12px 16px', fontWeight: 700, color: (b.urgency_score || 0) > 0.75 ? '#bc473a' : '#1e1b19' }}>
-                          {b.urgency_score != null ? b.urgency_score.toFixed(3) : 'N/A'}
+                          {b.urgency_score != null ? `${(b.urgency_score * 100).toFixed(1)}%` : 'N/A'}
                         </td>
                         <td style={{ padding: '12px 16px' }}>{b.slot_date}</td>
                         <td style={{ padding: '12px 16px', fontWeight: 600 }}>
