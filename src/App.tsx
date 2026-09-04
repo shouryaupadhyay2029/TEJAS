@@ -2,6 +2,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+// Import TEJAS Auth Context & Protected Route Guard
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+
 // Import TEJAS Pages
 import Home from './pages/Home/Home';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -33,29 +37,69 @@ const NonLandingRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <PageTransitionProvider>
-          <ScrollProvider>
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-              <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/dashboard" element={<NonLandingRoute><Dashboard /></NonLandingRoute>} />
-                  <Route path="/maintenance" element={<NonLandingRoute><Maintenance /></NonLandingRoute>} />
-                  <Route path="/defects" element={<NonLandingRoute><Defects /></NonLandingRoute>} />
-                  <Route path="/block-planning" element={<NonLandingRoute><BlockPlanning /></NonLandingRoute>} />
-                  <Route path="/optimization" element={<NonLandingRoute><Optimization /></NonLandingRoute>} />
-                  <Route path="/assets" element={<NonLandingRoute><Assets /></NonLandingRoute>} />
-                  <Route path="/report" element={<NonLandingRoute><IncidentReport /></NonLandingRoute>} />
-                  <Route path="/reports" element={<NonLandingRoute><Reports /></NonLandingRoute>} />
-                  <Route path="/login" element={<NonLandingRoute><Auth /></NonLandingRoute>} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </main>
-            </div>
-          </ScrollProvider>
-        </PageTransitionProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <PageTransitionProvider>
+            <ScrollProvider>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/auth" element={<NonLandingRoute><Auth /></NonLandingRoute>} />
+                    <Route path="/login" element={<Navigate to="/auth" replace />} />
+
+                    {/* Protected Operational Workspace Routes */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Dashboard /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/maintenance" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Maintenance /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/defects" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Defects /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/block-planning" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><BlockPlanning /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/optimization" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Optimization /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/assets" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Assets /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/report" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><IncidentReport /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/reports" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><Reports /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+
+                    {/* Fallback */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </main>
+              </div>
+            </ScrollProvider>
+          </PageTransitionProvider>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

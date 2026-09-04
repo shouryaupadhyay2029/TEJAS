@@ -5,7 +5,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import BlockSchedule, MaintenanceTask, Section
+from app.auth import get_current_user, require_role
+from app.models import User, BlockSchedule, MaintenanceTask, Section
 from app.schemas import (
     BlockScheduleCreate,
     BlockScheduleOut,
@@ -15,11 +16,14 @@ from app.schemas import (
 
 router = APIRouter(prefix="/block-schedule", tags=["block-schedule"])
 
+
 @router.post("", response_model=BlockScheduleBatchCreateResponse)
 def create_block_schedule_batch(
     items: List[BlockScheduleCreate],
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("OPERATIONS_CONTROLLER"))
 ):
+
     """
     Batch endpoint consumed by CP-SAT solver to post generated maintenance block schedules.
     Validates task eligibility (must be status 'SCORED'), section existence, hours, and horizon.
@@ -95,7 +99,8 @@ def get_block_schedule(
     horizon: str = Query(..., description="Schedule horizon: 'WEEKLY' or 'MONTHLY'"),
     start_date: Optional[datetime.date] = Query(default=None),
     end_date: Optional[datetime.date] = Query(default=None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Returns block schedule entries for a horizon, joined with task and station details for UI rendering.
@@ -146,7 +151,8 @@ def get_block_schedule(
 @router.patch("/{block_id}/approve", response_model=BlockScheduleDetailOut)
 def approve_block_schedule(
     block_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("DIVISIONAL_ENGINEER"))
 ):
     """
     Records Control Office / DRM human approval for a scheduled maintenance block.

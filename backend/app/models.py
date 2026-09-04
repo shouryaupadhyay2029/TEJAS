@@ -148,3 +148,24 @@ class BlockSchedule(Base):
 
     task = relationship("MaintenanceTask")
     section = relationship("Section")
+
+class User(Base):
+    __tablename__ = "users"
+
+    user_id = Column(Integer, primary_key=True, index=True)
+    officer_id = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=True)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    full_name = Column(String, nullable=True)
+    department = Column(String, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('OPERATIONS_CONTROLLER','FIELD_OFFICER_ENG','FIELD_OFFICER_ST','FIELD_OFFICER_TRD','DIVISIONAL_ENGINEER')",
+            name="chk_user_role"
+        ),
+    )
+

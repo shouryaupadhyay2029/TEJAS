@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import MaintenanceTask, SectionTimeSlot, BlockSchedule
+from app.auth import get_current_user, require_role
+from app.models import User, MaintenanceTask, SectionTimeSlot, BlockSchedule
 from scripts.run_cpsat_block_optimizer import (
     fetch_scored_tasks_from_db,
     fetch_section_time_slots,
@@ -56,7 +57,8 @@ class OptimizerRunResponse(BaseModel):
 @router.post("/run", response_model=OptimizerRunResponse)
 def run_optimizer(
     req: OptimizerRunRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("OPERATIONS_CONTROLLER"))
 ):
     """
     Triggers the Google OR-Tools CP-SAT constraint optimization engine on-demand.
@@ -145,6 +147,8 @@ def run_optimizer(
     )
 
 @router.get("/durations")
-def get_department_durations():
-    """Returns the operational maintenance duration constraints per railway department."""
+def get_department_durations(current_user: User = Depends(get_current_user)):
+    """
+    Returns standard duration rules by department in hours.
+    """
     return DEPARTMENT_DURATIONS

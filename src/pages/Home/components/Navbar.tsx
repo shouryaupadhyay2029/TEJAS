@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, UserCheck } from 'lucide-react';
 import styles from '../Home.module.css';
 
 import { TransitionLink } from '../../../components/PageTransition';
+import { useAuth } from '../../../context/AuthContext';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -16,25 +17,21 @@ const navVariant = {
   },
 };
 
-/* Each section of the navbar fades+slides down */
 const itemVariant = {
   hidden: { opacity: 0, y: -14 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
 };
 
-/* Logo circle: scale in from 0 */
 const circleVariant = {
   hidden: { opacity: 0, scale: 0.5 },
   show: { opacity: 1, scale: 1, transition: { duration: 0.55, ease } },
 };
 
-/* "AS" text beside circle: slide in from left */
 const logoTextVariant = {
   hidden: { opacity: 0, x: -10 },
   show: { opacity: 1, x: 0, transition: { duration: 0.45, delay: 0.1, ease } },
 };
 
-/* Each nav link: staggered fade up */
 const linkVariant = {
   hidden: { opacity: 0, y: -8 },
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease } },
@@ -45,22 +42,23 @@ const navLinks = [
   { to: '/dashboard', label: 'DASHBOARD', num: '02' },
   { to: '/maintenance', label: 'MAINTENANCE', num: '03' },
   { to: '/block-planning', label: 'PLANNING', num: '04' },
-  { to: '/assets', label: 'ASSETS', num: '05' },
-  { to: '/report', label: 'INCIDENT REPORT', num: '06' },
-  { to: '/reports', label: 'REPORTS', num: '07' },
+  { to: '/optimization', label: 'OPTIMIZATION', num: '05' },
+  { to: '/assets', label: 'ASSETS', num: '06' },
+  { to: '/defects', label: 'DEFECTS', num: '07' },
+  { to: '/reports', label: 'REPORTS', num: '08' },
 ];
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const location = useLocation();
-  const currentPath = location.pathname;
 
-  // Find active node based on current path
-  const activeLinkObj = navLinks.find(link => link.to === currentPath) || navLinks[0];
-  const activeNum = activeLinkObj.num;
-  const activeLabel = activeLinkObj.label;
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
 
   return (
     <>
@@ -73,11 +71,9 @@ export const Navbar: React.FC = () => {
         {/* LEFT — Logo group */}
         <motion.div className={styles.logoGroup} variants={itemVariant}>
           <div className={styles.logoWrapper}>
-            {/* Circular logo: scales in */}
             <motion.div className={styles.logoCircle} variants={circleVariant}>
               TEJ
             </motion.div>
-            {/* "AS" text: slides in from left */}
             <motion.span className={styles.logoTextOutside} variants={logoTextVariant}>
               AS
             </motion.span>
@@ -88,7 +84,7 @@ export const Navbar: React.FC = () => {
           </motion.span>
         </motion.div>
 
-        {/* CENTER — Nav links: each staggered */}
+        {/* CENTER — Nav links */}
         <motion.div
           className={styles.navLinks}
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
@@ -102,14 +98,67 @@ export const Navbar: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* RIGHT — CTA pill: fades in last */}
+        {/* RIGHT — Identity Badge & Login/Logout CTA */}
         <motion.div
           className={styles.navRight}
           variants={{ hidden: { opacity: 0, y: -10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.55, ease } } }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
         >
-          <TransitionLink to="/login" label="ACCESS" className={`${styles.orderButton} interactive-hover`}>
-            ACCESS DASHBOARD
-          </TransitionLink>
+          {isAuthenticated && user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(8px)',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#1e1b19'
+              }}>
+                <UserCheck size={14} color="var(--color-railway-red)" />
+                <span>{user.officerId}</span>
+                <span style={{
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  background: 'var(--color-railway-red)',
+                  color: '#ffffff',
+                  fontSize: '0.65rem',
+                  textTransform: 'uppercase'
+                }}>
+                  {user.role.replace('FIELD_OFFICER_', '').replace('_', ' ')}
+                </span>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                title="Sign out of operational session"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(188,71,58,0.3)',
+                  background: 'rgba(188,71,58,0.08)',
+                  color: '#bc473a',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <LogOut size={14} />
+                <span>LOGOUT</span>
+              </button>
+            </div>
+          ) : (
+            <TransitionLink to="/auth" label="ACCESS" className={`${styles.orderButton} interactive-hover`}>
+              COMMAND LOGIN
+            </TransitionLink>
+          )}
         </motion.div>
 
         {/* MOBILE HAMBURGER BUTTON */}
@@ -128,7 +177,6 @@ export const Navbar: React.FC = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease }}
           >
-            {/* Header section in overlay */}
             <div className={styles.mobileMenuHeader}>
               <div className={styles.logoGroup} style={{ opacity: 1 }}>
                 <div className={styles.logoWrapper}>
@@ -145,9 +193,7 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
 
-            {/* Content section */}
             <div className={styles.mobileMenuContent}>
-              {/* Leftaligned index list */}
               <motion.div
                 className={styles.mobileLinksList}
                 variants={{
@@ -157,41 +203,24 @@ export const Navbar: React.FC = () => {
                 initial="hidden"
                 animate="show"
               >
-                {navLinks.map(({ to, label, num }, idx) => (
-                  <motion.div
-                    key={to}
-                    variants={{
-                      hidden: { y: 24, opacity: 0 },
-                      show: { y: 0, opacity: 1, transition: { duration: 0.7, ease } }
-                    }}
-                    style={{ width: '100%' }}
-                  >
-                    <TransitionLink
-                      to={to}
-                      label={label}
-                      className={`${styles.mobileMenuRow} ${hoveredIdx === idx ? styles.mobileMenuRowActive : ''}`}
-                      style={{
-                        paddingLeft: hoveredIdx === idx ? '8px' : '0px',
-                        opacity: hoveredIdx === null ? 1 : hoveredIdx === idx ? 1 : 0.4
-                      }}
-                      onMouseEnter={() => setHoveredIdx(idx)}
-                      onMouseLeave={() => setHoveredIdx(null)}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span className={styles.mobileMenuNum}>{num}</span>
-                      <span className={styles.mobileMenuLabel}>{label}</span>
-                      <span className={styles.menuWipeLine} />
+                {navLinks.map(({ to, label, num }) => (
+                  <motion.div key={to} variants={linkVariant}>
+                    <TransitionLink to={to} label={label} className={styles.mobileNavLink}>
+                      <span className={styles.mobileNavNum}>{num}</span>
+                      {label}
                     </TransitionLink>
                   </motion.div>
                 ))}
+                {isAuthenticated ? (
+                  <button onClick={handleLogout} style={{ marginTop: '1rem', padding: '0.75rem', background: '#bc473a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700 }}>
+                    LOGOUT ({user?.officerId})
+                  </button>
+                ) : (
+                  <TransitionLink to="/auth" label="ACCESS" style={{ marginTop: '1rem', display: 'block', textAlign: 'center', padding: '0.75rem', background: '#bc473a', color: '#fff', textDecoration: 'none', borderRadius: '8px', fontWeight: 700 }}>
+                    COMMAND LOGIN
+                  </TransitionLink>
+                )}
               </motion.div>
-
-              {/* Current active section elements */}
-              <div className={styles.mobileMenuPosition}>
-                <div className={styles.mobileMenuPositionLine} />
-                <span className={styles.mobileMenuPosNum}>TEJAS / {activeNum}</span>
-                <span className={styles.mobileMenuPosLabel}>{activeLabel}</span>
-              </div>
             </div>
           </motion.div>
         )}

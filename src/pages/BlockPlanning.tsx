@@ -88,7 +88,12 @@ const mockRequests = [
   { id: 'ENG-301', task: 'Sleepers replacement', dept: 'Engineering', window: '14:30 — 16:30', duration: '2h', priority: 'HIGH', status: 'PENDING' }
 ];
 
+import { useAuth } from '../context/AuthContext';
+
 export const BlockPlanning: React.FC = () => {
+  const { user } = useAuth();
+  const isDRE = user?.role === 'DIVISIONAL_ENGINEER';
+
   const [blocks, setBlocks] = useState<PlanningBlock[]>(initialBlocks);
   const [hoveredBlock, setHoveredBlock] = useState<PlanningBlock | null>(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
@@ -472,9 +477,18 @@ export const BlockPlanning: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => handleApproveBlock(b.block_id)}
-                        disabled={approvingBlockId === b.block_id}
+                        disabled={approvingBlockId === b.block_id || !isDRE}
+                        title={!isDRE ? 'Requires Divisional Engineer access.' : undefined}
                         className={styles.statusPending}
-                        style={{ cursor: 'pointer', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px' }}
+                        style={{
+                          cursor: (approvingBlockId === b.block_id || !isDRE) ? 'not-allowed' : 'pointer',
+                          background: isDRE ? 'var(--color-primary)' : '#8a7e72',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '3px',
+                          padding: '2px 8px',
+                          opacity: (approvingBlockId === b.block_id || !isDRE) ? 0.6 : 1
+                        }}
                       >
                         {approvingBlockId === b.block_id ? 'APPROVING...' : 'APPROVE SIGN-OFF'}
                       </button>

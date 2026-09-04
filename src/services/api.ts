@@ -126,7 +126,13 @@ export async function fetchBlockSchedule(
   if (startDate) query.append('start_date', startDate);
   if (endDate) query.append('end_date', endDate);
 
-  const response = await fetch(`${API_BASE_URL}/block-schedule?${query.toString()}`);
+  const token = sessionStorage.getItem('tejas_access_token') || localStorage.getItem('tejas_access_token') || localStorage.getItem('token');
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/block-schedule?${query.toString()}`, { headers });
   if (!response.ok) {
     throw new Error(`Failed to fetch block schedule: HTTP ${response.status}`);
   }
@@ -134,11 +140,15 @@ export async function fetchBlockSchedule(
 }
 
 export async function approveBlockSchedule(blockId: number): Promise<BlockScheduleDetail> {
+  const token = sessionStorage.getItem('tejas_access_token') || localStorage.getItem('tejas_access_token') || localStorage.getItem('token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/block-schedule/${blockId}/approve`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
   if (!response.ok) {
     throw new Error(`Failed to approve block schedule: HTTP ${response.status}`);
@@ -323,30 +333,27 @@ export async function fetchNetworkGraph(params?: {
 }
 
 export async function runCpsatOptimizer(options?: { horizon?: string; max_capacity?: number; dry_run?: boolean }) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/optimizer/run`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        horizon: options?.horizon || 'MONTHLY',
-        max_capacity: options?.max_capacity || 2,
-        dry_run: options?.dry_run || false
-      })
-    });
-    if (!res.ok) throw new Error(`Optimizer error: ${res.statusText}`);
-    return await res.json();
-  } catch (err) {
-    console.warn('Backend optimizer endpoint failed, returning local fallback simulation', err);
-    return {
-      status: 'OPTIMAL',
-      total_tasks: 42,
-      scheduled_tasks: 38,
-      unscheduled_tasks: 4,
-      scheduling_rate_pct: 90.5,
-      urgency_captured_pct: 94.2,
-      colocated_windows_count: 7
-    };
+  const token = sessionStorage.getItem('tejas_access_token') || localStorage.getItem('tejas_access_token') || localStorage.getItem('token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
+
+  const res = await fetch(`${API_BASE_URL}/optimizer/run`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      horizon: options?.horizon || 'MONTHLY',
+      max_capacity: options?.max_capacity || 2,
+      dry_run: options?.dry_run || false
+    })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Optimizer HTTP ${res.status}: ${res.statusText}`);
+  }
+  return await res.json();
 }
 
 

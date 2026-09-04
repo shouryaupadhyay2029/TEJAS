@@ -5,13 +5,18 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models import Section, SectionTimeSlot, SectionTrafficSummary, Station
+from app.auth import get_current_user
+from app.models import User, Section, SectionTimeSlot, SectionTrafficSummary, Station
 from app.schemas import SectionOut, SectionTrafficOut, SectionAvailabilityResponse, SlotItem
+
 
 router = APIRouter(prefix="/sections", tags=["sections"])
 
 @router.get("/traffic/all", response_model=List[SectionTrafficOut])
-def get_all_section_traffic(db: Session = Depends(get_db)):
+def get_all_section_traffic(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """
     Returns all section traffic summary metrics joined with section and station details.
     This is the primary endpoint consumed by the ML model.
@@ -41,7 +46,8 @@ def get_all_section_traffic(db: Session = Depends(get_db)):
 def get_all_sections(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Utility endpoint returning paginated sections with readable from/to station details.
@@ -61,7 +67,8 @@ def get_section_availability(
     section_id: int,
     start_date: Optional[datetime.date] = Query(default=None),
     days: int = Query(default=7, ge=1, le=31),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Returns section_time_slots rows for a given section within the date range.

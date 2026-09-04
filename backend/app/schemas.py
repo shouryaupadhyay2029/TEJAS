@@ -94,6 +94,36 @@ class SectionAvailabilityResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class UserLogin(BaseModel):
+    officer_id: str
+    password: str
+
+class UserRegister(BaseModel):
+    officer_id: str
+    password: str
+    role: str
+    full_name: Optional[str] = None
+    department: Optional[str] = None
+
+class UserOut(BaseModel):
+    user_id: int
+    officer_id: str
+    email: Optional[str] = None
+    role: str
+    full_name: Optional[str] = None
+    department: Optional[str] = None
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    role: str
+    officer_id: str
+    department: Optional[str] = None
+
 class BlockScheduleCreate(BaseModel):
     task_id: int
     section_id: int

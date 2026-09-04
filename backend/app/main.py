@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
 import app.models
-from app.routers import sections, tasks, schedule, network, optimizer
+from app.routers import sections, tasks, schedule, network, optimizer, auth
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,6 +48,7 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(auth.router)
 app.include_router(sections.router)
 app.include_router(tasks.router)
 app.include_router(schedule.router)

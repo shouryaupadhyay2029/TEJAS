@@ -1,25 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, ShieldCheck, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Navbar } from './Home/components/Navbar';
 import GradientBackground from '../components/GradientBackground';
 import { PageEntryReveal } from '../components/PageEntryReveal';
 import styles from './Auth.module.css';
+import apiClient from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
-  const [officerId, setOfficerId] = useState<string>('IR-OFFICER-8924');
-  const [passkey, setPasskey] = useState<string>('••••••••••••');
-  const [role, setRole] = useState<string>('OPERATIONS_CONTROLLER');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [officerId, setOfficerId] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+
+    try {
+      const response = await apiClient.post('/auth/login', {
+        officer_id: officerId.trim(),
+        password: password
+      });
+
+      const { access_token, role, officer_id, department } = response.data;
+
+      // Update global auth state
+      login(access_token, role, officer_id, department);
+
+      // Navigate to operational dashboard
       navigate('/dashboard');
-    }, 400);
+    } catch (err: any) {
+      console.error('Login authentication error:', err);
+      if (err.response && err.response.status === 401) {
+        setErrorMessage('Invalid Officer Designation ID or Security Passkey.');
+      } else if (err.response && err.response.data && err.response.data.detail) {
+        setErrorMessage(err.response.data.detail);
+      } else {
+        setErrorMessage('Authentication service unavailable. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,14 +87,32 @@ export const Auth: React.FC = () => {
               </p>
             </div>
 
+            {errorMessage && (
+              <div style={{
+                padding: '0.85rem 1rem',
+                backgroundColor: 'rgba(188,71,58,0.1)',
+                border: '1px solid rgba(188,71,58,0.3)',
+                borderRadius: '8px',
+                color: '#bc473a',
+                fontSize: '0.85rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <AlertTriangle size={18} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className={styles.authForm}>
               <div className={styles.fieldGroup}>
-                <label>Officer Designation ID / Email</label>
+                <label>Officer Designation ID</label>
                 <input 
                   type="text" 
                   value={officerId} 
                   onChange={(e) => setOfficerId(e.target.value)} 
-                  placeholder="e.g. IR-OFFICER-8924"
+                  placeholder="e.g. IR-OFFICER-ENG01"
                   required
                 />
               </div>
@@ -76,22 +121,11 @@ export const Auth: React.FC = () => {
                 <label>Security Passkey</label>
                 <input 
                   type="password" 
-                  value={passkey} 
-                  onChange={(e) => setPasskey(e.target.value)} 
-                  placeholder="Enter Passkey"
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  placeholder="Enter Security Passkey"
                   required
                 />
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label>Access Role / Division</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="OPERATIONS_CONTROLLER">Operations Controller (Chief Dispatcher)</option>
-                  <option value="FIELD_OFFICER_ENG">Field Officer — Engineering (Track & Bridge)</option>
-                  <option value="FIELD_OFFICER_ST">Field Officer — Signal & Telecom</option>
-                  <option value="FIELD_OFFICER_TRD">Field Officer — Traction Distribution</option>
-                  <option value="DIVISIONAL_ENGINEER">Divisional Railway Engineer (DRE)</option>
-                </select>
               </div>
 
               <button type="submit" disabled={isSubmitting} className={styles.submitBtn}>

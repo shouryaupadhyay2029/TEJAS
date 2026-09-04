@@ -24,6 +24,8 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/tejas
       ML_API_URL: http://ml_service:8001
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+
     depends_on:
       db:
         condition: service_healthy
