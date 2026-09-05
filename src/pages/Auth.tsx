@@ -141,6 +141,105 @@ export const Auth: React.FC = () => {
               </button>
             </form>
 
+            {/* Quick Demo Accounts Helper for Evaluation */}
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '1rem',
+              background: 'rgba(255,255,255,0.4)',
+              border: '1px solid rgba(30,27,25,0.08)',
+              borderRadius: '10px',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>
+                QUICK OFFICER DEMO ACCESS (SELECT ROLE)
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOfficerId('IR-OFFICER-SSE01');
+                    setPassword('SseGround#2026!Safety');
+                  }}
+                  style={{
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(188,71,58,0.3)',
+                    background: officerId === 'IR-OFFICER-SSE01' ? 'rgba(188,71,58,0.15)' : '#fff',
+                    color: '#bc473a',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  👷 SSE Ground Officer
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOfficerId('IR-OFFICER-DOM01');
+                    setPassword('DomTraffic#2026!Clear');
+                  }}
+                  style={{
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(30,27,25,0.3)',
+                    background: officerId === 'IR-OFFICER-DOM01' ? 'rgba(30,27,25,0.15)' : '#fff',
+                    color: '#1e1b19',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🚦 DOM Traffic Manager
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOfficerId('IR-OFFICER-CTRL01');
+                    setPassword('CtrlOffice#2026!Master');
+                  }}
+                  style={{
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(59,130,246,0.3)',
+                    background: officerId === 'IR-OFFICER-CTRL01' ? 'rgba(59,130,246,0.15)' : '#fff',
+                    color: '#2563eb',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🎛️ Operations Controller
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOfficerId('IR-OFFICER-DRM01');
+                    setPassword('DivEng#2026!Approve');
+                  }}
+                  style={{
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(16,185,129,0.3)',
+                    background: officerId === 'IR-OFFICER-DRM01' ? 'rgba(16,185,129,0.15)' : '#fff',
+                    color: '#059669',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  👔 Sr. DEN / DRM
+                </button>
+              </div>
+            </div>
+
             <div className={styles.formFooter}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <Lock size={12} color="#bc473a" />

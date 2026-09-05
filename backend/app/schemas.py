@@ -163,8 +163,17 @@ class BlockScheduleDetailOut(BaseModel):
     horizon: str
     created_at: Optional[datetime.datetime] = None
     approved_by_control_office: bool
+    sse_approved: bool = False
+    dom_approved: bool = False
+    sse_notes: Optional[str] = None
+    dom_notes: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class SignoffRequest(BaseModel):
+    role: str # 'SSE' or 'DOM'
+    approved: bool = True
+    notes: Optional[str] = None
 
 class BlockScheduleBatchCreateResponse(BaseModel):
     created: List[int]

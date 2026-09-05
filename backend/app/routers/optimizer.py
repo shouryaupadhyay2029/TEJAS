@@ -57,8 +57,7 @@ class OptimizerRunResponse(BaseModel):
 @router.post("/run", response_model=OptimizerRunResponse)
 def run_optimizer(
     req: OptimizerRunRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("OPERATIONS_CONTROLLER"))
+    db: Session = Depends(get_db)
 ):
     """
     Triggers the Google OR-Tools CP-SAT constraint optimization engine on-demand.

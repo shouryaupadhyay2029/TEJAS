@@ -47,6 +47,20 @@ DEMO_USERS = [
         "role": "DIVISIONAL_ENGINEER",
         "full_name": "Dr. S. K. Mukherjee (Sr. DEN / DRM)",
         "department": None
+    },
+    {
+        "officer_id": "IR-OFFICER-SSE01",
+        "password": "SseGround#2026!Safety",
+        "role": "SSE_INSPECTOR",
+        "full_name": "R. K. Verma (Senior Section Engineer - Ground)",
+        "department": "ENGINEERING"
+    },
+    {
+        "officer_id": "IR-OFFICER-DOM01",
+        "password": "DomTraffic#2026!Clear",
+        "role": "DOM_OPERATIONS",
+        "full_name": "A. P. Deshmukh (Divisional Operations Manager)",
+        "department": "OPERATIONS"
     }
 ]
 

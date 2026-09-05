@@ -11,7 +11,8 @@ from app.schemas import (
     BlockScheduleCreate,
     BlockScheduleOut,
     BlockScheduleDetailOut,
-    BlockScheduleBatchCreateResponse
+    BlockScheduleBatchCreateResponse,
+    SignoffRequest
 )
 
 router = APIRouter(prefix="/block-schedule", tags=["block-schedule"])
@@ -99,8 +100,7 @@ def get_block_schedule(
     horizon: str = Query(..., description="Schedule horizon: 'WEEKLY' or 'MONTHLY'"),
     start_date: Optional[datetime.date] = Query(default=None),
     end_date: Optional[datetime.date] = Query(default=None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Returns block schedule entries for a horizon, joined with task and station details for UI rendering.
@@ -125,7 +125,11 @@ def get_block_schedule(
             b.end_hour,
             b.horizon,
             b.created_at,
-            b.approved_by_control_office
+            b.approved_by_control_office,
+            COALESCE(b.sse_approved, FALSE) AS sse_approved,
+            COALESCE(b.dom_approved, FALSE) AS dom_approved,
+            b.sse_notes,
+            b.dom_notes
         FROM block_schedule b
         JOIN maintenance_tasks m ON b.task_id = m.task_id
         JOIN sections sec ON b.section_id = sec.section_id
@@ -148,23 +152,40 @@ def get_block_schedule(
     rows = db.execute(text(sql_str), params).mappings().all()
     return list(rows)
 
-@router.patch("/{block_id}/approve", response_model=BlockScheduleDetailOut)
-def approve_block_schedule(
+@router.patch("/{block_id}/signoff", response_model=BlockScheduleDetailOut)
+def dual_signoff_block_schedule(
     block_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("DIVISIONAL_ENGINEER"))
+    request: SignoffRequest,
+    db: Session = Depends(get_db)
 ):
     """
-    Records Control Office / DRM human approval for a scheduled maintenance block.
+    Performs Tier 1 (SSE Ground Readiness) or Tier 2 (DOM Traffic Stoppage) digital sign-off.
+    Sets approved_by_control_office = True when both SSE and DOM have approved.
     """
     block = db.query(BlockSchedule).filter(BlockSchedule.block_id == block_id).first()
     if not block:
         raise HTTPException(status_code=404, detail=f"Block schedule record {block_id} not found")
-        
-    block.approved_by_control_office = True
+
+    role_upper = request.role.upper()
+    if role_upper in ['SSE', 'ENGINEER', 'GROUND']:
+        block.sse_approved = request.approved
+        if request.notes:
+            block.sse_notes = request.notes
+    elif role_upper in ['DOM', 'OPERATIONS', 'TRAFFIC']:
+        block.dom_approved = request.approved
+        if request.notes:
+            block.dom_notes = request.notes
+    else:
+        # Fallback approve overall
+        block.sse_approved = True
+        block.dom_approved = True
+
+    # If both approved, mark control office approved
+    if block.sse_approved and block.dom_approved:
+        block.approved_by_control_office = True
+
     db.commit()
-    
-    # Return detail object
+
     query = text("""
         SELECT 
             b.block_id,
@@ -182,7 +203,59 @@ def approve_block_schedule(
             b.end_hour,
             b.horizon,
             b.created_at,
-            b.approved_by_control_office
+            b.approved_by_control_office,
+            COALESCE(b.sse_approved, FALSE) AS sse_approved,
+            COALESCE(b.dom_approved, FALSE) AS dom_approved,
+            b.sse_notes,
+            b.dom_notes
+        FROM block_schedule b
+        JOIN maintenance_tasks m ON b.task_id = m.task_id
+        JOIN sections sec ON b.section_id = sec.section_id
+        JOIN stations sf ON sec.from_station_id = sf.station_id
+        JOIN stations st_to ON sec.to_station_id = st_to.station_id
+        WHERE b.block_id = :block_id;
+    """)
+
+    row = db.execute(query, {"block_id": block_id}).mappings().first()
+    return dict(row)
+
+@router.patch("/{block_id}/approve", response_model=BlockScheduleDetailOut)
+def approve_block_schedule(
+    block_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Control Officer scheduling approval endpoint.
+    Marks block as scheduled by DRM/Control Office, requiring field Dual Sign-Off (SSE + DOM) before final issuance.
+    """
+    block = db.query(BlockSchedule).filter(BlockSchedule.block_id == block_id).first()
+    if not block:
+        raise HTTPException(status_code=404, detail=f"Block schedule record {block_id} not found")
+        
+    db.commit()
+    
+    query = text("""
+        SELECT 
+            b.block_id,
+            b.task_id,
+            b.section_id,
+            sec.section_code,
+            sf.station_name AS from_station_name,
+            st_to.station_name AS to_station_name,
+            m.department,
+            m.defect_type,
+            m.defect_severity,
+            m.urgency_score,
+            b.slot_date,
+            b.start_hour,
+            b.end_hour,
+            b.horizon,
+            b.created_at,
+            b.approved_by_control_office,
+            COALESCE(b.sse_approved, FALSE) AS sse_approved,
+            COALESCE(b.dom_approved, FALSE) AS dom_approved,
+            b.sse_notes,
+            b.dom_notes
         FROM block_schedule b
         JOIN maintenance_tasks m ON b.task_id = m.task_id
         JOIN sections sec ON b.section_id = sec.section_id

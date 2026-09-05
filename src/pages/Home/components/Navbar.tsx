@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, UserCheck } from 'lucide-react';
 import styles from '../Home.module.css';
@@ -40,11 +40,12 @@ const linkVariant = {
 const navLinks = [
   { to: '/', label: 'HOME', num: '01' },
   { to: '/dashboard', label: 'DASHBOARD', num: '02' },
-  { to: '/maintenance', label: 'MAINTENANCE', num: '03' },
-  { to: '/block-planning', label: 'PLANNING', num: '04' },
-  { to: '/optimization', label: 'OPTIMIZATION', num: '05' },
-  { to: '/traffic', label: 'TRAFFIC', num: '06' },
-  { to: '/assets', label: 'ASSETS', num: '07' },
+  { to: '/defects', label: 'DEFECTS', num: '03' },
+  { to: '/maintenance', label: 'MAINTENANCE', num: '04' },
+  { to: '/block-planning', label: 'PLANNING', num: '05' },
+  { to: '/optimization', label: 'OPTIMIZATION', num: '06' },
+  { to: '/traffic', label: 'TRAFFIC', num: '07' },
+  { to: '/assets', label: 'ASSETS', num: '08' },
   { to: '/reports', label: 'REPORTS', num: '09' },
 ];
 

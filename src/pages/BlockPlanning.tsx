@@ -3,14 +3,19 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  FileCheck,
+  X
 } from 'lucide-react';
 import { Navbar } from './Home/components/Navbar';
 import GradientBackground from '../components/GradientBackground';
 import { ScrollReveal } from '../components/motion/ScrollSystem';
 import styles from './BlockPlanning.module.css';
 import { PageEntryReveal } from '../components/PageEntryReveal';
-import { fetchBlockSchedule, approveBlockSchedule, type BlockScheduleDetail } from '../services/api';
+import { fetchBlockSchedule, signoffBlockSchedule, type BlockScheduleDetail } from '../services/api';
 
 interface PlanningBlock {
   id: string;
@@ -26,14 +31,10 @@ interface PlanningBlock {
   compatibleWith: string[]; // compatible block IDs
 }
 
-const initialBlocks: PlanningBlock[] = [];
-const mockRequests: any[] = [];
-
 import { useAuth } from '../context/AuthContext';
 
 export const BlockPlanning: React.FC = () => {
   const { user } = useAuth();
-  const isDRE = user?.role === 'DIVISIONAL_ENGINEER';
 
   const [blocks, setBlocks] = useState<PlanningBlock[]>([]);
   const [hoveredBlock, setHoveredBlock] = useState<PlanningBlock | null>(null);
@@ -44,7 +45,12 @@ export const BlockPlanning: React.FC = () => {
 
   // Live Backend API States
   const [liveBlocks, setLiveBlocks] = useState<BlockScheduleDetail[]>([]);
-  const [approvingBlockId, setApprovingBlockId] = useState<number | null>(null);
+
+  // Dual Safety Sign-Off Modal State
+  const [signoffModalBlock, setSignoffModalBlock] = useState<BlockScheduleDetail | null>(null);
+  const [signoffRole, setSignoffRole] = useState<'SSE' | 'DOM'>('SSE');
+  const [signoffNotes, setSignoffNotes] = useState('');
+  const [isSubmittingSignoff, setIsSubmittingSignoff] = useState(false);
 
   const loadLiveSchedule = async () => {
     try {
@@ -96,15 +102,39 @@ export const BlockPlanning: React.FC = () => {
     loadLiveSchedule();
   }, []);
 
-  const handleApproveBlock = async (blockId: number) => {
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleDualSignoff = async (approved: boolean) => {
+    if (!signoffModalBlock) return;
     try {
-      setApprovingBlockId(blockId);
-      await approveBlockSchedule(blockId);
+      setIsSubmittingSignoff(true);
+      await signoffBlockSchedule(signoffModalBlock.block_id, signoffRole, approved, signoffNotes);
+      setToastMessage(`${signoffRole} Safety Clearance ${approved ? 'GRANTED' : 'REVOKED'} for BLK-${signoffModalBlock.block_id}!`);
+      setSignoffModalBlock(null);
+      setSignoffNotes('');
       await loadLiveSchedule();
-    } catch (err) {
-      console.error('Failed to approve block schedule:', err);
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err: any) {
+      console.error('Dual signoff error:', err);
+      alert(`Sign-off Operation Failed: ${err.message || err}`);
     } finally {
-      setApprovingBlockId(null);
+      setIsSubmittingSignoff(false);
+    }
+  };
+
+  const handleDualSignoffDirect = async (block: BlockScheduleDetail, role: 'SSE' | 'DOM') => {
+    try {
+      setIsSubmittingSignoff(true);
+      const notes = role === 'SSE' ? 'SSE Ground Readiness Safety Clearance Granted' : 'DOM Traffic Stoppage Clearance Granted';
+      await signoffBlockSchedule(block.block_id, role, true, notes);
+      setToastMessage(`${role} Safety Clearance GRANTED for BLK-${block.block_id}!`);
+      await loadLiveSchedule();
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err: any) {
+      console.error('Direct signoff error:', err);
+      alert(`Sign-Off Operation Failed: ${err.message || err}`);
+    } finally {
+      setIsSubmittingSignoff(false);
     }
   };
 
@@ -175,6 +205,36 @@ export const BlockPlanning: React.FC = () => {
         <Navbar />
       </div>
 
+      {/* SUCCESS TOAST BANNER */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            style={{
+              position: 'fixed',
+              top: '80px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9999999,
+              background: '#059669',
+              color: '#ffffff',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '30px',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              boxShadow: '0 10px 30px rgba(5, 150, 105, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <CheckCircle2 size={18} /> {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className={styles.contentWrapper}>
         
         {/* S01: HEADER */}
@@ -227,7 +287,12 @@ export const BlockPlanning: React.FC = () => {
             <button 
               className={styles.optimizeBtn} 
               onClick={handleOptimize}
-              disabled={isOptimizing}
+              disabled={isOptimizing || user?.role !== 'OPERATIONS_CONTROLLER'}
+              title={user?.role !== 'OPERATIONS_CONTROLLER' ? 'CP-SAT Solver Execution is restricted to Operations Controller (IR-OFFICER-CTRL01)' : 'Run CP-SAT solver to co-locate line block windows'}
+              style={{
+                opacity: user?.role !== 'OPERATIONS_CONTROLLER' ? 0.5 : 1,
+                cursor: user?.role !== 'OPERATIONS_CONTROLLER' ? 'not-allowed' : 'pointer'
+              }}
             >
               <Sparkles size={13} className={isOptimizing ? 'animate-spin' : ''} />
               {isOptimizing ? 'Evaluating Paths...' : isOptimized ? 'Restore Original Plan' : 'Optimize Access Windows'}
@@ -478,40 +543,191 @@ export const BlockPlanning: React.FC = () => {
             </div>
 
             <div className={styles.requestRows}>
+              {/* Header Columns for perfect grid symmetry */}
+              <div 
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
+                  alignItems: 'center',
+                  padding: '0.75rem 1rem',
+                  borderBottom: '2px solid rgba(30, 27, 25, 0.1)',
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  color: '#8c827a',
+                  textTransform: 'uppercase',
+                  gap: '0.8rem'
+                }}
+              >
+                <span>ID</span>
+                <span>Corridor & Defect</span>
+                <span>Dept</span>
+                <span>Scheduled Window</span>
+                <span>Dur</span>
+                <span>Priority</span>
+                <span>Verification Badges</span>
+                <span style={{ textAlign: 'right' }}>Action Sign-Off</span>
+              </div>
+
               {liveBlocks.length > 0 ? (
-                liveBlocks.map((b) => (
-                  <div key={b.block_id} className={styles.requestRow}>
-                    <span className={styles.requestId}>BLK-{b.block_id}</span>
-                    <span className={styles.requestTask}>{b.defect_type} ({b.from_station_name}—{b.to_station_name})</span>
-                    <span className={styles.requestDept}>{b.department}</span>
-                    <span className={styles.requestWindow}>{b.slot_date} ({b.start_hour}:00 - {b.end_hour}:00)</span>
-                    <span className={styles.requestDuration}>{b.end_hour - b.start_hour}h</span>
-                    <span className={`${styles.priorityBadge} ${b.defect_severity >= 4 ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
-                      {b.urgency_score ? (b.urgency_score * 100).toFixed(0) : '85'} SCORE
-                    </span>
-                    {b.approved_by_control_office ? (
-                      <span className={styles.statusPending} style={{ color: 'var(--color-primary)' }}>APPROVED</span>
-                    ) : (
-                      <button
-                        onClick={() => handleApproveBlock(b.block_id)}
-                        disabled={approvingBlockId === b.block_id || !isDRE}
-                        title={!isDRE ? 'Requires Divisional Engineer access.' : undefined}
-                        className={styles.statusPending}
-                        style={{
-                          cursor: (approvingBlockId === b.block_id || !isDRE) ? 'not-allowed' : 'pointer',
-                          background: isDRE ? 'var(--color-primary)' : '#8a7e72',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '3px',
-                          padding: '2px 8px',
-                          opacity: (approvingBlockId === b.block_id || !isDRE) ? 0.6 : 1
-                        }}
-                      >
-                        {approvingBlockId === b.block_id ? 'APPROVING...' : 'APPROVE SIGN-OFF'}
-                      </button>
-                    )}
-                  </div>
-                ))
+                liveBlocks.map((b) => {
+                  const isSseDone = Boolean(b.sse_approved);
+                  const isDomDone = Boolean(b.dom_approved);
+                  const isFullyApproved = isSseDone && isDomDone;
+
+                  return (
+                    <div 
+                      key={b.block_id} 
+                      className={styles.requestRow} 
+                      style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
+                        alignItems: 'center',
+                        gap: '0.8rem', 
+                        padding: '0.9rem 1rem' 
+                      }}
+                    >
+                      <span className={styles.requestId}>BLK-{b.block_id}</span>
+                      
+                      <span className={styles.requestTask} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {b.defect_type} <span style={{ opacity: 0.6, fontWeight: 500 }}>({b.from_station_name}—{b.to_station_name})</span>
+                      </span>
+                      
+                      <span className={styles.requestDept}>{b.department}</span>
+                      
+                      <span className={styles.requestWindow}>{b.slot_date} ({b.start_hour}:00 - {b.end_hour}:00)</span>
+                      
+                      <span className={styles.requestDuration}>{b.end_hour - b.start_hour}h</span>
+                      
+                      <span className={`${styles.priorityBadge} ${b.defect_severity >= 4 ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
+                        {b.urgency_score ? (b.urgency_score * 100).toFixed(0) : '85'} SCORE
+                      </span>
+
+                      {/* Dual-Safety Status Badges (Clickable) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span 
+                          onClick={() => {
+                            setSignoffModalBlock(b);
+                            setSignoffRole('SSE');
+                          }}
+                          title="Click to open SSE Ground Readiness Verification modal"
+                          style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '4px',
+                            background: isSseDone ? 'rgba(16, 185, 129, 0.18)' : 'rgba(245, 158, 11, 0.15)',
+                            color: isSseDone ? '#059669' : '#d97706',
+                            border: isSseDone ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                            transition: 'transform 0.15s ease'
+                          }}
+                        >
+                          {isSseDone ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />} SSE
+                        </span>
+
+                        <span 
+                          onClick={() => {
+                            setSignoffModalBlock(b);
+                            setSignoffRole('DOM');
+                          }}
+                          title="Click to open DOM Traffic Clearance Verification modal"
+                          style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '4px',
+                            background: isDomDone ? 'rgba(16, 185, 129, 0.18)' : 'rgba(245, 158, 11, 0.15)',
+                            color: isDomDone ? '#059669' : '#d97706',
+                            border: isDomDone ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                            transition: 'transform 0.15s ease'
+                          }}
+                        >
+                          {isDomDone ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />} DOM
+                        </span>
+                      </div>
+
+                      {/* Action Sign-Off Button */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                        {isFullyApproved ? (
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <FileCheck size={14} /> ISSUED
+                          </span>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.3rem' }}>
+                            {!isSseDone && (
+                              <button
+                                type="button"
+                                disabled={isSubmittingSignoff}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDualSignoffDirect(b, 'SSE');
+                                }}
+                                title="Click to instantly grant SSE Ground Readiness Safety Clearance"
+                                style={{
+                                  background: '#bc473a',
+                                  color: '#fff',
+                                  border: 'none',
+                                  borderRadius: '5px',
+                                  padding: '0.35rem 0.65rem',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  cursor: isSubmittingSignoff ? 'not-allowed' : 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  whiteSpace: 'nowrap',
+                                  zIndex: 10,
+                                  opacity: isSubmittingSignoff ? 0.6 : 1
+                                }}
+                              >
+                                <ShieldCheck size={12} /> SSE
+                              </button>
+                            )}
+                            {!isDomDone && (
+                              <button
+                                type="button"
+                                disabled={isSubmittingSignoff}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDualSignoffDirect(b, 'DOM');
+                                }}
+                                title="Click to instantly grant DOM Traffic Stoppage Clearance"
+                                style={{
+                                  background: '#1e1b19',
+                                  color: '#fff',
+                                  border: 'none',
+                                  borderRadius: '5px',
+                                  padding: '0.35rem 0.65rem',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  cursor: isSubmittingSignoff ? 'not-allowed' : 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  whiteSpace: 'nowrap',
+                                  zIndex: 10,
+                                  opacity: isSubmittingSignoff ? 0.6 : 1
+                                }}
+                              >
+                                <ShieldCheck size={12} /> DOM
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 <div style={{ padding: '2rem', textAlign: 'center', color: '#665c54' }}>
                   No active line block requests in database.
@@ -574,6 +790,187 @@ export const BlockPlanning: React.FC = () => {
               <span>{hoveredBlock.asset}</span>
             </div>
           </motion.div>,
+          document.body
+        )}
+      </AnimatePresence>
+
+      {/* DUAL SAFETY SIGN-OFF MODAL */}
+      <AnimatePresence>
+        {signoffModalBlock && createPortal(
+          <div 
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setSignoffModalBlock(null);
+              }
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 999999,
+              background: 'rgba(15, 12, 10, 0.72)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.5rem',
+              pointerEvents: 'auto'
+            }}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              style={{
+                background: '#faf6f0',
+                border: '2px solid rgba(220, 210, 195, 0.95)',
+                borderRadius: '20px',
+                padding: '2.25rem',
+                maxWidth: '560px',
+                width: '100%',
+                maxHeight: '88vh',
+                overflowY: 'auto',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
+                color: '#1e1b19'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid rgba(220, 210, 195, 0.8)', paddingBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <ShieldCheck size={24} color="#bc473a" />
+                  <div>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                      DUAL-SAFETY VERIFICATION PROTOCOL
+                    </span>
+                    <h3 style={{ margin: 0, fontSize: '1.35rem', fontFamily: 'var(--font-display)', fontWeight: 400 }}>
+                      {signoffRole === 'SSE' ? 'Tier 1: SSE Ground Readiness Sign-Off' : 'Tier 2: DOM Traffic Stoppage Clearance'}
+                    </h3>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSignoffModalBlock(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b635b' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Block Details Brief */}
+              <div style={{ background: 'rgba(240, 230, 215, 0.5)', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <span>BLK-{signoffModalBlock.block_id} — {signoffModalBlock.defect_type}</span>
+                  <span style={{ color: '#bc473a' }}>{signoffModalBlock.department}</span>
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#5c544d' }}>
+                  Section: {signoffModalBlock.from_station_name} ↔ {signoffModalBlock.to_station_name} | Window: {signoffModalBlock.slot_date} ({signoffModalBlock.start_hour}:00 - {signoffModalBlock.end_hour}:00)
+                </div>
+              </div>
+
+              {/* Verification Checklist */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.5rem' }}>
+                  MANDATORY VERIFICATION CHECKLIST
+                </span>
+
+                {signoffRole === 'SSE' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>Track Tamping Machine / Tower Wagon on-site & fueled</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>Ground maintenance crew & safety supervisor briefed</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>Emergency detonators & red signal protection deployed</span>
+                    </label>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>Train timetable diversion & loop holding confirmed</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>No adjacent section deadlock / conflicting block</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="checkbox" defaultChecked disabled /> <span>Digital Caution Order issued to Section Controller</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Notes Input */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.35rem' }}>
+                  OFFICER REMARKS / FIELD NOTES
+                </label>
+                <textarea
+                  value={signoffNotes}
+                  onChange={(e) => setSignoffNotes(e.target.value)}
+                  placeholder={signoffRole === 'SSE' ? 'e.g., Track Machine CSM-901 ready at Kanpur yard.' : 'e.g., Train #12021 regulated at Unnao loop.'}
+                  style={{
+                    width: '100%',
+                    height: '70px',
+                    padding: '0.65rem 0.85rem',
+                    background: '#ffffff',
+                    border: '1px solid rgba(210, 195, 175, 0.8)',
+                    borderRadius: '10px',
+                    fontSize: '0.825rem',
+                    color: '#1e1b19',
+                    fontFamily: 'inherit',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <button
+                  onClick={() => handleDualSignoff(true)}
+                  disabled={isSubmittingSignoff}
+                  style={{
+                    flex: 1,
+                    background: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.75rem',
+                    fontSize: '0.825rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <CheckCircle2 size={16} /> {isSubmittingSignoff ? 'SIGNING OFF...' : `GRANT ${signoffRole} SAFETY CLEARANCE`}
+                </button>
+
+                <button
+                  onClick={() => handleDualSignoff(false)}
+                  disabled={isSubmittingSignoff}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#dc2626',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '10px',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.825rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  REJECT / REVOKE
+                </button>
+              </div>
+            </motion.div>
+          </div>,
           document.body
         )}
       </AnimatePresence>

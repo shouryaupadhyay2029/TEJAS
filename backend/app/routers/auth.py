@@ -76,7 +76,9 @@ def register_officer(
         "FIELD_OFFICER_ENG",
         "FIELD_OFFICER_ST",
         "FIELD_OFFICER_TRD",
-        "DIVISIONAL_ENGINEER"
+        "DIVISIONAL_ENGINEER",
+        "SSE_INSPECTOR",
+        "DOM_OPERATIONS"
     ]
     if user_in.role not in valid_roles:
         raise HTTPException(

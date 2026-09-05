@@ -117,8 +117,9 @@ class Predictor:
         )
         context_factor = max(0.0, min(1.0, context_factor))
         
-        # FINAL URGENCY
-        urgency = base + (ceiling - base) * context_factor
+        # FINAL URGENCY WITH DYNAMIC OVERDUE ESCALATION
+        overdue_boost = overdue_norm * 25.0  # Dynamic escalation up to +25 score points for overdue defects
+        urgency = base + (ceiling - base) * context_factor + overdue_boost
         urgency = max(0.0, min(100.0, urgency))
         
         return urgency

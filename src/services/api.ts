@@ -56,6 +56,10 @@ export interface BlockScheduleDetail {
   horizon: string;
   created_at?: string;
   approved_by_control_office: boolean;
+  sse_approved?: boolean;
+  dom_approved?: boolean;
+  sse_notes?: string;
+  dom_notes?: string;
 }
 
 export async function fetchMaintenanceTasks(params?: {
@@ -152,6 +156,24 @@ export async function approveBlockSchedule(blockId: number): Promise<BlockSchedu
   });
   if (!response.ok) {
     throw new Error(`Failed to approve block schedule: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function signoffBlockSchedule(blockId: number, role: 'SSE' | 'DOM', approved: boolean = true, notes?: string): Promise<BlockScheduleDetail> {
+  const token = sessionStorage.getItem('tejas_access_token') || localStorage.getItem('tejas_access_token') || localStorage.getItem('token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/block-schedule/${blockId}/signoff`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ role, approved, notes })
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to record ${role} sign-off: HTTP ${response.status}`);
   }
   return response.json();
 }

@@ -105,6 +105,7 @@ export const Dashboard: React.FC = () => {
   // States for interactive animations
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationComplete, setOptimizationComplete] = useState(false);
+  const [hoveredCoordDept, setHoveredCoordDept] = useState<string | null>(null);
 
   // Filter assets based on search query
   const filteredAssets = mockAssets.filter(

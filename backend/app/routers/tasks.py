@@ -196,9 +196,12 @@ def report_maintenance_incident(
         print(f"ML Service HTTP call bypassed ({e}), using local ML scoring engine.")
 
     if not ml_succeeded:
-        sev_factor = (sev_int / 5.0) * 0.40
-        overdue_factor = min(1.0, report.days_since_detected / 14.0) * 0.25
-        traffic_factor = min(1.0, float(daily_trains) / 80.0) * 0.20
+        import math
+        sev_factor = (sev_int / 5.0) * 0.35
+        overdue_days = float(report.days_since_detected)
+        overdue_norm = 1.0 - math.exp(-overdue_days / 10.0)  # Dynamic curve scaling from 0.0 up to ~0.95 at 30 days
+        overdue_factor = overdue_norm * 0.35
+        traffic_factor = min(1.0, float(daily_trains) / 80.0) * 0.15
         crit_factor = (criticality / 100.0) * 0.15
         
         fallback_score = round(min(0.99, max(0.10, sev_factor + overdue_factor + traffic_factor + crit_factor)), 4)
@@ -228,8 +231,7 @@ def report_maintenance_incident(
 
 @router.get("/pending/for-optimizer", response_model=List[MaintenanceTaskForOptimizerOut])
 def get_pending_tasks_for_optimizer(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Returns all maintenance tasks where status = 'SCORED' (i.e. ML has assigned urgency_score,

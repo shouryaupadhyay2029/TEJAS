@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  Activity, 
   Train, 
   TrendingUp, 
   Clock, 
   Search, 
   ShieldCheck, 
   Zap, 
-  MapPin 
+  MapPin,
+  X,
+  Radio
 } from 'lucide-react';
 import styles from './Traffic.module.css';
 import { Navbar } from './Home/components/Navbar';
@@ -64,9 +65,17 @@ interface TrainSearchResult {
   }>;
 }
 
+const PRESET_TRAINS = [
+  { num: '12301', name: 'Rajdhani Exp' },
+  { num: '22436', name: 'Vande Bharat' },
+  { num: '12451', name: 'Shram Shakti' },
+  { num: '12801', name: 'Purushottam Exp' }
+];
+
 export const Traffic: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
+  const [sectionSearch, setSectionSearch] = useState('');
+  const [selectedSection, setSelectedSection] = useState<SectionTraffic | null>(null);
 
   // 1. Fetch Summary
   const { data: summary, isLoading: loadingSummary } = useQuery<TrafficSummary>({
@@ -79,10 +88,10 @@ export const Traffic: React.FC = () => {
 
   // 2. Fetch Hourly Density Curve
   const { data: density = [], isLoading: loadingDensity } = useQuery<HourlyDensity[]>({
-    queryKey: ['hourlyDensity', selectedSectionId],
+    queryKey: ['hourlyDensity', selectedSection?.section_id],
     queryFn: async () => {
-      const url = selectedSectionId 
-        ? `/traffic/hourly-density?section_id=${selectedSectionId}`
+      const url = selectedSection?.section_id 
+        ? `/traffic/hourly-density?section_id=${selectedSection.section_id}`
         : `/traffic/hourly-density`;
       const res = await apiClient.get(url);
       return res.data;
@@ -109,6 +118,19 @@ export const Traffic: React.FC = () => {
     enabled: searchQuery.trim().length > 0
   });
 
+  // Filter sections by search query
+  const filteredSections = sectionsTraffic.filter(sec => {
+    if (!sectionSearch.trim()) return true;
+    const q = sectionSearch.toLowerCase();
+    return (
+      sec.section_code.toLowerCase().includes(q) ||
+      sec.from_station_code.toLowerCase().includes(q) ||
+      sec.from_station_name.toLowerCase().includes(q) ||
+      sec.to_station_code.toLowerCase().includes(q) ||
+      sec.to_station_name.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <PageEntryReveal>
       <div style={{ position: 'relative', minHeight: '100vh' }}>
@@ -131,13 +153,17 @@ export const Traffic: React.FC = () => {
         <div className={styles.container}>
           {/* Header */}
           <div className={styles.header}>
-            <h1 className={styles.title}>
-              <Activity size={32} color="#2563eb" />
-              Traffic & Timetable Intelligence
-            </h1>
-            <p className={styles.subtitle}>
-              Real-time Indian Railways train movement density, section congestion analytics, and off-peak track block window identification.
-            </p>
+            <div className={styles.titleGroup}>
+              <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
+              <h1 className={styles.title}>Traffic & Timetable Intelligence</h1>
+              <p className={styles.subtitle}>
+                Real-time Indian Railways train movement density, section congestion analytics, and off-peak track block window identification.
+              </p>
+            </div>
+            <div className={styles.headerBadge}>
+              <span className={styles.liveDot} />
+              <span>TIMETABLE TELEMETRY ACTIVE</span>
+            </div>
           </div>
 
           {/* KPI Highlights Grid */}
@@ -150,10 +176,10 @@ export const Traffic: React.FC = () => {
                 </div>
               </div>
               <div className={styles.kpiValue}>
-                {loadingSummary ? '...' : summary ? `${summary.total_sections} Sections` : '--'}
+                {loadingSummary ? '...' : summary ? `${summary.total_sections.toLocaleString()} Sections` : '--'}
               </div>
               <div className={styles.kpiSubtext}>
-                {summary ? `${summary.total_trains} active trains in database` : 'Loading database...'}
+                {summary ? `${summary.total_trains.toLocaleString()} active trains in database` : 'Loading database...'}
               </div>
             </div>
 
@@ -202,28 +228,26 @@ export const Traffic: React.FC = () => {
           {/* 24-Hour Network Traffic Visualizer */}
           <div className={styles.visualizerCard}>
             <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>
-                <Clock size={22} color="#7c3aed" />
-                24-Hour Hourly Train Movement Density
-                {selectedSectionId && (
-                  <button 
-                    onClick={() => setSelectedSectionId(null)}
-                    style={{
-                      marginLeft: '1rem',
-                      fontSize: '0.75rem',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '8px',
-                      background: '#1e1b19',
-                      color: '#fff',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: 600
-                    }}
-                  >
-                    Clear Section Filter
-                  </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <h2 className={styles.sectionTitle}>
+                  <Clock size={22} color="#7c3aed" />
+                  24-Hour Hourly Train Movement Density
+                </h2>
+                {selectedSection && (
+                  <div className={styles.filterBanner}>
+                    <Radio size={14} color="#10b981" />
+                    <span>Corridor: {selectedSection.from_station_code} → {selectedSection.to_station_code} ({selectedSection.daily_train_count} trains/day)</span>
+                    <button 
+                      onClick={() => setSelectedSection(null)}
+                      className={styles.resetBtn}
+                      title="Reset to network average"
+                    >
+                      <X size={12} /> Reset Filter
+                    </button>
+                  </div>
                 )}
-              </h2>
+              </div>
+
               <div className={styles.legend}>
                 <div className={styles.legendItem}>
                   <div className={styles.dotPeak}></div>
@@ -274,9 +298,22 @@ export const Traffic: React.FC = () => {
                   <Zap size={20} color="#d97706" />
                   High-Density Railway Corridors
                 </h2>
-                <span style={{ fontSize: '0.8rem', color: '#6b635b', fontWeight: 600 }}>
-                  {sectionsTraffic.length.toLocaleString()} Monitored Sections
+                <span style={{ fontSize: '0.8rem', color: '#6b635b', fontWeight: 700 }}>
+                  {filteredSections.length.toLocaleString()} Sections
                 </span>
+              </div>
+
+              <div className={styles.tableFilterBar}>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <Search size={16} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#8c8278' }} />
+                  <input
+                    type="text"
+                    className={styles.tableSearchInput}
+                    placeholder="Search corridor station code or name (e.g., NDLS, CNB, Kanpur)..."
+                    value={sectionSearch}
+                    onChange={(e) => setSectionSearch(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className={styles.tableWrapper}>
@@ -286,48 +323,64 @@ export const Traffic: React.FC = () => {
                       <th>Section Code</th>
                       <th>Corridor Stations</th>
                       <th>Daily Trains</th>
-                      <th>Criticality (GMT)</th>
+                      <th>Criticality (% Density)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loadingSections ? (
                       <tr>
-                        <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: '#6b635b' }}>
+                        <td colSpan={4} style={{ textAlign: 'center', padding: '2.5rem', color: '#6b635b' }}>
                           Loading Section Density Data...
                         </td>
                       </tr>
+                    ) : filteredSections.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: '#786f68' }}>
+                          No sections match "{sectionSearch}".
+                        </td>
+                      </tr>
                     ) : (
-                      sectionsTraffic.slice(0, 10).map((sec) => (
-                        <tr 
-                          key={sec.section_id}
-                          onClick={() => setSelectedSectionId(sec.section_id)}
-                          style={{
-                            cursor: 'pointer',
-                            background: selectedSectionId === sec.section_id ? 'rgba(37, 99, 235, 0.12)' : undefined
-                          }}
-                        >
-                          <td>
-                            <strong style={{ color: '#1e1b19' }}>{sec.section_code}</strong>
-                          </td>
-                          <td>
-                            {sec.from_station_code} → {sec.to_station_code}
-                            <div style={{ fontSize: '0.75rem', color: '#786f68' }}>
-                              {sec.from_station_name} to {sec.to_station_name}
-                            </div>
-                          </td>
-                          <td>
-                            <strong>{sec.daily_train_count}</strong> trains
-                          </td>
-                          <td>
-                            <span className={`
-                              ${styles.badge} 
-                              ${sec.criticality_score >= 0.7 ? styles.badgeHigh : sec.criticality_score >= 0.4 ? styles.badgeMed : styles.badgeLow}
-                            `}>
-                              {(Number(sec.criticality_score) * 100).toFixed(1)}% Density
-                            </span>
-                          </td>
-                        </tr>
-                      ))
+                      filteredSections.slice(0, 12).map((sec) => {
+                        const isSelected = selectedSection?.section_id === sec.section_id;
+                        const critPct = Number(sec.criticality_score) * 100;
+                        const barColor = critPct >= 70 ? '#ef4444' : critPct >= 40 ? '#f59e0b' : '#10b981';
+
+                        return (
+                          <tr 
+                            key={sec.section_id}
+                            onClick={() => setSelectedSection(sec)}
+                            className={isSelected ? styles.activeRow : undefined}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td>
+                              <strong style={{ color: '#1e1b19', fontFamily: 'monospace' }}>{sec.section_code}</strong>
+                            </td>
+                            <td>
+                              <strong style={{ color: '#1e1b19' }}>{sec.from_station_code} → {sec.to_station_code}</strong>
+                              <div style={{ fontSize: '0.75rem', color: '#786f68', marginTop: '2px' }}>
+                                {sec.from_station_name} to {sec.to_station_name}
+                              </div>
+                            </td>
+                            <td>
+                              <strong>{sec.daily_train_count}</strong> trains/day
+                            </td>
+                            <td>
+                              <span className={`
+                                ${styles.badge} 
+                                ${critPct >= 70 ? styles.badgeHigh : critPct >= 40 ? styles.badgeMed : styles.badgeLow}
+                              `}>
+                                {critPct.toFixed(1)}% Density
+                              </span>
+                              <div className={styles.densityTrack}>
+                                <div 
+                                  className={styles.densityFill} 
+                                  style={{ width: `${Math.min(100, Math.max(8, critPct))}%`, background: barColor }} 
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -343,6 +396,19 @@ export const Traffic: React.FC = () => {
                 </h2>
               </div>
 
+              {/* Preset Quick Search Chips */}
+              <div className={styles.presetChips}>
+                {PRESET_TRAINS.map((p) => (
+                  <button 
+                    key={p.num} 
+                    className={styles.presetChip}
+                    onClick={() => setSearchQuery(p.num)}
+                  >
+                    #{p.num} {p.name}
+                  </button>
+                ))}
+              </div>
+
               <div className={styles.searchBox}>
                 <Search className={styles.searchIcon} size={18} />
                 <input 
@@ -354,8 +420,12 @@ export const Traffic: React.FC = () => {
                 />
               </div>
 
-              {trainResults.length === 0 ? (
-                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#786f68', fontSize: '0.9rem' }}>
+              {searchQuery.trim().length === 0 ? (
+                <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: '#786f68', fontSize: '0.875rem', background: 'rgba(250, 246, 238, 0.5)', borderRadius: '12px', border: '1px dashed rgba(210,195,175,0.6)' }}>
+                  Type a train number (e.g. <strong>12301</strong>) or click a quick preset above to view full station schedules.
+                </div>
+              ) : trainResults.length === 0 ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#786f68', fontSize: '0.875rem' }}>
                   No trains found matching "{searchQuery}". Try searching "12301" or "Rajdhani".
                 </div>
               ) : (

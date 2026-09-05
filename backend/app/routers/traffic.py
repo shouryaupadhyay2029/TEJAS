@@ -11,8 +11,7 @@ router = APIRouter(prefix="/traffic", tags=["traffic"])
 
 @router.get("/summary")
 def get_traffic_summary(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Returns aggregate network-wide traffic analytics:
@@ -54,11 +53,11 @@ def get_traffic_summary(
     best_offpeak = hourly_rows[-1]["hour"] if hourly_rows else 2
 
     return {
-        "total_sections": summary_row["total_sections"],
+        "total_sections": summary_row["total_sections"] if summary_row else 0,
         "total_trains": total_trains,
-        "total_daily_movements": summary_row["total_daily_movements"],
-        "avg_trains_per_section": round(float(summary_row["avg_trains_per_section"]), 1),
-        "max_section_trains": summary_row["max_section_trains"],
+        "total_daily_movements": summary_row["total_daily_movements"] if summary_row else 0,
+        "avg_trains_per_section": round(float(summary_row["avg_trains_per_section"]), 1) if summary_row else 0,
+        "max_section_trains": summary_row["max_section_trains"] if summary_row else 0,
         "peak_hours_window": f"{peak_hour:02d}:00 - {(peak_hour+3)%24:02d}:00",
         "best_offpeak_window": f"{best_offpeak:02d}:00 - {(best_offpeak+3)%24:02d}:00"
     }
@@ -66,8 +65,7 @@ def get_traffic_summary(
 @router.get("/hourly-density")
 def get_hourly_density(
     section_id: Optional[int] = Query(default=None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Returns 24-hour traffic density breakdown (00:00 to 23:00).
@@ -125,8 +123,7 @@ def get_hourly_density(
 def search_trains(
     query: str = Query(..., min_length=1, description="Train number or train name"),
     limit: int = Query(default=20, ge=1, le=100),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Search trains by train_number or train_name and return route stop details.

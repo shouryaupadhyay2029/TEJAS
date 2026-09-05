@@ -141,6 +141,10 @@ class BlockSchedule(Base):
     horizon = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     approved_by_control_office = Column(Boolean, nullable=False, default=False)
+    sse_approved = Column(Boolean, nullable=False, default=False)
+    dom_approved = Column(Boolean, nullable=False, default=False)
+    sse_notes = Column(String, nullable=True)
+    dom_notes = Column(String, nullable=True)
 
     __table_args__ = (
         CheckConstraint("horizon IN ('WEEKLY','MONTHLY')", name="chk_block_horizon"),
@@ -164,7 +168,7 @@ class User(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "role IN ('OPERATIONS_CONTROLLER','FIELD_OFFICER_ENG','FIELD_OFFICER_ST','FIELD_OFFICER_TRD','DIVISIONAL_ENGINEER')",
+            "role IN ('OPERATIONS_CONTROLLER','FIELD_OFFICER_ENG','FIELD_OFFICER_ST','FIELD_OFFICER_TRD','DIVISIONAL_ENGINEER','SSE_INSPECTOR','DOM_OPERATIONS')",
             name="chk_user_role"
         ),
     )
