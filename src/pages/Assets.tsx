@@ -214,6 +214,10 @@ export const Assets: React.FC = () => {
             if (idx % 3 === 1) dept = 'S&T';
             else if (idx % 3 === 2) dept = 'Traction';
 
+            let criticalityClass: 'Class A' | 'Class B' | 'Class C' = 'Class C';
+            if (critScore >= 0.70) criticalityClass = 'Class A';
+            else if (critScore >= 0.40) criticalityClass = 'Class B';
+
             // Filter real matching tasks & scheduled blocks for this section
             const secTasks = tasksData.filter(t => t.section_id === sec.section_id);
             const secBlocks = blocksData.filter(b => b.section_id === sec.section_id);
@@ -295,7 +299,7 @@ export const Assets: React.FC = () => {
               availability: Math.min(99.9, Math.round((1 - critScore * 0.1) * 1000) / 10),
               lastInspection: '01 SEP 2026',
               nextAction: secTasks.length > 0 ? `Active defect reported: ${secTasks[0].defect_type}` : `${sec.daily_train_count} trains/day traffic density`,
-              criticality: critScore >= 0.70 ? 'Class A' : critScore >= 0.40 ? 'Class B' : 'Class C',
+              criticality: criticalityClass,
               activeDefectsCount: secTasks.length > 0 ? secTasks.length : (critScore >= 0.70 ? 2 : 0),
               serviceHistory: serviceHist,
               defectHistory: defectHist,
