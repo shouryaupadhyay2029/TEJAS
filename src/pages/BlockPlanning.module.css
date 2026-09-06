@@ -834,3 +834,17 @@
   border-color: #bc473a;
   color: #faf6f0;
 }
+
+/* Official Print Styles for Line Block Sanction Certificate */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .navbarRelativeWrap,
+  .grainTexture,
+  .contentWrapper,
+  .backToTop {
+    display: none !important;
+  }
+}

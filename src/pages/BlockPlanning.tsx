@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   AlertTriangle,
   Sparkles,
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
   FileCheck,
-  X
+  X,
+  Printer,
+  QrCode,
+  Award,
+  FileText
 } from 'lucide-react';
 import { Navbar } from './Home/components/Navbar';
 import GradientBackground from '../components/GradientBackground';
@@ -48,6 +52,7 @@ export const BlockPlanning: React.FC = () => {
 
   // Dual Safety Sign-Off Modal State
   const [signoffModalBlock, setSignoffModalBlock] = useState<BlockScheduleDetail | null>(null);
+  const [memoModalBlock, setMemoModalBlock] = useState<BlockScheduleDetail | null>(null);
   const [signoffRole, setSignoffRole] = useState<'SSE' | 'DOM'>('SSE');
   const [signoffNotes, setSignoffNotes] = useState('');
   const [isSubmittingSignoff, setIsSubmittingSignoff] = useState(false);
@@ -199,7 +204,7 @@ export const BlockPlanning: React.FC = () => {
         style={{ position: 'fixed', inset: 0, zIndex: -1 }}
       />
       <div className={styles.grainTexture} />
-      
+
       {/* GLOBAL NAVBAR */}
       <div className={styles.navbarRelativeWrap}>
         <Navbar />
@@ -236,7 +241,7 @@ export const BlockPlanning: React.FC = () => {
       </AnimatePresence>
 
       <div className={styles.contentWrapper}>
-        
+
         {/* S01: HEADER */}
         <ScrollReveal>
           <div className={styles.headerWrap}>
@@ -244,7 +249,7 @@ export const BlockPlanning: React.FC = () => {
               <PageEntryReveal delay={0.15} duration={1.1}>
                 <span className={`${styles.eyebrow} reveal-target`}>OPERATIONS CONSOLE</span>
               </PageEntryReveal>
-              
+
               <div style={{ margin: '4px 0' }}>
                 <PageEntryReveal delay={0.35} duration={1.25}>
                   <h1 className={`${styles.title} reveal-target`}>Block Planning</h1>
@@ -284,8 +289,8 @@ export const BlockPlanning: React.FC = () => {
                 <option value="TRD">TRACTION</option>
               </select>
             </div>
-            <button 
-              className={styles.optimizeBtn} 
+            <button
+              className={styles.optimizeBtn}
               onClick={handleOptimize}
               disabled={isOptimizing || user?.role !== 'OPERATIONS_CONTROLLER'}
               title={user?.role !== 'OPERATIONS_CONTROLLER' ? 'CP-SAT Solver Execution is restricted to Operations Controller (IR-OFFICER-CTRL01)' : 'Run CP-SAT solver to co-locate line block windows'}
@@ -345,7 +350,7 @@ export const BlockPlanning: React.FC = () => {
         <ScrollReveal>
           <div className={styles.timelineSection}>
             <div className={styles.timelineCard}>
-              
+
               {/* Timeline Header Time slots */}
               <div className={styles.timeHeader}>
                 <div className={styles.laneLabelHeader}>
@@ -360,7 +365,7 @@ export const BlockPlanning: React.FC = () => {
 
               {/* Lanes */}
               <div className={styles.lanesContainer}>
-                
+
                 {/* Vertical Guidelines */}
                 <div className={styles.verticalGuides}>
                   {Array.from({ length: 9 }).map((_, i) => (
@@ -372,29 +377,25 @@ export const BlockPlanning: React.FC = () => {
                 {(['Engineering', 'S&T', 'Traction'] as const).map((dept) => (
                   <div key={dept} className={styles.lane}>
                     <div className={styles.laneLabel}>{dept.toUpperCase()}</div>
-                    
+
                     <div className={styles.laneContent}>
                       {/* Render Blocks inside lane */}
                       {blocks
                         .filter((b) => b.dept === dept)
                         .map((b) => {
                           const highlight = getHighlightState(b);
-                          
+
                           // Pre-optimized Conflict indicator overlay
                           const hasOverlapConflict = !isOptimized && (b.id === 'ENG-204' || b.id === 'SNT-409');
-                          
+
                           return (
                             <motion.div
                               key={b.id}
-                              className={`${styles.block} ${
-                                highlight === 'hovered' ? styles.blockHovered : ''
-                              } ${
-                                highlight === 'dimmed' ? styles.blockDimmed : ''
-                              } ${
-                                highlight === 'compatible' ? styles.blockCoordinated : ''
-                              } ${
-                                hasOverlapConflict ? styles.blockConflict : ''
-                              }`}
+                              className={`${styles.block} ${highlight === 'hovered' ? styles.blockHovered : ''
+                                } ${highlight === 'dimmed' ? styles.blockDimmed : ''
+                                } ${highlight === 'compatible' ? styles.blockCoordinated : ''
+                                } ${hasOverlapConflict ? styles.blockConflict : ''
+                                }`}
                               style={{
                                 left: `${b.leftPercent}%`,
                                 width: `${b.widthPercent}%`,
@@ -406,7 +407,7 @@ export const BlockPlanning: React.FC = () => {
                             >
                               <span className={styles.blockTitle}>{b.task}</span>
                               <span className={styles.blockId}>{b.id} ({b.duration})</span>
-                              
+
                               {hasOverlapConflict && b.id === 'SNT-409' && (
                                 <div className={styles.conflictBadge}>
                                   <AlertTriangle size={7} style={{ marginRight: 2, display: 'inline' }} />
@@ -466,7 +467,7 @@ export const BlockPlanning: React.FC = () => {
         {/* S04: OPTIMIZATION RESULTS */}
         <ScrollReveal>
           <div className={styles.optimizationGrid}>
-            
+
             {/* Left Card: Current Plan Stats */}
             <div className={styles.optiCard}>
               <div className={styles.optiCardHeader}>
@@ -511,10 +512,10 @@ export const BlockPlanning: React.FC = () => {
                 <span className={styles.optiCardLabel} style={{ color: '#d2b48c' }}>TEJAS INTELLIGENCE</span>
                 <h3 className={`${styles.optiCardTitle} ${styles.savedCardTitle}`}>Coordinated Block Window</h3>
               </div>
-              
+
               <div className={styles.optiStats}>
                 <span className={styles.savedDesc}>DOWNTIME SAVED</span>
-                <motion.div 
+                <motion.div
                   className={styles.savedHighlight}
                   animate={{ scale: isOptimized ? [1, 1.05, 1] : 1 }}
                   transition={{ duration: 0.4 }}
@@ -544,7 +545,7 @@ export const BlockPlanning: React.FC = () => {
 
             <div className={styles.requestRows}>
               {/* Header Columns for perfect grid symmetry */}
-              <div 
+              <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
@@ -576,36 +577,36 @@ export const BlockPlanning: React.FC = () => {
                   const isFullyApproved = isSseDone && isDomDone;
 
                   return (
-                    <div 
-                      key={b.block_id} 
-                      className={styles.requestRow} 
-                      style={{ 
+                    <div
+                      key={b.block_id}
+                      className={styles.requestRow}
+                      style={{
                         display: 'grid',
                         gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
                         alignItems: 'center',
-                        gap: '0.8rem', 
-                        padding: '0.9rem 1rem' 
+                        gap: '0.8rem',
+                        padding: '0.9rem 1rem'
                       }}
                     >
                       <span className={styles.requestId}>BLK-{b.block_id}</span>
-                      
+
                       <span className={styles.requestTask} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {b.defect_type} <span style={{ opacity: 0.6, fontWeight: 500 }}>({b.from_station_name}—{b.to_station_name})</span>
                       </span>
-                      
+
                       <span className={styles.requestDept}>{b.department}</span>
-                      
+
                       <span className={styles.requestWindow}>{b.slot_date} ({b.start_hour}:00 - {b.end_hour}:00)</span>
-                      
+
                       <span className={styles.requestDuration}>{b.end_hour - b.start_hour}h</span>
-                      
+
                       <span className={`${styles.priorityBadge} ${b.defect_severity >= 4 ? styles.priorityHIGH : styles.priorityMEDIUM}`}>
                         {b.urgency_score ? (b.urgency_score * 100).toFixed(0) : '85'} SCORE
                       </span>
 
                       {/* Dual-Safety Status Badges (Clickable) */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <span 
+                        <span
                           onClick={() => {
                             setSignoffModalBlock(b);
                             setSignoffRole('SSE');
@@ -629,7 +630,7 @@ export const BlockPlanning: React.FC = () => {
                           {isSseDone ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />} SSE
                         </span>
 
-                        <span 
+                        <span
                           onClick={() => {
                             setSignoffModalBlock(b);
                             setSignoffRole('DOM');
@@ -657,9 +658,36 @@ export const BlockPlanning: React.FC = () => {
                       {/* Action Sign-Off Button */}
                       <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                         {isFullyApproved ? (
-                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <FileCheck size={14} /> ISSUED
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <FileCheck size={14} /> ISSUED
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setMemoModalBlock(b);
+                              }}
+                              title="Click to view/print official Indian Railways Line Block Sanction Memo"
+                              style={{
+                                background: 'rgba(16, 185, 129, 0.12)',
+                                color: '#059669',
+                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                borderRadius: '5px',
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              <FileText size={11} /> SANCTION MEMO
+                            </button>
+                          </div>
                         ) : (
                           <div style={{ display: 'flex', gap: '0.3rem' }}>
                             {!isSseDone && (
@@ -755,8 +783,8 @@ export const BlockPlanning: React.FC = () => {
               </div>
               <div className={styles.summaryItem}>
                 <div className={styles.summaryVal}>
-                  {liveBlocks.length > 0 
-                    ? `${(Math.min(98.5, 60 + liveBlocks.length * 9.5)).toFixed(1)}%` 
+                  {liveBlocks.length > 0
+                    ? `${(Math.min(98.5, 60 + liveBlocks.length * 9.5)).toFixed(1)}%`
                     : '0.0%'}
                 </div>
                 <div className={styles.summaryLabel}>Block Utilization</div>
@@ -797,7 +825,7 @@ export const BlockPlanning: React.FC = () => {
       {/* DUAL SAFETY SIGN-OFF MODAL */}
       <AnimatePresence>
         {signoffModalBlock && createPortal(
-          <div 
+          <div
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setSignoffModalBlock(null);
@@ -852,7 +880,7 @@ export const BlockPlanning: React.FC = () => {
                     </h3>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setSignoffModalBlock(null)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b635b' }}
                 >
@@ -967,6 +995,191 @@ export const BlockPlanning: React.FC = () => {
                   }}
                 >
                   REJECT / REVOKE
+                </button>
+              </div>
+            </motion.div>
+          </div>,
+          document.body
+        )}
+      </AnimatePresence>
+
+      {/* OFFICIAL INDIAN RAILWAYS SANCTION MEMO MODAL */}
+      <AnimatePresence>
+        {memoModalBlock && createPortal(
+          <div 
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setMemoModalBlock(null);
+              }
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 999999,
+              background: 'rgba(15, 12, 10, 0.78)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.5rem',
+              pointerEvents: 'auto'
+            }}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.9, y: 25 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 25 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              style={{
+                background: '#ffffff',
+                border: '3px double #bc473a',
+                borderRadius: '16px',
+                padding: '2.25rem',
+                maxWidth: '640px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.4)',
+                color: '#1e1b19'
+              }}
+            >
+              {/* Official Railways Header */}
+              <div style={{ textAlign: 'center', borderBottom: '2px solid #bc473a', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+                  <Award size={28} color="#bc473a" />
+                  <span style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '0.1em', color: '#bc473a', textTransform: 'uppercase' }}>
+                    INDIAN RAILWAYS
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#5c544d', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                  DIVISIONAL OPERATING CONTROL ROOM — LINE BLOCK SANCTION MEMO
+                </div>
+                <div style={{ fontSize: '0.68rem', color: '#8c827a', marginTop: '2px', fontFamily: 'monospace' }}>
+                  SANCTION REF: IR-SANCTION-2026-BLK{memoModalBlock.block_id} | DATE: {memoModalBlock.slot_date}
+                </div>
+              </div>
+
+              {/* Certificate Body Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#faf8f5', padding: '1.25rem', borderRadius: '10px', border: '1px solid #e8e2d8', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                    SECTION &amp; CORRIDOR
+                  </span>
+                  <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock.from_station_name} ↔ {memoModalBlock.to_station_name}</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Section ID: {memoModalBlock.section_code || memoModalBlock.section_id}</div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                    DEPARTMENT &amp; WORK SCOPE
+                  </span>
+                  <strong style={{ color: '#bc473a', fontSize: '0.95rem' }}>{memoModalBlock.department}</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>{memoModalBlock.defect_type}</div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                    SANCTIONED ACCESS WINDOW
+                  </span>
+                  <strong style={{ color: '#10b981', fontSize: '0.95rem' }}>{memoModalBlock.start_hour}:00 HRS — {memoModalBlock.end_hour}:00 HRS</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Duration: {memoModalBlock.end_hour - memoModalBlock.start_hour} Hours</div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                    URGENCY PRIORITY SCORE
+                  </span>
+                  <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock.urgency_score ? (memoModalBlock.urgency_score * 100).toFixed(0) : '85'}/100 SCORE</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Status: CP-SAT Co-located</div>
+                </div>
+              </div>
+
+              {/* Dual Digital Signatures Box */}
+              <div style={{ marginBottom: '1.25rem', border: '1px dashed #bc473a', padding: '1rem', borderRadius: '10px', background: 'rgba(188, 71, 58, 0.03)' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem' }}>
+                  DUAL-SAFETY DIGITAL CLEARANCE VERIFICATION
+                </span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.8rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                    <CheckCircle2 size={16} color="#10b981" />
+                    <div>
+                      <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 1: SSE Ground Clearance</div>
+                      <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-SSE01</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                    <CheckCircle2 size={16} color="#10b981" />
+                    <div>
+                      <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 2: DOM Traffic Clearance</div>
+                      <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-DOM01</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Stamp & QR Code */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e8e2d8', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ width: '52px', height: '52px', background: '#1e1b19', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                    <QrCode size={34} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981', display: 'block' }}>✔ DIGITALLY VERIFIED &amp; SANCTIONED</span>
+                    <span style={{ fontSize: '0.68rem', color: '#8c827a' }}>Scan QR to audit cryptographic block ledger</span>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#8c827a', textTransform: 'uppercase' }}>ISSUING AUTHORITY</div>
+                  <strong style={{ fontSize: '0.82rem', color: '#1e1b19' }}>DIVISIONAL OPERATING CONTROL</strong>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    flex: 1,
+                    background: '#bc473a',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem',
+                    fontSize: '0.825rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Printer size={16} /> PRINT / EXPORT OFFICIAL SANCTION MEMO
+                </button>
+
+                <button
+                  onClick={() => setMemoModalBlock(null)}
+                  style={{
+                    background: 'rgba(30, 27, 25, 0.08)',
+                    color: '#1e1b19',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1.25rem',
+                    fontSize: '0.825rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  CLOSE
                 </button>
               </div>
             </motion.div>
