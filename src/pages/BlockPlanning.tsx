@@ -548,7 +548,7 @@ export const BlockPlanning: React.FC = () => {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
+                  gridTemplateColumns: '80px 2fr 1.1fr 1.5fr 50px 85px 120px 220px',
                   alignItems: 'center',
                   padding: '0.75rem 1rem',
                   borderBottom: '2px solid rgba(30, 27, 25, 0.1)',
@@ -566,7 +566,7 @@ export const BlockPlanning: React.FC = () => {
                 <span>Scheduled Window</span>
                 <span>Dur</span>
                 <span>Priority</span>
-                <span>Verification Badges</span>
+                <span>Verification</span>
                 <span style={{ textAlign: 'right' }}>Action Sign-Off</span>
               </div>
 
@@ -579,13 +579,14 @@ export const BlockPlanning: React.FC = () => {
                   return (
                     <div
                       key={b.block_id}
-                      className={styles.requestRow}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '80px 2.2fr 1.1fr 1.6fr 50px 90px 160px 140px',
+                        gridTemplateColumns: '80px 2fr 1.1fr 1.5fr 50px 85px 120px 220px',
                         alignItems: 'center',
                         gap: '0.8rem',
-                        padding: '0.9rem 1rem'
+                        padding: '0.9rem 1rem',
+                        borderBottom: '1px solid rgba(30, 27, 25, 0.06)',
+                        background: 'rgba(255, 255, 255, 0.4)'
                       }}
                     >
                       <span className={styles.requestId}>BLK-{b.block_id}</span>
@@ -671,21 +672,35 @@ export const BlockPlanning: React.FC = () => {
                               }}
                               title="Click to view/print official Indian Railways Line Block Sanction Memo"
                               style={{
-                                background: 'rgba(16, 185, 129, 0.12)',
-                                color: '#059669',
-                                border: '1px solid rgba(16, 185, 129, 0.4)',
-                                borderRadius: '5px',
-                                padding: '0.25rem 0.5rem',
-                                fontSize: '0.68rem',
+                                background: '#059669',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '0.35rem 0.75rem',
+                                fontSize: '0.72rem',
                                 fontWeight: 800,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                whiteSpace: 'nowrap'
+                                gap: '5px',
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.35)',
+                                transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+                                position: 'relative',
+                                zIndex: 10
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#047857';
+                                e.currentTarget.style.transform = 'translateY(-1px) scale(1.03)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.45)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#059669';
+                                e.currentTarget.style.transform = 'none';
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.35)';
                               }}
                             >
-                              <FileText size={11} /> SANCTION MEMO
+                              <FileText size={13} /> SANCTION MEMO
                             </button>
                           </div>
                         ) : (
@@ -823,370 +838,391 @@ export const BlockPlanning: React.FC = () => {
       </AnimatePresence>
 
       {/* DUAL SAFETY SIGN-OFF MODAL */}
-      <AnimatePresence>
-        {signoffModalBlock && createPortal(
-          <div
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setSignoffModalBlock(null);
-              }
-            }}
+      {signoffModalBlock && createPortal(
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSignoffModalBlock(null);
+            }
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 999999,
+            background: 'rgba(15, 12, 10, 0.72)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            pointerEvents: 'auto'
+          }}
+        >
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 999999,
-              background: 'rgba(15, 12, 10, 0.72)',
-              backdropFilter: 'blur(10px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1.5rem',
-              pointerEvents: 'auto'
+              background: '#faf6f0',
+              border: '2px solid rgba(220, 210, 195, 0.95)',
+              borderRadius: '20px',
+              padding: '2.25rem',
+              maxWidth: '560px',
+              width: '100%',
+              maxHeight: '88vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
+              color: '#1e1b19'
             }}
           >
-            <motion.div
-              onClick={(e) => e.stopPropagation()}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              style={{
-                background: '#faf6f0',
-                border: '2px solid rgba(220, 210, 195, 0.95)',
-                borderRadius: '20px',
-                padding: '2.25rem',
-                maxWidth: '560px',
-                width: '100%',
-                maxHeight: '88vh',
-                overflowY: 'auto',
-                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
-                color: '#1e1b19'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid rgba(220, 210, 195, 0.8)', paddingBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <ShieldCheck size={24} color="#bc473a" />
-                  <div>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                      DUAL-SAFETY VERIFICATION PROTOCOL
-                    </span>
-                    <h3 style={{ margin: 0, fontSize: '1.35rem', fontFamily: 'var(--font-display)', fontWeight: 400 }}>
-                      {signoffRole === 'SSE' ? 'Tier 1: SSE Ground Readiness Sign-Off' : 'Tier 2: DOM Traffic Stoppage Clearance'}
-                    </h3>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSignoffModalBlock(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b635b' }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Block Details Brief */}
-              <div style={{ background: 'rgba(240, 230, 215, 0.5)', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.35rem' }}>
-                  <span>BLK-{signoffModalBlock.block_id} — {signoffModalBlock.defect_type}</span>
-                  <span style={{ color: '#bc473a' }}>{signoffModalBlock.department}</span>
-                </div>
-                <div style={{ fontSize: '0.78rem', color: '#5c544d' }}>
-                  Section: {signoffModalBlock.from_station_name} ↔ {signoffModalBlock.to_station_name} | Window: {signoffModalBlock.slot_date} ({signoffModalBlock.start_hour}:00 - {signoffModalBlock.end_hour}:00)
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', borderBottom: '1px solid rgba(220, 210, 195, 0.8)', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <ShieldCheck size={24} color="#bc473a" />
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                    DUAL-SAFETY VERIFICATION PROTOCOL
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.35rem', fontFamily: 'var(--font-display)', fontWeight: 400 }}>
+                    {signoffRole === 'SSE' ? 'Tier 1: SSE Ground Readiness Sign-Off' : 'Tier 2: DOM Traffic Stoppage Clearance'}
+                  </h3>
                 </div>
               </div>
+              <button
+                onClick={() => setSignoffModalBlock(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b635b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              {/* Verification Checklist */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.5rem' }}>
-                  MANDATORY VERIFICATION CHECKLIST
-                </span>
-
-                {signoffRole === 'SSE' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>Track Tamping Machine / Tower Wagon on-site & fueled</span>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>Ground maintenance crew & safety supervisor briefed</span>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>Emergency detonators & red signal protection deployed</span>
-                    </label>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>Train timetable diversion & loop holding confirmed</span>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>No adjacent section deadlock / conflicting block</span>
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="checkbox" defaultChecked disabled /> <span>Digital Caution Order issued to Section Controller</span>
-                    </label>
-                  </div>
-                )}
+            {/* Block Details Brief */}
+            <div style={{ background: 'rgba(240, 230, 215, 0.5)', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.35rem' }}>
+                <span>BLK-{signoffModalBlock.block_id} — {signoffModalBlock.defect_type}</span>
+                <span style={{ color: '#bc473a' }}>{signoffModalBlock.department}</span>
               </div>
-
-              {/* Notes Input */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.35rem' }}>
-                  OFFICER REMARKS / FIELD NOTES
-                </label>
-                <textarea
-                  value={signoffNotes}
-                  onChange={(e) => setSignoffNotes(e.target.value)}
-                  placeholder={signoffRole === 'SSE' ? 'e.g., Track Machine CSM-901 ready at Kanpur yard.' : 'e.g., Train #12021 regulated at Unnao loop.'}
-                  style={{
-                    width: '100%',
-                    height: '70px',
-                    padding: '0.65rem 0.85rem',
-                    background: '#ffffff',
-                    border: '1px solid rgba(210, 195, 175, 0.8)',
-                    borderRadius: '10px',
-                    fontSize: '0.825rem',
-                    color: '#1e1b19',
-                    fontFamily: 'inherit',
-                    outline: 'none'
-                  }}
-                />
+              <div style={{ fontSize: '0.78rem', color: '#5c544d' }}>
+                Section: {signoffModalBlock.from_station_name} ↔ {signoffModalBlock.to_station_name} | Window: {signoffModalBlock.slot_date} ({signoffModalBlock.start_hour}:00 - {signoffModalBlock.end_hour}:00)
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '0.8rem' }}>
-                <button
-                  onClick={() => handleDualSignoff(true)}
-                  disabled={isSubmittingSignoff}
-                  style={{
-                    flex: 1,
-                    background: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '0.75rem',
-                    fontSize: '0.825rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <CheckCircle2 size={16} /> {isSubmittingSignoff ? 'SIGNING OFF...' : `GRANT ${signoffRole} SAFETY CLEARANCE`}
-                </button>
+            {/* Verification Checklist */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.5rem' }}>
+                MANDATORY VERIFICATION CHECKLIST
+              </span>
 
-                <button
-                  onClick={() => handleDualSignoff(false)}
-                  disabled={isSubmittingSignoff}
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    color: '#dc2626',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    borderRadius: '10px',
-                    padding: '0.75rem 1rem',
-                    fontSize: '0.825rem',
-                    fontWeight: 800,
-                    cursor: 'pointer'
-                  }}
-                >
-                  REJECT / REVOKE
-                </button>
-              </div>
-            </motion.div>
-          </div>,
-          document.body
-        )}
-      </AnimatePresence>
+              {signoffRole === 'SSE' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>Track Tamping Machine / Tower Wagon on-site & fueled</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>Ground maintenance crew & safety supervisor briefed</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>Emergency detonators & red signal protection deployed</span>
+                  </label>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: '#2b2623' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>Train timetable diversion & loop holding confirmed</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>No adjacent section deadlock / conflicting block</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="checkbox" defaultChecked disabled /> <span>Digital Caution Order issued to Section Controller</span>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Notes Input */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d', display: 'block', marginBottom: '0.35rem' }}>
+                OFFICER REMARKS / FIELD NOTES
+              </label>
+              <textarea
+                value={signoffNotes}
+                onChange={(e) => setSignoffNotes(e.target.value)}
+                placeholder={signoffRole === 'SSE' ? 'e.g., Track Machine CSM-901 ready at Kanpur yard.' : 'e.g., Train #12021 regulated at Unnao loop.'}
+                style={{
+                  width: '100%',
+                  height: '70px',
+                  padding: '0.65rem 0.85rem',
+                  background: '#ffffff',
+                  border: '1px solid rgba(210, 195, 175, 0.8)',
+                  borderRadius: '10px',
+                  fontSize: '0.825rem',
+                  color: '#1e1b19',
+                  fontFamily: 'inherit',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <button
+                onClick={() => handleDualSignoff(true)}
+                disabled={isSubmittingSignoff}
+                style={{
+                  flex: 1,
+                  background: '#10b981',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.75rem',
+                  fontSize: '0.825rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <CheckCircle2 size={16} /> {isSubmittingSignoff ? 'SIGNING OFF...' : `GRANT ${signoffRole} SAFETY CLEARANCE`}
+              </button>
+
+              <button
+                onClick={() => handleDualSignoff(false)}
+                disabled={isSubmittingSignoff}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  color: '#dc2626',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '10px',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.825rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                REJECT / REVOKE
+              </button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
 
       {/* OFFICIAL INDIAN RAILWAYS SANCTION MEMO MODAL */}
-      <AnimatePresence>
-        {memoModalBlock && createPortal(
-          <div 
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setMemoModalBlock(null);
-              }
-            }}
+      {memoModalBlock && createPortal(
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setMemoModalBlock(null);
+            }
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 999999,
+            background: 'rgba(15, 12, 10, 0.78)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            pointerEvents: 'auto'
+          }}
+        >
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.9, y: 25 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 25 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 999999,
-              background: 'rgba(15, 12, 10, 0.78)',
-              backdropFilter: 'blur(12px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1.5rem',
-              pointerEvents: 'auto'
+              background: '#ffffff',
+              border: '3px double #bc473a',
+              borderRadius: '16px',
+              padding: '2.25rem',
+              maxWidth: '640px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.4)',
+              color: '#1e1b19',
+              position: 'relative'
             }}
           >
-            <motion.div
-              onClick={(e) => e.stopPropagation()}
-              initial={{ opacity: 0, scale: 0.9, y: 25 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 25 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            {/* Close Button X */}
+            <button
+              onClick={() => setMemoModalBlock(null)}
+              title="Close Sanction Memo"
               style={{
-                background: '#ffffff',
-                border: '3px double #bc473a',
-                borderRadius: '16px',
-                padding: '2.25rem',
-                maxWidth: '640px',
-                width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.4)',
-                color: '#1e1b19'
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'rgba(30, 27, 25, 0.06)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#5c544d',
+                transition: 'background 0.15s ease'
               }}
             >
-              {/* Official Railways Header */}
-              <div style={{ textAlign: 'center', borderBottom: '2px solid #bc473a', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
-                  <Award size={28} color="#bc473a" />
-                  <span style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '0.1em', color: '#bc473a', textTransform: 'uppercase' }}>
-                    INDIAN RAILWAYS
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#5c544d', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                  DIVISIONAL OPERATING CONTROL ROOM — LINE BLOCK SANCTION MEMO
-                </div>
-                <div style={{ fontSize: '0.68rem', color: '#8c827a', marginTop: '2px', fontFamily: 'monospace' }}>
-                  SANCTION REF: IR-SANCTION-2026-BLK{memoModalBlock.block_id} | DATE: {memoModalBlock.slot_date}
-                </div>
-              </div>
+              <X size={18} />
+            </button>
 
-              {/* Certificate Body Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#faf8f5', padding: '1.25rem', borderRadius: '10px', border: '1px solid #e8e2d8', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
-                    SECTION &amp; CORRIDOR
-                  </span>
-                  <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock.from_station_name} ↔ {memoModalBlock.to_station_name}</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Section ID: {memoModalBlock.section_code || memoModalBlock.section_id}</div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
-                    DEPARTMENT &amp; WORK SCOPE
-                  </span>
-                  <strong style={{ color: '#bc473a', fontSize: '0.95rem' }}>{memoModalBlock.department}</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>{memoModalBlock.defect_type}</div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
-                    SANCTIONED ACCESS WINDOW
-                  </span>
-                  <strong style={{ color: '#10b981', fontSize: '0.95rem' }}>{memoModalBlock.start_hour}:00 HRS — {memoModalBlock.end_hour}:00 HRS</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Duration: {memoModalBlock.end_hour - memoModalBlock.start_hour} Hours</div>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
-                    URGENCY PRIORITY SCORE
-                  </span>
-                  <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock.urgency_score ? (memoModalBlock.urgency_score * 100).toFixed(0) : '85'}/100 SCORE</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Status: CP-SAT Co-located</div>
-                </div>
-              </div>
-
-              {/* Dual Digital Signatures Box */}
-              <div style={{ marginBottom: '1.25rem', border: '1px dashed #bc473a', padding: '1rem', borderRadius: '10px', background: 'rgba(188, 71, 58, 0.03)' }}>
-                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem' }}>
-                  DUAL-SAFETY DIGITAL CLEARANCE VERIFICATION
+            {/* Official Railways Header */}
+            <div style={{ textAlign: 'center', borderBottom: '2px solid #bc473a', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+                <Award size={28} color="#bc473a" />
+                <span style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '0.1em', color: '#bc473a', textTransform: 'uppercase' }}>
+                  INDIAN RAILWAYS
                 </span>
+              </div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#5c544d', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                DIVISIONAL OPERATING CONTROL ROOM — LINE BLOCK SANCTION MEMO
+              </div>
+              <div style={{ fontSize: '0.68rem', color: '#8c827a', marginTop: '2px', fontFamily: 'monospace' }}>
+                SANCTION REF: IR-SANCTION-2026-BLK{memoModalBlock?.block_id || '01'} | DATE: {memoModalBlock?.slot_date || activeDate}
+              </div>
+            </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.8rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
-                    <CheckCircle2 size={16} color="#10b981" />
-                    <div>
-                      <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 1: SSE Ground Clearance</div>
-                      <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-SSE01</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
-                    <CheckCircle2 size={16} color="#10b981" />
-                    <div>
-                      <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 2: DOM Traffic Clearance</div>
-                      <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-DOM01</div>
-                    </div>
-                  </div>
-                </div>
+            {/* Certificate Body Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#faf8f5', padding: '1.25rem', borderRadius: '10px', border: '1px solid #e8e2d8', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  SECTION &amp; CORRIDOR
+                </span>
+                <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock?.from_station_name || 'VARANASI JN.'} ↔ {memoModalBlock?.to_station_name || 'NEW DELHI'}</strong>
+                <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Section ID: {memoModalBlock?.section_code || memoModalBlock?.section_id || 'SEC-101'}</div>
               </div>
 
-              {/* Verification Stamp & QR Code */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e8e2d8', paddingTop: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ width: '52px', height: '52px', background: '#1e1b19', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
-                    <QrCode size={34} />
-                  </div>
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  DEPARTMENT &amp; WORK SCOPE
+                </span>
+                <strong style={{ color: '#bc473a', fontSize: '0.95rem' }}>{memoModalBlock?.department || 'ENGINEERING'}</strong>
+                <div style={{ fontSize: '0.75rem', color: '#665c54' }}>{memoModalBlock?.defect_type || 'Track Repair'}</div>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  SANCTIONED ACCESS WINDOW
+                </span>
+                <strong style={{ color: '#10b981', fontSize: '0.95rem' }}>{memoModalBlock?.start_hour ?? 22}:00 HRS — {memoModalBlock?.end_hour ?? 24}:00 HRS</strong>
+                <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Duration: {(memoModalBlock?.end_hour ?? 24) - (memoModalBlock?.start_hour ?? 22)} Hours</div>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#8c827a', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  URGENCY PRIORITY SCORE
+                </span>
+                <strong style={{ color: '#1e1b19', fontSize: '0.95rem' }}>{memoModalBlock?.urgency_score ? (memoModalBlock.urgency_score * 100).toFixed(0) : '85'}/100 SCORE</strong>
+                <div style={{ fontSize: '0.75rem', color: '#665c54' }}>Status: CP-SAT Co-located</div>
+              </div>
+            </div>
+
+            {/* Dual Digital Signatures Box */}
+            <div style={{ marginBottom: '1.25rem', border: '1px dashed #bc473a', padding: '1rem', borderRadius: '10px', background: 'rgba(188, 71, 58, 0.03)' }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#bc473a', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: '0.6rem' }}>
+                DUAL-SAFETY DIGITAL CLEARANCE VERIFICATION
+              </span>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.8rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                  <CheckCircle2 size={16} color="#10b981" />
                   <div>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981', display: 'block' }}>✔ DIGITALLY VERIFIED &amp; SANCTIONED</span>
-                    <span style={{ fontSize: '0.68rem', color: '#8c827a' }}>Scan QR to audit cryptographic block ledger</span>
+                    <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 1: SSE Ground Clearance</div>
+                    <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-SSE01</div>
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.65rem', color: '#8c827a', textTransform: 'uppercase' }}>ISSUING AUTHORITY</div>
-                  <strong style={{ fontSize: '0.82rem', color: '#1e1b19' }}>DIVISIONAL OPERATING CONTROL</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                  <CheckCircle2 size={16} color="#10b981" />
+                  <div>
+                    <div style={{ fontWeight: 800, color: '#059669', fontSize: '0.75rem' }}>Tier 2: DOM Traffic Clearance</div>
+                    <div style={{ fontSize: '0.68rem', color: '#665c54' }}>Signed by: IR-OFFICER-DOM01</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Stamp & QR Code */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e8e2d8', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div style={{ width: '52px', height: '52px', background: '#1e1b19', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                  <QrCode size={34} />
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981', display: 'block' }}>✔ DIGITALLY VERIFIED &amp; SANCTIONED</span>
+                  <span style={{ fontSize: '0.68rem', color: '#8c827a' }}>Scan QR to audit cryptographic block ledger</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '0.8rem' }}>
-                <button
-                  onClick={() => window.print()}
-                  style={{
-                    flex: 1,
-                    background: '#bc473a',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '0.75rem',
-                    fontSize: '0.825rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <Printer size={16} /> PRINT / EXPORT OFFICIAL SANCTION MEMO
-                </button>
-
-                <button
-                  onClick={() => setMemoModalBlock(null)}
-                  style={{
-                    background: 'rgba(30, 27, 25, 0.08)',
-                    color: '#1e1b19',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '0.75rem 1.25rem',
-                    fontSize: '0.825rem',
-                    fontWeight: 800,
-                    cursor: 'pointer'
-                  }}
-                >
-                  CLOSE
-                </button>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.65rem', color: '#8c827a', textTransform: 'uppercase' }}>ISSUING AUTHORITY</div>
+                <strong style={{ fontSize: '0.82rem', color: '#1e1b19' }}>DIVISIONAL OPERATING CONTROL</strong>
               </div>
-            </motion.div>
-          </div>,
-          document.body
-        )}
-      </AnimatePresence>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <button
+                onClick={() => window.print()}
+                style={{
+                  flex: 1,
+                  background: '#bc473a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.75rem',
+                  fontSize: '0.825rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Printer size={16} /> PRINT / EXPORT OFFICIAL SANCTION MEMO
+              </button>
+
+              <button
+                onClick={() => setMemoModalBlock(null)}
+                style={{
+                  background: 'rgba(30, 27, 25, 0.08)',
+                  color: '#1e1b19',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.75rem 1.25rem',
+                  fontSize: '0.825rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
