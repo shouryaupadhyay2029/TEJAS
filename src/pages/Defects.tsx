@@ -5,6 +5,7 @@ import GradientBackground from '../components/GradientBackground';
 import { ScrollReveal } from '../components/motion/ScrollSystem';
 import apiClient from '../api/apiClient';
 import { AlertTriangle, PlusCircle, CheckCircle, RefreshCw, Wrench, ShieldAlert } from 'lucide-react';
+import styles from './Defects.module.css';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -179,7 +180,7 @@ export const Defects: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg-base)' }}>
+    <div className={styles.defectsPage}>
       <GradientBackground
         gradientOrigin="bottom-middle"
         noiseIntensity={0.65}
@@ -200,7 +201,7 @@ export const Defects: React.FC = () => {
         <Navbar />
       </div>
 
-      <div style={{ padding: '8rem 5% 4rem 5%', color: '#1e1b19' }}>
+      <div className={styles.contentContainer}>
         <PageEntryReveal delay={0.15} duration={1.1}>
           <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.15em', color: 'var(--color-railway-red)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
             OPERATIONS CONSOLE
@@ -209,7 +210,7 @@ export const Defects: React.FC = () => {
         
         <div style={{ margin: '4px 0' }}>
           <PageEntryReveal delay={0.35} duration={1.25}>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 400, color: '#1e1b19', textTransform: 'uppercase' }}>
+            <h1 className={styles.pageTitle}>
               Defects &amp; Asset Monitoring
             </h1>
           </PageEntryReveal>
@@ -222,21 +223,13 @@ export const Defects: React.FC = () => {
         </ScrollReveal>
 
         {/* MAIN CONTAINER GRID */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', marginTop: '2.5rem' }}>
+        <div className={styles.mainGrid}>
           
           {/* LEFT COLUMN: FORM + ML MODEL EXPLAINABILITY CARD */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+          <div className={styles.leftColumn}>
             
             {/* SUBMIT DEFECT REPORT FORM */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.55)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '16px',
-              padding: '2rem',
-              border: '1px solid rgba(30, 27, 25, 0.12)',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.03)',
-              height: 'fit-content'
-            }}>
+            <div className={styles.formCard}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(30, 27, 25, 0.1)', paddingBottom: '1rem' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(188, 71, 58, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <PlusCircle size={20} color="var(--color-railway-red, #bc473a)" />
@@ -275,7 +268,7 @@ export const Defects: React.FC = () => {
               <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {/* SECTION SELECTOR */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.25rem' }}>
                     <label style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5c544d' }}>
                       Target Track Section
                     </label>
@@ -299,7 +292,8 @@ export const Defects: React.FC = () => {
                       fontSize: '0.82rem',
                       color: '#1e1b19',
                       outline: 'none',
-                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)'
+                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)',
+                      boxSizing: 'border-box'
                     }}
                   />
 
@@ -317,7 +311,8 @@ export const Defects: React.FC = () => {
                       fontSize: '0.88rem',
                       fontWeight: 600,
                       color: '#1e1b19',
-                      outline: 'none'
+                      outline: 'none',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {filteredSections.map((sec) => (
@@ -329,7 +324,7 @@ export const Defects: React.FC = () => {
                 </div>
 
                 {/* DEFECT TYPE & DEPARTMENT */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+                <div className={styles.formRowTwoCol}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem', color: '#5c544d' }}>
                       Department {isFieldOfficer ? '(Locked)' : ''}
@@ -347,7 +342,8 @@ export const Defects: React.FC = () => {
                         fontSize: '0.85rem',
                         fontWeight: 600,
                         color: isFieldOfficer ? '#665c54' : '#1e1b19',
-                        cursor: isFieldOfficer ? 'not-allowed' : 'default'
+                        cursor: isFieldOfficer ? 'not-allowed' : 'default',
+                        boxSizing: 'border-box'
                       }}
                     >
                       <option value="ENGINEERING">ENGINEERING (Track)</option>
@@ -371,7 +367,8 @@ export const Defects: React.FC = () => {
                         background: 'rgba(255, 255, 255, 0.85)',
                         fontSize: '0.85rem',
                         fontWeight: 600,
-                        color: '#1e1b19'
+                        color: '#1e1b19',
+                        boxSizing: 'border-box'
                       }}
                     >
                       <option value="LOW">LOW (Severity 2)</option>
@@ -384,7 +381,7 @@ export const Defects: React.FC = () => {
                 </div>
 
                 {/* DEFECT TYPE & OVERDUE DAYS */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.9rem' }}>
+                <div className={styles.formRowTwoColUnequal}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem', color: '#5c544d' }}>
                       Defect Type Category
@@ -401,7 +398,8 @@ export const Defects: React.FC = () => {
                         fontSize: '0.85rem',
                         fontWeight: 600,
                         color: '#1e1b19',
-                        outline: 'none'
+                        outline: 'none',
+                        boxSizing: 'border-box'
                       }}
                     >
                       {/* Engineering Defects */}
@@ -459,7 +457,8 @@ export const Defects: React.FC = () => {
                         background: 'rgba(255, 255, 255, 0.85)',
                         fontSize: '0.85rem',
                         fontWeight: 600,
-                        color: '#1e1b19'
+                        color: '#1e1b19',
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
@@ -485,7 +484,8 @@ export const Defects: React.FC = () => {
                       fontWeight: 500,
                       color: '#1e1b19',
                       outline: 'none',
-                      resize: 'vertical'
+                      resize: 'vertical',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -513,7 +513,9 @@ export const Defects: React.FC = () => {
                     justifyContent: 'center',
                     gap: '0.6rem',
                     boxShadow: isDRE ? 'none' : '0 4px 14px rgba(188, 71, 58, 0.25)',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    width: '100%',
+                    boxSizing: 'border-box'
                   }}
                 >
                   {submitting ? <RefreshCw size={18} className="animate-spin" /> : <ShieldAlert size={18} />}
@@ -523,16 +525,9 @@ export const Defects: React.FC = () => {
             </div>
 
             {/* COMPACT AI GOVERNANCE & ACCURACY EXPLANATION CARD */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.35)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: '14px',
-              padding: '1.25rem 1.5rem',
-              border: '1px dashed rgba(30, 27, 25, 0.2)',
-              boxShadow: 'none'
-            }}>
+            <div className={styles.aiCard}>
               {/* TOP HEADER */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
                   <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.14em', color: 'var(--color-railway-red, #bc473a)', textTransform: 'uppercase', display: 'block' }}>
                     AI MODEL GOVERNANCE
@@ -551,7 +546,7 @@ export const Defects: React.FC = () => {
               </p>
 
               {/* 4 COMPACT CRITERIA TAGS */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.85rem' }}>
+              <div className={styles.aiCriteriaGrid}>
                 <div style={{ padding: '0.45rem 0.65rem', background: 'rgba(255, 255, 255, 0.6)', borderRadius: '6px', border: '1px solid rgba(30, 27, 25, 0.08)', fontSize: '0.76rem' }}>
                   <span style={{ fontWeight: 800, color: '#bc473a' }}>40%</span> <span style={{ color: '#1e1b19', fontWeight: 600 }}>Severity &amp; USFD Depth</span>
                 </div>
@@ -567,8 +562,8 @@ export const Defects: React.FC = () => {
               </div>
 
               {/* COMPACT FORMULA LINE */}
-              <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.7)', borderRadius: '6px', border: '1px solid rgba(30,27,25,0.1)' }}>
-                <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#1e1b19', fontWeight: 700, display: 'block' }}>
+              <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.7)', borderRadius: '6px', border: '1px solid rgba(30,27,25,0.1)', overflowX: 'auto' }}>
+                <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#1e1b19', fontWeight: 700, display: 'block', whiteSpace: 'nowrap' }}>
                   Score = (0.40×Sev) + (0.25×Overdue) + (0.20×GMT) + (0.15×Crit)
                 </code>
               </div>
@@ -579,139 +574,130 @@ export const Defects: React.FC = () => {
 
 
           {/* RIGHT: MAINTENANCE TASKS MONITORING TABLE */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.55)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: '16px',
-            padding: '1.75rem',
-            border: '1px solid rgba(30, 27, 25, 0.12)',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'fit-content'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(30, 27, 25, 0.1)', paddingBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Wrench size={20} color="var(--color-railway-red)" />
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 400, margin: 0, textTransform: 'capitalize', color: '#1e1b19' }}>
-                  Live Maintenance Tasks ({tasks.length})
-                </h2>
+          <div className={styles.rightColumn}>
+            <div className={styles.tableCard}>
+              <div className={styles.tableHeaderRow}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Wrench size={20} color="var(--color-railway-red)" />
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 400, margin: 0, textTransform: 'capitalize', color: '#1e1b19' }}>
+                    Live Maintenance Tasks ({tasks.length})
+                  </h2>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <select
+                    value={taskFilterStatus}
+                    onChange={(e) => {
+                      setTaskFilterStatus(e.target.value);
+                      fetchTasks(e.target.value);
+                    }}
+                    style={{
+                      padding: '0.45rem 0.75rem',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(30, 27, 25, 0.15)',
+                      background: 'rgba(255, 255, 255, 0.85)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="SCORED">SCORED (Ready)</option>
+                    <option value="SCHEDULED">SCHEDULED (In Block)</option>
+                    <option value="PENDING">PENDING</option>
+                  </select>
+
+                  <button
+                    onClick={() => fetchTasks(taskFilterStatus)}
+                    disabled={loadingTasks}
+                    style={{
+                      padding: '0.45rem 0.75rem',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(30, 27, 25, 0.15)',
+                      background: 'rgba(255, 255, 255, 0.85)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}
+                  >
+                    <RefreshCw size={14} className={loadingTasks ? 'animate-spin' : ''} />
+                    Refresh
+                  </button>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <select
-                  value={taskFilterStatus}
-                  onChange={(e) => {
-                    setTaskFilterStatus(e.target.value);
-                    fetchTasks(e.target.value);
-                  }}
-                  style={{
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(30, 27, 25, 0.15)',
-                    background: 'rgba(255, 255, 255, 0.85)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    outline: 'none'
-                  }}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="SCORED">SCORED (Ready)</option>
-                  <option value="SCHEDULED">SCHEDULED (In Block)</option>
-                  <option value="PENDING">PENDING</option>
-                </select>
-
-                <button
-                  onClick={() => fetchTasks(taskFilterStatus)}
-                  disabled={loadingTasks}
-                  style={{
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(30, 27, 25, 0.15)',
-                    background: 'rgba(255, 255, 255, 0.85)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem'
-                  }}
-                >
-                  <RefreshCw size={14} className={loadingTasks ? 'animate-spin' : ''} />
-                  Refresh
-                </button>
-              </div>
-            </div>
-
-            {loadingTasks ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.5rem' }} />
-                <p style={{ margin: 0 }}>Loading live task registry from database...</p>
-              </div>
-            ) : tasks.length === 0 ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                No maintenance tasks match the active filter.
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto', maxHeight: '460px', overflowY: 'auto', paddingRight: '4px', borderRadius: '8px', border: '1px solid rgba(30, 27, 25, 0.08)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ background: 'rgba(30,27,25,0.04)', borderBottom: '2px solid rgba(30,27,25,0.1)' }}>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ID</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Department</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Section</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Defect Type</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Severity</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ML Urgency</th>
-                      <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tasks.map((task) => (
-                      <tr key={task.task_id} style={{ borderBottom: '1px solid rgba(30,27,25,0.06)', transition: 'background 0.15s ease' }}>
-                        <td style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: 'var(--color-railway-red, #bc473a)' }}>
-                          #{task.task_id}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', fontWeight: 700, fontSize: '0.72rem', color: '#5c544d' }}>
-                          {task.department}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem' }}>
-                          <div style={{ fontWeight: 700, color: '#1e1b19' }}>{task.section_code}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#8a7e72', fontWeight: 500 }}>
-                            {task.from_station_name} ➔ {task.to_station_name}
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', fontWeight: 600, color: '#1e1b19' }}>
-                          {task.defect_type}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', whiteSpace: 'nowrap' }}>
-                          {getSeverityBadge(task.defect_severity)}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: task.urgency_score ? (task.urgency_score > 0.7 ? '#bc473a' : '#2563eb') : '#8a7e72' }}>
-                          {task.urgency_score !== null ? `${(task.urgency_score * 100).toFixed(1)}%` : 'N/A'}
-                        </td>
-                        <td style={{ padding: '0.8rem 0.6rem', whiteSpace: 'nowrap' }}>
-                          <span style={{
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontWeight: 800,
-                            fontSize: '0.72rem',
-                            letterSpacing: '0.04em',
-                            background: task.status === 'SCHEDULED' ? 'rgba(46, 125, 50, 0.15)' : task.status === 'SCORED' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(138, 126, 114, 0.15)',
-                            color: task.status === 'SCHEDULED' ? '#2e7d32' : task.status === 'SCORED' ? '#1d4ed8' : '#5c544d',
-                            border: `1px solid ${task.status === 'SCHEDULED' ? 'rgba(46, 125, 50, 0.3)' : task.status === 'SCORED' ? 'rgba(37, 99, 235, 0.3)' : 'rgba(138, 126, 114, 0.3)'}`
-                          }}>
-                            {task.status}
-                          </span>
-                        </td>
+              {loadingTasks ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                  <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.5rem' }} />
+                  <p style={{ margin: 0 }}>Loading live task registry from database...</p>
+                </div>
+              ) : tasks.length === 0 ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                  No maintenance tasks match the active filter.
+                </div>
+              ) : (
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr style={{ background: 'rgba(30,27,25,0.04)', borderBottom: '2px solid rgba(30,27,25,0.1)' }}>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ID</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Department</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Section</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Defect Type</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Severity</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ML Urgency</th>
+                        <th style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: '#44413c', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {tasks.map((task) => (
+                        <tr key={task.task_id} style={{ borderBottom: '1px solid rgba(30,27,25,0.06)', transition: 'background 0.15s ease' }}>
+                          <td style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: 'var(--color-railway-red, #bc473a)' }}>
+                            #{task.task_id}
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem', fontWeight: 700, fontSize: '0.72rem', color: '#5c544d' }}>
+                            {task.department}
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem' }}>
+                            <div style={{ fontWeight: 700, color: '#1e1b19' }}>{task.section_code}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#8a7e72', fontWeight: 500 }}>
+                              {task.from_station_name} ➔ {task.to_station_name}
+                            </div>
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem', fontWeight: 600, color: '#1e1b19' }}>
+                            {task.defect_type}
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem', whiteSpace: 'nowrap' }}>
+                            {getSeverityBadge(task.defect_severity)}
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem', fontWeight: 800, color: task.urgency_score ? (task.urgency_score > 0.7 ? '#bc473a' : '#2563eb') : '#8a7e72' }}>
+                            {task.urgency_score !== null ? `${(task.urgency_score * 100).toFixed(1)}%` : 'N/A'}
+                          </td>
+                          <td style={{ padding: '0.8rem 0.6rem', whiteSpace: 'nowrap' }}>
+                            <span style={{
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontWeight: 800,
+                              fontSize: '0.72rem',
+                              letterSpacing: '0.04em',
+                              background: task.status === 'SCHEDULED' ? 'rgba(46, 125, 50, 0.15)' : task.status === 'SCORED' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(138, 126, 114, 0.15)',
+                              color: task.status === 'SCHEDULED' ? '#2e7d32' : task.status === 'SCORED' ? '#1d4ed8' : '#5c544d',
+                              border: `1px solid ${task.status === 'SCHEDULED' ? 'rgba(46, 125, 50, 0.3)' : task.status === 'SCORED' ? 'rgba(37, 99, 235, 0.3)' : 'rgba(138, 126, 114, 0.3)'}`
+                            }}>
+                              {task.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-
 
         </div>
       </div>

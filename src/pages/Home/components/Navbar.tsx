@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogOut, UserCheck } from 'lucide-react';
+import { Menu, X, LogOut, UserCheck, AlertTriangle } from 'lucide-react';
 import styles from '../Home.module.css';
 
 import { TransitionLink } from '../../../components/PageTransition';
@@ -59,6 +59,21 @@ export const Navbar: React.FC = () => {
     navigate('/auth');
   };
 
+  // Check if logged in user is from Engineering, S&T, Traction, or Field Officer roles
+  const isFieldDepartmentUser = Boolean(
+    isAuthenticated &&
+    user &&
+    (
+      user.role?.includes('FIELD') ||
+      user.role?.includes('SSE') ||
+      user.department?.toUpperCase().includes('ENG') ||
+      user.department?.toUpperCase().includes('S&T') ||
+      user.department?.toUpperCase().includes('SIGNAL') ||
+      user.department?.toUpperCase().includes('TRACTION') ||
+      user.department?.toUpperCase().includes('TRD')
+    )
+  );
+
   return (
     <>
       <motion.nav
@@ -88,13 +103,73 @@ export const Navbar: React.FC = () => {
           className={styles.navLinks}
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
         >
-          {navLinks.map(({ to, label }) => (
-            <motion.div key={to} variants={linkVariant}>
-              <TransitionLink to={to} label={label} className={`${styles.navLink} nav-underline-anim`}>
-                {label}
-              </TransitionLink>
-            </motion.div>
-          ))}
+          {navLinks.map(({ to, label }) => {
+            const isDashboard = label === 'DASHBOARD';
+
+            return (
+              <motion.div key={to} variants={linkVariant} style={{ position: 'relative' }}>
+                <TransitionLink to={to} label={label} className={`${styles.navLink} nav-underline-anim`}>
+                  {label}
+                </TransitionLink>
+
+                {/* Smooth Animated Field Officer Prompt - DIRECTLY BELOW DASHBOARD ONLY */}
+                {isDashboard && isFieldDepartmentUser && (
+                  <motion.div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/defects');
+                    }}
+                    initial={{ opacity: 0, y: -4, scale: 0.88 }}
+                    animate={{ opacity: 1, y: [0, -4, 0], scale: 1 }}
+                    transition={{
+                      opacity: { duration: 0.4 },
+                      y: { repeat: Infinity, duration: 2.2, ease: 'easeInOut' }
+                    }}
+                    title="Click to report field defects"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'linear-gradient(135deg, #bc473a 0%, #a8382b 100%)',
+                      color: '#ffffff',
+                      fontSize: '0.58rem',
+                      fontWeight: 900,
+                      padding: '3.5px 9px',
+                      borderRadius: '6px',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      boxShadow: '0 4px 16px rgba(188, 71, 58, 0.48), 0 0 10px rgba(188, 71, 58, 0.3)',
+                      cursor: 'pointer',
+                      zIndex: 100,
+                      letterSpacing: '0.07em',
+                      border: '1px solid rgba(255, 255, 255, 0.35)',
+                      pointerEvents: 'auto'
+                    }}
+                  >
+                    {/* Upward pointing arrow caret */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-5px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderLeft: '5px solid transparent',
+                        borderRight: '5px solid transparent',
+                        borderBottom: '5px solid #bc473a'
+                      }}
+                    />
+                    <AlertTriangle size={11} color="#ffffff" />
+                    <span>REPORT DEFECTS HERE</span>
+                  </motion.div>
+                )}
+              </motion.div>
+            );
+          })}
         </motion.div>
 
         {/* RIGHT — Identity Badge & Login/Logout CTA */}

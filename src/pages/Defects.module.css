@@ -1,0 +1,182 @@
+.defectsPage {
+  min-height: 100vh;
+  background-color: var(--color-bg-base, #fbf7ee);
+  color: #1e1b19;
+  font-family: var(--font-sans, sans-serif);
+  position: relative;
+  width: 100%;
+}
+
+.contentContainer {
+  padding: 8rem 5% 4rem 5%;
+  color: #1e1b19;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #1e1b19;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* MAIN CONTAINER GRID */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  width: 100%;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.rightColumn {
+  min-width: 0;
+}
+
+.formCard {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(30, 27, 25, 0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+  height: fit-content;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.formRowTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.formRowTwoColUnequal {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.9rem;
+}
+
+.aiCard {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  border: 1px dashed rgba(30, 27, 25, 0.2);
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.aiCriteriaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.tableCard {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid rgba(30, 27, 25, 0.12);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.tableHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(30, 27, 25, 0.1);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(30, 27, 25, 0.08);
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+  min-width: 640px; /* Ensures table columns retain clean readable spacing on small mobile displays */
+}
+
+/* ── RESPONSIVE MEDIA QUERIES ────────────────────────── */
+
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: 1fr; /* Stack form card on top, live tasks monitoring table on bottom */
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentContainer {
+    padding: 5.5rem 1rem 3rem 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .formCard {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .formRowTwoCol {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .formRowTwoColUnequal {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .aiCard {
+    padding: 1rem;
+  }
+
+  .aiCriteriaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tableCard {
+    padding: 1.15rem;
+    border-radius: 12px;
+  }
+
+  .tableHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
