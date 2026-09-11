@@ -106,10 +106,9 @@ const processSteps = [
 
 /* ── Capability rows ─────────────────────────────────── */
 const capabilities = [
-  { tag: 'MAINTENANCE', title: 'Maintenance Intelligence', desc: 'AI-assisted maintenance prioritization, defect tracking and task management across the railway network.', to: '/maintenance' },
   { tag: 'PLANNING',    title: 'Block Planning',           desc: 'Coordinated block planning across Engineering, S&T and Traction within shared work windows.', to: '/block-planning' },
   { tag: 'OPTIMIZATION',title: 'Schedule Optimization',   desc: 'CP-SAT constraint-aware optimization generates feasible and efficient block schedules.', to: '/optimization' },
-  { tag: 'ASSETS',      title: 'Asset Intelligence',       desc: 'Centralized asset registry, condition history, maintenance records and defect intelligence.', to: '/assets' },
+  { tag: 'ASSETS',      title: 'Asset Intelligence',       desc: 'Centralized asset registry, condition history, maintenance records and defect intelligence.', to: '/dashboard' },
   { tag: 'REPORTS',     title: 'Operational Insights',     desc: 'Clear data-driven visibility into maintenance status, block utilization and planning outcomes.', to: '/reports' },
 ];
 
@@ -138,8 +137,8 @@ const after = [
 ];
 
 /* ── Nav links ───────────────────────────────────────── */
-const navLinks = ['HOME', 'DASHBOARD', 'MAINTENANCE', 'PLANNING', 'ASSETS', 'REPORTS'];
-const navPaths = ['/', '/dashboard', '/maintenance', '/block-planning', '/assets', '/reports'];
+const navLinks = ['HOME', 'DASHBOARD', 'PLANNING', 'REPORTS'];
+const navPaths = ['/', '/dashboard', '/block-planning', '/reports'];
 
 /* ── WORKFLOW MILESTONE COMPONENT ────────────────────── */
 interface MilestoneProps {

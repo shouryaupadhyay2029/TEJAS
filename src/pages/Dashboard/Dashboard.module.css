@@ -1092,3 +1092,207 @@
 :global(.animate-spin) {
   animation: spin 1.2s linear infinite !important;
 }
+
+/* ── RAILWAY COMMAND CENTRE ENHANCEMENTS ──────────────── */
+.commandToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1.5px solid var(--color-border);
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+}
+
+.commandFilters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.deptFilterBtn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.3);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deptFilterBtn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary);
+}
+
+.deptFilterActive {
+  background: #1e1b19 !important;
+  color: #faf6f0 !important;
+  border-color: #1e1b19 !important;
+  font-weight: 800;
+}
+
+.commandActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cmdBtnPrimary {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #faf6f0;
+  background-color: #bc473a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(188, 71, 58, 0.2);
+}
+
+.cmdBtnPrimary:hover {
+  background-color: #a3382d;
+  transform: translateY(-1px);
+}
+
+.cmdBtnSecondary {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1e1b19;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid var(--color-border);
+  padding: 7px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.cmdBtnSecondary:hover {
+  background-color: #ffffff;
+  border-color: #1e1b19;
+  transform: translateY(-1px);
+}
+
+/* Sign-off Badges & Action Buttons */
+.signoffBadge {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.signoffBadgePending {
+  background: rgba(229, 152, 102, 0.15);
+  color: #d67a36;
+  border: 1px solid rgba(229, 152, 102, 0.3);
+}
+
+.signoffBadgeSse {
+  background: rgba(52, 152, 219, 0.15);
+  color: #2980b9;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.signoffBadgeApproved {
+  background: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.actionBtnMini {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 2px;
+  border: 1px solid var(--color-border);
+  background: #1e1b19;
+  color: #faf6f0;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.actionBtnMini:hover {
+  background: #bc473a;
+  border-color: #bc473a;
+}
+
+.actionBtnMiniDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(30, 27, 25, 0.1) !important;
+  color: var(--color-text-muted) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* Section Grid */
+.sectionCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.sectionCard {
+  border: 1.5px solid var(--color-border);
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sectionCard:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  border-color: rgba(30, 27, 25, 0.3);
+}
+
+.sectionCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionCode {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.sectionCritBadge {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+

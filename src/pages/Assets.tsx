@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Activity, ShieldAlert, RefreshCw } from 'lucide-react';
 import { Navbar } from './Home/components/Navbar';
 import GradientBackground from '../components/GradientBackground';
 import { ScrollReveal } from '../components/motion/ScrollSystem';
@@ -31,12 +31,16 @@ interface OperationalRisk {
 
 interface Asset {
   id: string;
+  sectionId: number;
   name: string;
   type: string;
   location: string;
   department: 'Engineering' | 'S&T' | 'Traction';
   condition: 'Critical' | 'Degraded' | 'Optimal';
   availability: number;
+  fatigueIndex: number; // Cumulative fatigue % based on GMT load & defects
+  dailyTrainCount: number;
+  gmtLoading: number;
   lastInspection: string;
   nextAction: string;
   criticality: 'Class A' | 'Class B' | 'Class C';
@@ -46,148 +50,106 @@ interface Asset {
   operationalRisk: OperationalRisk;
 }
 
-const mockAssets: Asset[] = [
+const fallbackAssets: Asset[] = [
   {
-    id: 'AST-101',
-    name: 'Track Segment T1',
+    id: 'SEC-101',
+    sectionId: 101,
+    name: 'BSB_KASHI — Varanasi Jn ➔ Kashi',
     type: 'Track Line',
-    location: 'KM 42.4',
+    location: 'BSB_KASHI (KM 42.4)',
     department: 'Engineering',
     condition: 'Critical',
     availability: 94.2,
-    lastInspection: '10 Aug 2026',
-    nextAction: 'Priority maintenance required',
+    fatigueIndex: 78.5,
+    dailyTrainCount: 74,
+    gmtLoading: 42.5,
+    lastInspection: '01 SEP 2026',
+    nextAction: 'Active defect reported: USFD Rail Joint Flaw',
     criticality: 'Class A',
     activeDefectsCount: 3,
     serviceHistory: [
-      { date: '10 AUG 2026', task: 'Joint inspection and bolting', status: 'Completed' },
-      { date: '15 JUL 2026', task: 'Ballast dressing', status: 'Completed' },
-      { date: '02 JUN 2026', task: 'Alignment inspection', status: 'Completed' },
-      { date: '12 APR 2026', task: 'Sleeper condition inspection', status: 'Completed' }
+      { date: '01 SEP 2026', task: 'USFD Ultrasonic Flaw Detection Rail Scan', status: 'Passed' },
+      { date: '15 AUG 2026', task: 'Track Geometry & Ballast Tamping Inspection', status: 'Completed' },
+      { date: '10 AUG 2026', task: 'Joint inspection and bolting', status: 'Completed' }
     ],
     defectHistory: [
-      { date: '02 JUN 2026', defect: 'Minor alignment displacement', severity: 'MEDIUM', resolution: 'Aligned' },
-      { date: '12 APR 2026', defect: 'Sleeper cracking', severity: 'HIGH', resolution: 'Replaced' }
+      { date: '01 SEP 2026', defect: 'Ultrasonic Flaw (USFD) (Engineering)', severity: 'HIGH', resolution: 'Pending CP-SAT Optimization' },
+      { date: '12 APR 2026', defect: 'Sleeper crack under high GMT load', severity: 'HIGH', resolution: 'Replaced & Re-bolted' }
     ],
     operationalRisk: {
       conditionRisk: 'High',
       trafficImpact: 'High',
-      failureFrequency: '4 previous occurrences',
+      failureFrequency: '74 trains/day | 3 reported defects',
       urgency: 'Immediate'
     }
   },
   {
-    id: 'AST-202',
-    name: 'Junction Point 4A',
-    type: 'Point Machine',
-    location: 'KM 43.1',
+    id: 'SEC-102',
+    sectionId: 102,
+    name: 'LKO_SLN — Lucknow NR ➔ Sultanpur',
+    type: 'Point & Signal System',
+    location: 'LKO_SLN (KM 68.2)',
     department: 'S&T',
     condition: 'Critical',
-    availability: 97.8,
-    lastInspection: '18 Aug 2026',
-    nextAction: 'Replace motor assembly',
+    availability: 96.8,
+    fatigueIndex: 68.2,
+    dailyTrainCount: 62,
+    gmtLoading: 38.0,
+    lastInspection: '28 AUG 2026',
+    nextAction: 'Active defect reported: Point Machine Failure',
     criticality: 'Class A',
     activeDefectsCount: 2,
     serviceHistory: [
-      { date: '18 AUG 2026', task: 'Motor torque calibration', status: 'Completed' },
-      { date: '28 JUL 2026', task: 'Point lubrication & cleaning', status: 'Completed' },
-      { date: '10 JUN 2026', task: 'Slide chair adjustment', status: 'Completed' }
+      { date: '28 AUG 2026', task: 'Axle Counter & Interlocking Relay Inspection', status: 'Passed' },
+      { date: '18 AUG 2026', task: 'Motor torque calibration', status: 'Completed' }
     ],
     defectHistory: [
-      { date: '28 JUL 2026', defect: 'Torque limit exceeded', severity: 'HIGH', resolution: 'Calibrated' },
-      { date: '10 JUN 2026', defect: 'Switch rail gap gap discrepancy', severity: 'MEDIUM', resolution: 'Adjusted' }
+      { date: '28 AUG 2026', defect: 'Point Machine Failure (S&T)', severity: 'HIGH', resolution: 'Pending CP-SAT Optimization' }
     ],
     operationalRisk: {
       conditionRisk: 'High',
       trafficImpact: 'High',
-      failureFrequency: '2 previous occurrences',
+      failureFrequency: '62 trains/day | 2 reported defects',
       urgency: 'Immediate'
     }
   },
   {
-    id: 'AST-303',
-    name: 'OHE Line 3',
-    type: 'Overhead Equipment',
-    location: 'KM 45.8',
+    id: 'SEC-103',
+    sectionId: 103,
+    name: 'SLN_BSB — Sultanpur ➔ Varanasi Jn',
+    type: 'Traction OHE Line',
+    location: 'SLN_BSB (KM 112.0)',
     department: 'Traction',
     condition: 'Degraded',
     availability: 98.5,
-    lastInspection: '05 Aug 2026',
-    nextAction: 'Tensioner adjustment scheduled',
+    fatigueIndex: 45.0,
+    dailyTrainCount: 48,
+    gmtLoading: 28.4,
+    lastInspection: '30 AUG 2026',
+    nextAction: 'Active defect reported: OHE Catenary Wire Sag',
     criticality: 'Class B',
     activeDefectsCount: 1,
     serviceHistory: [
-      { date: '05 AUG 2026', task: 'Contact wire wear measurement', status: 'Completed' },
-      { date: '12 JUL 2026', task: 'Insulator cleaning', status: 'Completed' },
-      { date: '18 MAY 2026', task: 'Steady arm replacement', status: 'Completed' }
+      { date: '30 AUG 2026', task: 'OHE Height, Stagger & Cantilever Inspection', status: 'Passed' }
     ],
     defectHistory: [
-      { date: '12 JUL 2026', defect: 'Insulator flashover trace', severity: 'MEDIUM', resolution: 'Cleaned' }
+      { date: '30 AUG 2026', defect: 'OHE Catenary Wire Sag (Traction)', severity: 'MEDIUM', resolution: 'Pending CP-SAT Optimization' }
     ],
     operationalRisk: {
       conditionRisk: 'Medium',
       trafficImpact: 'High',
-      failureFrequency: '1 previous occurrence',
+      failureFrequency: '48 trains/day | 1 reported defect',
       urgency: 'Scheduled'
-    }
-  },
-  {
-    id: 'AST-404',
-    name: 'Bridge 104',
-    type: 'Structural Bridge',
-    location: 'KM 51.2',
-    department: 'Engineering',
-    condition: 'Degraded',
-    availability: 99.1,
-    lastInspection: '22 Jul 2026',
-    nextAction: 'Abutment grouting inspection',
-    criticality: 'Class A',
-    activeDefectsCount: 1,
-    serviceHistory: [
-      { date: '22 JUL 2026', task: 'Substructure scour inspection', status: 'Completed' },
-      { date: '04 MAY 2026', task: 'Bearing lubrication', status: 'Completed' }
-    ],
-    defectHistory: [
-      { date: '04 MAY 2026', defect: 'Minor substructure hairline crack', severity: 'LOW', resolution: 'Monitored' }
-    ],
-    operationalRisk: {
-      conditionRisk: 'Medium',
-      trafficImpact: 'High',
-      failureFrequency: '0 previous occurrences',
-      urgency: 'Monitoring'
-    }
-  },
-  {
-    id: 'AST-505',
-    name: 'Signal S12',
-    type: 'Color Light Signal',
-    location: 'KM 46.7',
-    department: 'S&T',
-    condition: 'Optimal',
-    availability: 99.9,
-    lastInspection: '24 Aug 2026',
-    nextAction: 'Routine visual inspection',
-    criticality: 'Class C',
-    activeDefectsCount: 0,
-    serviceHistory: [
-      { date: '24 AUG 2026', task: 'LED aspect replacement', status: 'Completed' },
-      { date: '14 JUL 2026', task: 'Aspect power supply unit test', status: 'Completed' }
-    ],
-    defectHistory: [],
-    operationalRisk: {
-      conditionRisk: 'Low',
-      trafficImpact: 'Medium',
-      failureFrequency: '0 previous occurrences',
-      urgency: 'Monitoring'
     }
   }
 ];
 
 export const Assets: React.FC = () => {
-  const [assetList, setAssetList] = useState<Asset[]>(mockAssets);
+  const [assetList, setAssetList] = useState<Asset[]>(fallbackAssets);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [loading, setLoading] = useState<boolean>(true);
   
   // Filter states
   const [selectedType, setSelectedType] = useState('ALL TYPES');
@@ -195,7 +157,8 @@ export const Assets: React.FC = () => {
   const [selectedCondition, setSelectedCondition] = useState('ALL CONDITIONS');
 
   useEffect(() => {
-    async function loadSections() {
+    async function loadRealData() {
+      setLoading(true);
       try {
         const [sectionsData, tasksData, blocksData] = await Promise.all([
           fetchSectionTrafficAll({ limit: 100 }).catch(() => []),
@@ -203,7 +166,7 @@ export const Assets: React.FC = () => {
           fetchBlockSchedule('MONTHLY').catch(() => [])
         ]);
 
-        if (sectionsData && sectionsData.length > 0) {
+        if (Array.isArray(sectionsData) && sectionsData.length > 0) {
           const mapped: Asset[] = sectionsData.map((sec, idx) => {
             const critScore = sec.criticality_score ?? 0.5;
             let cond: 'Critical' | 'Degraded' | 'Optimal' = 'Optimal';
@@ -218,11 +181,9 @@ export const Assets: React.FC = () => {
             if (critScore >= 0.70) criticalityClass = 'Class A';
             else if (critScore >= 0.40) criticalityClass = 'Class B';
 
-            // Filter real matching tasks & scheduled blocks for this section
             const secTasks = tasksData.filter(t => t.section_id === sec.section_id);
             const secBlocks = blocksData.filter(b => b.section_id === sec.section_id);
 
-            // Construct real Defect History from reported DB tasks
             const defectHist: DefectHistory[] = secTasks.map(t => {
               let sev: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
               if (t.defect_severity >= 4) sev = 'HIGH';
@@ -230,7 +191,7 @@ export const Assets: React.FC = () => {
 
               const reportedDate = t.reported_at
                 ? new Date(t.reported_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
-                : '02 SEP 2026';
+                : '01 SEP 2026';
 
               let res = 'Pending CP-SAT Optimization';
               if (t.status === 'SCHEDULED') res = 'Scheduled in Maintenance Window';
@@ -244,7 +205,6 @@ export const Assets: React.FC = () => {
               };
             });
 
-            // If no active defect tasks reported yet, provide realistic historical baseline defect log
             if (defectHist.length === 0) {
               if (dept === 'Engineering') {
                 defectHist.push({ date: '12 JUL 2026', defect: 'Minor rail head wear & joint gap discrepancy', severity: 'MEDIUM', resolution: 'Joint re-bolted & lubricated' });
@@ -255,10 +215,7 @@ export const Assets: React.FC = () => {
               }
             }
 
-            // Construct real Service & Maintenance History from scheduled blocks & inspections
             const serviceHist: AssetHistory[] = [];
-
-            // Add real scheduled block windows
             secBlocks.forEach(b => {
               serviceHist.push({
                 date: b.slot_date,
@@ -271,7 +228,6 @@ export const Assets: React.FC = () => {
               });
             });
 
-            // Add standard maintenance inspection logs
             if (dept === 'Engineering') {
               serviceHist.push(
                 { date: '01 SEP 2026', task: 'USFD Ultrasonic Flaw Detection Rail Scan', status: 'Passed' },
@@ -289,43 +245,49 @@ export const Assets: React.FC = () => {
               );
             }
 
+            const dailyTrains = sec.daily_train_count ?? 45;
+            const gmt = sec.traffic_gmt ?? (dailyTrains * 0.55);
+            const fatigue = Math.min(98, Math.round(critScore * 75 + (dailyTrains / 100) * 20));
+
+            const condRisk: 'High' | 'Medium' | 'Low' = critScore >= 0.70 ? 'High' : critScore >= 0.40 ? 'Medium' : 'Low';
+            const trafImpact: 'High' | 'Medium' | 'Low' = dailyTrains > 50 ? 'High' : 'Medium';
+
             return {
               id: `SEC-${sec.section_id}`,
+              sectionId: sec.section_id,
               name: `${sec.from_station_name} — ${sec.to_station_name}`,
               type: dept === 'Engineering' ? 'Track Line' : dept === 'S&T' ? 'Point & Signal System' : 'Traction OHE Line',
               location: sec.section_code || `SEC-${sec.section_id}`,
               department: dept,
               condition: cond,
-              availability: Math.min(99.9, Math.round((1 - critScore * 0.1) * 1000) / 10),
+              availability: Math.min(99.9, Math.round((1 - critScore * 0.08) * 1000) / 10),
+              fatigueIndex: fatigue,
+              dailyTrainCount: dailyTrains,
+              gmtLoading: Math.round(gmt * 10) / 10,
               lastInspection: '01 SEP 2026',
-              nextAction: secTasks.length > 0 ? `Active defect reported: ${secTasks[0].defect_type}` : `${sec.daily_train_count} trains/day traffic density`,
+              nextAction: secTasks.length > 0 ? `Active defect: ${secTasks[0].defect_type}` : `${dailyTrains} trains/day traffic density`,
               criticality: criticalityClass,
-              activeDefectsCount: secTasks.length > 0 ? secTasks.length : (critScore >= 0.70 ? 2 : 0),
+              activeDefectsCount: secTasks.length,
               serviceHistory: serviceHist,
               defectHistory: defectHist,
               operationalRisk: {
-                conditionRisk: critScore >= 0.70 ? 'High' : critScore >= 0.40 ? 'Medium' : 'Low',
-                trafficImpact: sec.daily_train_count > 50 ? 'High' : 'Medium',
-                failureFrequency: `${sec.daily_train_count} trains/day | ${secTasks.length} reported defects`,
-                urgency: critScore >= 0.70 ? 'Immediate' : 'Scheduled'
+                conditionRisk: condRisk,
+                trafficImpact: trafImpact,
+                failureFrequency: `${dailyTrains} trains/day | ${secTasks.length} reported defects`,
+                urgency: (critScore >= 0.70 ? 'Immediate' : critScore >= 0.40 ? 'Scheduled' : 'Monitoring') as 'Immediate' | 'Scheduled' | 'Monitoring'
               }
             };
           });
           setAssetList(mapped);
         }
       } catch (err) {
-        console.warn('Section traffic API fetch warning, using fallback assets:', err);
+        console.warn('Real section traffic fetch warning, keeping fallbacks:', err);
+      } finally {
+        setLoading(false);
       }
     }
-    loadSections();
+    loadRealData();
   }, []);
-
-  // Stagger entry variables
-  const headerEyebrowVariants = { hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.6 } } };
-  const headerTitleVariants = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { delay: 0.35, duration: 0.7 } } };
-  const headerDescVariants = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { delay: 0.55, duration: 0.7 } } };
-  const rightStatsVariants = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { delay: 0.65, duration: 0.7 } } };
-  const contentFadeVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { delay: 0.85, duration: 0.8 } } };
 
   // Filter handlers
   const filteredAssets = assetList.filter((asset) => {
@@ -342,11 +304,22 @@ export const Assets: React.FC = () => {
     return matchesSearch && matchesType && matchesDept && matchesCondition;
   });
 
+  // Calculate Health Breakdown Statistics
+  const totalAssets = assetList.length;
+  const criticalAssets = assetList.filter(a => a.condition === 'Critical').length;
+  const degradedAssets = assetList.filter(a => a.condition === 'Degraded').length;
+  const optimalAssets = assetList.filter(a => a.condition === 'Optimal').length;
+  const avgAvailability = totalAssets > 0 ? (assetList.reduce((acc, a) => acc + a.availability, 0) / totalAssets).toFixed(1) : '98.7';
+  
+  const engCount = assetList.filter(a => a.department === 'Engineering').length;
+  const stCount = assetList.filter(a => a.department === 'S&T').length;
+  const trdCount = assetList.filter(a => a.department === 'Traction').length;
+
   const getConditionColor = (cond: Asset['condition']) => {
     switch (cond) {
-      case 'Critical': return '#bc473a'; // Muted Red
-      case 'Degraded': return '#8a7e72'; // Muted Amber/Brown
-      case 'Optimal': return '#d2b48c';  // Neutral/Tan
+      case 'Critical': return '#bc473a';
+      case 'Degraded': return '#eab308';
+      case 'Optimal': return '#2e7d32';
     }
   };
 
@@ -380,110 +353,146 @@ export const Assets: React.FC = () => {
         <div className={styles.heroRow}>
           <div className={styles.heroLeft}>
             <PageEntryReveal delay={0.15} duration={1.1}>
-              <motion.span className={styles.eyebrow} variants={headerEyebrowVariants} initial="hidden" animate="visible">
-                ASSET INTELLIGENCE
-              </motion.span>
+              <span className={styles.eyebrow}>
+                ASSET INTELLIGENCE &amp; AUDIT CONSOLE
+              </span>
             </PageEntryReveal>
             
             <div style={{ margin: '4px 0' }}>
               <PageEntryReveal delay={0.35} duration={1.25}>
-                <motion.h1 className={styles.pageTitle} variants={headerTitleVariants} initial="hidden" animate="visible">
+                <h1 className={styles.pageTitle}>
                   Railway Asset Registry
-                </motion.h1>
+                </h1>
               </PageEntryReveal>
             </div>
             
-            <motion.p className={styles.subtitle} variants={headerDescVariants} initial="hidden" animate="visible">
-              A unified view of infrastructure condition, availability, service history, and operational risk across the network.
-            </motion.p>
+            <p className={styles.subtitle}>
+              A unified live overview mapping physical infrastructure conditions, cumulative GMT fatigue, availability, and operational risk across Indian Railways divisions.
+            </p>
           </div>
 
-          <motion.div className={styles.heroRight} variants={rightStatsVariants} initial="hidden" animate="visible">
+          <div className={styles.heroRight}>
             <div className={styles.statusIndicatorBlock}>
-              <span className={styles.indicatorLabel}>TOTAL ASSETS</span>
-              <span className={styles.indicatorValue}>1,284</span>
+              <span className={styles.indicatorLabel}>AUDITED SECTIONS</span>
+              <span className={styles.indicatorValue}>{totalAssets}</span>
             </div>
             <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--color-border)', alignSelf: 'center' }} />
             <div className={styles.statusIndicatorBlock}>
-              <span className={styles.indicatorLabel}>CRITICAL</span>
-              <span className={`${styles.indicatorValue} styles.indicatorValueCritical`}>18</span>
+              <span className={styles.indicatorLabel}>CRITICAL ALERTS</span>
+              <span className={`${styles.indicatorValue} ${styles.indicatorValueCritical}`}>{criticalAssets}</span>
             </div>
             <div style={{ width: '1px', height: '32px', backgroundColor: 'var(--color-border)', alignSelf: 'center' }} />
             <div className={styles.statusIndicatorBlock}>
-              <span className={styles.indicatorLabel}>AVG. AVAILABILITY</span>
-              <span className={styles.indicatorValue}>98.7%</span>
+              <span className={styles.indicatorLabel}>AVG AVAILABILITY</span>
+              <span className={styles.indicatorValue}>{avgAvailability}%</span>
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div className={styles.dividerLine} variants={contentFadeVariants} initial="hidden" animate="visible" />
+        <div className={styles.dividerLine} />
 
-        {/* S02: ASSET HEALTH OVERVIEW */}
+        {/* S02: DYNAMIC ASSET HEALTH OVERVIEW */}
         <ScrollReveal>
           <div className={styles.healthOverview}>
-            <h2 className={styles.sectionTitle}>Asset Health Overview</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Network Asset Health Breakdown</h2>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <span style={{ padding: '3px 10px', borderRadius: '6px', background: 'rgba(46,125,50,0.12)', border: '1px solid rgba(46,125,50,0.3)', color: '#2e7d32', fontSize: '0.72rem', fontWeight: 800 }}>
+                  {optimalAssets} OPTIMAL
+                </span>
+                <span style={{ padding: '3px 10px', borderRadius: '6px', background: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.3)', color: '#854d0e', fontSize: '0.72rem', fontWeight: 800 }}>
+                  {degradedAssets} DEGRADED
+                </span>
+                <span style={{ padding: '3px 10px', borderRadius: '6px', background: 'rgba(188,71,58,0.12)', border: '1px solid rgba(188,71,58,0.3)', color: '#bc473a', fontSize: '0.72rem', fontWeight: 800 }}>
+                  {criticalAssets} CRITICAL
+                </span>
+              </div>
+            </div>
             
             <div className={styles.healthGrid}>
               <div className={styles.healthCard}>
                 <div className={styles.healthCardHeader}>
-                  <span className={styles.healthCardLabel}>Operational</span>
-                  <span className={styles.healthDot} style={{ backgroundColor: 'var(--color-text-secondary)' }} />
+                  <span className={styles.healthCardLabel}>Optimal Assets</span>
+                  <span className={styles.healthDot} style={{ backgroundColor: '#2e7d32' }} />
                 </div>
-                <div className={styles.healthValue}>1,146</div>
+                <div className={styles.healthValue}>{optimalAssets}</div>
                 <div className={styles.healthBarTrack}>
-                  <div className={styles.healthBarFill} style={{ width: '89.2%', backgroundColor: 'var(--color-text-secondary)' }} />
+                  <div className={styles.healthBarFill} style={{ width: `${totalAssets > 0 ? (optimalAssets / totalAssets * 100) : 80}%`, backgroundColor: '#2e7d32' }} />
                 </div>
               </div>
 
               <div className={styles.healthCard}>
                 <div className={styles.healthCardHeader}>
-                  <span className={styles.healthCardLabel}>Degraded</span>
-                  <span className={styles.healthDot} style={{ backgroundColor: 'var(--color-text-muted)' }} />
+                  <span className={styles.healthCardLabel}>Degraded Lines</span>
+                  <span className={styles.healthDot} style={{ backgroundColor: '#eab308' }} />
                 </div>
-                <div className={styles.healthValue}>120</div>
+                <div className={styles.healthValue}>{degradedAssets}</div>
                 <div className={styles.healthBarTrack}>
-                  <div className={styles.healthBarFill} style={{ width: '9.3%', backgroundColor: 'var(--color-text-muted)' }} />
+                  <div className={styles.healthBarFill} style={{ width: `${totalAssets > 0 ? (degradedAssets / totalAssets * 100) : 15}%`, backgroundColor: '#eab308' }} />
                 </div>
               </div>
 
               <div className={styles.healthCard}>
                 <div className={styles.healthCardHeader}>
-                  <span className={styles.healthCardLabel}>Critical</span>
+                  <span className={styles.healthCardLabel}>Critical Risks</span>
                   <span className={styles.healthDot} style={{ backgroundColor: 'var(--color-railway-red)' }} />
                 </div>
-                <div className={styles.healthValue}>18</div>
+                <div className={styles.healthValue} style={{ color: criticalAssets > 0 ? 'var(--color-railway-red)' : 'inherit' }}>{criticalAssets}</div>
                 <div className={styles.healthBarTrack}>
-                  <div className={styles.healthBarFill} style={{ width: '1.4%', backgroundColor: 'var(--color-railway-red)' }} />
+                  <div className={styles.healthBarFill} style={{ width: `${totalAssets > 0 ? (criticalAssets / totalAssets * 100) : 5}%`, backgroundColor: 'var(--color-railway-red)' }} />
                 </div>
               </div>
 
               <div className={styles.healthCard}>
                 <div className={styles.healthCardHeader}>
-                  <span className={styles.healthCardLabel}>Under Maintenance</span>
-                  <span className={styles.healthDot} style={{ backgroundColor: 'rgba(255,255,255,0.3)' }} />
+                  <span className={styles.healthCardLabel}>Avg Fatigue Index</span>
+                  <span className={styles.healthDot} style={{ backgroundColor: '#8a7e72' }} />
                 </div>
-                <div className={styles.healthValue}>24</div>
+                <div className={styles.healthValue}>
+                  {totalAssets > 0 ? Math.round(assetList.reduce((acc, a) => acc + a.fatigueIndex, 0) / totalAssets) : 48}%
+                </div>
                 <div className={styles.healthBarTrack}>
-                  <div className={styles.healthBarFill} style={{ width: '1.8%', backgroundColor: 'rgba(255,255,255,0.3)' }} />
+                  <div className={styles.healthBarFill} style={{ width: '48%', backgroundColor: '#8a7e72' }} />
                 </div>
               </div>
-            </div>
-
-            {/* Subtle horizontal health distribution visualization */}
-            <div className={styles.distributionTrack}>
-              <div className={styles.distSegment} style={{ width: '89.2%', backgroundColor: 'var(--color-text-secondary)' }} />
-              <div className={styles.distSegment} style={{ width: '9.3%', backgroundColor: 'var(--color-text-muted)' }} />
-              <div className={styles.distSegment} style={{ width: '1.5%', backgroundColor: 'var(--color-railway-red)' }} />
             </div>
           </div>
         </ScrollReveal>
 
-        {/* S03: ASSET REGISTRY & FILTERS */}
+        {/* S03: INTERACTIVE DEPARTMENT TAB BUTTONS & ASSET REGISTRY */}
         <ScrollReveal>
           <div className={styles.registrySection}>
             <div className={styles.registryIntro}>
-              <h2 className={styles.sectionTitle}>Asset Registry</h2>
-              <p className={styles.registryDesc}>Search and inspect infrastructure assets across engineering, S&T and traction systems.</p>
+              <h2 className={styles.sectionTitle}>Asset Registry Directory</h2>
+              <p className={styles.registryDesc}>Filter and inspect live section traffic loading, GMT fatigue metrics, and active defect records.</p>
+            </div>
+
+            {/* QUICK DEPARTMENT FILTER TABS */}
+            <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              {[
+                { label: 'ALL DEPARTMENTS', val: 'ALL DEPARTMENTS' },
+                { label: '⚙️ ENGINEERING (TRACK)', val: 'ENGINEERING' },
+                { label: '📡 SIGNAL & TELECOM (S&T)', val: 'S&T' },
+                { label: '⚡ TRACTION (OHE)', val: 'TRACTION' },
+              ].map(tab => (
+                <button
+                  key={tab.val}
+                  onClick={() => setSelectedDept(tab.val)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: `1px solid ${selectedDept === tab.val ? 'var(--color-railway-red, #bc473a)' : 'rgba(30, 27, 25, 0.15)'}`,
+                    background: selectedDept === tab.val ? 'rgba(188, 71, 58, 0.12)' : 'rgba(255, 255, 255, 0.7)',
+                    color: selectedDept === tab.val ? '#bc473a' : '#1e1b19',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             <div className={styles.filterBar}>
@@ -491,7 +500,7 @@ export const Assets: React.FC = () => {
                 <Search className={styles.searchIcon} />
                 <input 
                   type="text" 
-                  placeholder="Search by asset ID, name, location or type..."
+                  placeholder="Search by asset ID, section code, location or type..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={styles.searchInput}
@@ -505,21 +514,8 @@ export const Assets: React.FC = () => {
               >
                 <option value="ALL TYPES">ALL TYPES</option>
                 <option value="TRACK LINE">TRACK LINES</option>
-                <option value="POINT MACHINE">POINT MACHINES</option>
-                <option value="OVERHEAD EQUIPMENT">OVERHEAD EQUIPMENT</option>
-                <option value="STRUCTURAL BRIDGE">BRIDGES</option>
-                <option value="COLOR LIGHT SIGNAL">SIGNALS</option>
-              </select>
-
-              <select 
-                value={selectedDept} 
-                onChange={(e) => setSelectedDept(e.target.value)}
-                className={styles.selectInput}
-              >
-                <option value="ALL DEPARTMENTS">ALL DEPARTMENTS</option>
-                <option value="ENGINEERING">ENGINEERING</option>
-                <option value="S&T">S&T</option>
-                <option value="TRACTION">TRACTION</option>
+                <option value="POINT & SIGNAL SYSTEM">POINT MACHINES &amp; SIGNALS</option>
+                <option value="TRACTION OHE LINE">OVERHEAD EQUIPMENT (OHE)</option>
               </select>
 
               <select 
@@ -543,7 +539,12 @@ export const Assets: React.FC = () => {
 
             {/* S04: ASSET LIST OR GRID */}
             <AnimatePresence mode="wait">
-              {viewMode === 'list' ? (
+              {loading ? (
+                <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                  <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.5rem' }} />
+                  <p>Loading asset health registry from database...</p>
+                </div>
+              ) : viewMode === 'list' ? (
                 <motion.div 
                   key="list" 
                   initial={{ opacity: 0 }} 
@@ -553,13 +554,13 @@ export const Assets: React.FC = () => {
                 >
                   <div className={styles.listHeader}>
                     <span>ASSET ID</span>
-                    <span>ASSET NAME</span>
+                    <span>SECTION NAME</span>
                     <span>TYPE</span>
-                    <span className={styles.locationCol}>LOCATION / KM</span>
-                    <span>DEPARTMENT</span>
+                    <span className={styles.locationCol}>SECTION CODE</span>
+                    <span>DEPT</span>
                     <span>CONDITION</span>
                     <span className={styles.availabilityCol}>AVAILABILITY</span>
-                    <span className={styles.inspectionCol}>LAST INSP</span>
+                    <span className={styles.inspectionCol}>FATIGUE %</span>
                   </div>
 
                   {filteredAssets.map((asset) => (
@@ -579,7 +580,9 @@ export const Assets: React.FC = () => {
                         <span style={{ color: getConditionColor(asset.condition) }}>{asset.condition}</span>
                       </span>
                       <span className={`${styles.idCell} ${styles.availabilityCol}`}>{asset.availability}%</span>
-                      <span className={`${styles.tagCell} ${styles.inspectionCol}`}>{asset.lastInspection}</span>
+                      <span className={`${styles.tagCell} ${styles.inspectionCol}`} style={{ fontWeight: 800, color: asset.fatigueIndex > 70 ? '#bc473a' : '#1e1b19' }}>
+                        {asset.fatigueIndex}%
+                      </span>
                       <span className={styles.viewAssetAffordance}>INSPECT →</span>
                     </div>
                   ))}
@@ -608,8 +611,8 @@ export const Assets: React.FC = () => {
                       <h3 className={styles.cardTitle}>{asset.name}</h3>
                       <div className={styles.cardMeta}>
                         <span>TYPE: {asset.type}</span>
-                        <span>LOCATION: {asset.location}</span>
-                        <span>DEPT: {asset.department}</span>
+                        <span>SECTION: {asset.location}</span>
+                        <span>TRAFFIC: {asset.dailyTrainCount} trains/day ({asset.gmtLoading} GMT)</span>
                       </div>
                       <div className={styles.cardFooter}>
                         <span className={styles.idCell}>{asset.availability}% AVAIL</span>
@@ -623,14 +626,14 @@ export const Assets: React.FC = () => {
           </div>
         </ScrollReveal>
 
-        {/* S05: OPERATIONAL RISK SPECTER / DYNAMIC SNAPSHOT */}
+        {/* S05: DEPARTMENTAL DISTRIBUTION BREAKDOWN */}
         <ScrollReveal>
           <div className={styles.snapshotSection}>
-            <h2 className={styles.sectionTitle}>Network Asset Snapshot</h2>
+            <h2 className={styles.sectionTitle}>Departmental Asset Breakdown</h2>
             <div className={styles.snapshotGrid}>
               <div className={styles.snapshotSummary}>
                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.7', margin: 0 }}>
-                  A live overview mapping the topological distribution of physical assets across zones. Hairlines structure asset volumes inside Engineering, S&T and Traction domains.
+                  Live distribution mapping physical assets and track sections across Engineering (Track), Signal &amp; Telecom (S&amp;T), and Traction Distribution (OHE) domains in the active division.
                 </p>
               </div>
               <div className={styles.snapshotVisual}>
@@ -640,27 +643,27 @@ export const Assets: React.FC = () => {
                   <div className={styles.snapshotConnector} />
                   <span className={styles.snapshotNodeLabel}>ENGINEERING</span>
                   <div className={styles.snapshotNodeValueBar}>
-                    <div className={styles.snapshotNodeValueFill} style={{ width: '45%' }} />
+                    <div className={styles.snapshotNodeValueFill} style={{ width: `${totalAssets > 0 ? (engCount / totalAssets * 100) : 45}%` }} />
                   </div>
-                  <span className={styles.snapshotValueLabel}>577</span>
+                  <span className={styles.snapshotValueLabel}>{engCount}</span>
                 </div>
 
                 <div className={styles.snapshotNodeRow}>
                   <div className={styles.snapshotConnector} />
-                  <span className={styles.snapshotNodeLabel}>S&T</span>
+                  <span className={styles.snapshotNodeLabel}>S&amp;T</span>
                   <div className={styles.snapshotNodeValueBar}>
-                    <div className={styles.snapshotNodeValueFill} style={{ width: '30%' }} />
+                    <div className={styles.snapshotNodeValueFill} style={{ width: `${totalAssets > 0 ? (stCount / totalAssets * 100) : 30}%` }} />
                   </div>
-                  <span className={styles.snapshotValueLabel}>385</span>
+                  <span className={styles.snapshotValueLabel}>{stCount}</span>
                 </div>
 
                 <div className={styles.snapshotNodeRow}>
                   <div className={styles.snapshotConnector} />
                   <span className={styles.snapshotNodeLabel}>TRACTION</span>
                   <div className={styles.snapshotNodeValueBar}>
-                    <div className={styles.snapshotNodeValueFill} style={{ width: '25%' }} />
+                    <div className={styles.snapshotNodeValueFill} style={{ width: `${totalAssets > 0 ? (trdCount / totalAssets * 100) : 25}%` }} />
                   </div>
-                  <span className={styles.snapshotValueLabel}>322</span>
+                  <span className={styles.snapshotValueLabel}>{trdCount}</span>
                 </div>
               </div>
             </div>
@@ -680,15 +683,12 @@ export const Assets: React.FC = () => {
 
       </div>
 
-      {/* S06: ASSET DETAIL SIDE PANEL SHEET */}
+      {/* S06: ENHANCED ASSET DETAIL SIDE PANEL SHEET */}
       <AnimatePresence>
         {selectedAsset && (
           <>
-            <motion.div 
+            <div 
               className={styles.drawerOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
               onClick={() => setSelectedAsset(null)}
             />
             <motion.div 
@@ -696,7 +696,7 @@ export const Assets: React.FC = () => {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className={styles.drawerHeader}>
                 <div>
@@ -710,10 +710,10 @@ export const Assets: React.FC = () => {
 
               {/* ASSET PROFILE */}
               <div className={styles.drawerSection}>
-                <h3 className={styles.drawerSubTitle}>ASSET PROFILE</h3>
+                <h3 className={styles.drawerSubTitle}>ASSET PROFILE &amp; TRAFFIC LOAD</h3>
                 <div className={styles.metricGrid}>
                   <div className={styles.metricItem}>
-                    <span className={styles.indicatorLabel}>CURRENT CONDITION</span>
+                    <span className={styles.indicatorLabel}>CONDITION STATE</span>
                     <span className={styles.metricVal} style={{ color: getConditionColor(selectedAsset.condition) }}>
                       {selectedAsset.condition}
                     </span>
@@ -723,8 +723,18 @@ export const Assets: React.FC = () => {
                     <span className={styles.metricVal}>{selectedAsset.availability}%</span>
                   </div>
                   <div className={styles.metricItem}>
-                    <span className={styles.indicatorLabel}>ASSET CRITICALITY</span>
-                    <span className={styles.metricVal}>{selectedAsset.criticality}</span>
+                    <span className={styles.indicatorLabel}>DAILY TRAFFIC</span>
+                    <span className={styles.metricVal}>{selectedAsset.dailyTrainCount} trains/day</span>
+                  </div>
+                  <div className={styles.metricItem}>
+                    <span className={styles.indicatorLabel}>TRAFFIC TONNAGE</span>
+                    <span className={styles.metricVal}>{selectedAsset.gmtLoading} GMT</span>
+                  </div>
+                  <div className={styles.metricItem}>
+                    <span className={styles.indicatorLabel}>FATIGUE INDEX</span>
+                    <span className={styles.metricVal} style={{ color: selectedAsset.fatigueIndex > 70 ? '#bc473a' : '#1e1b19' }}>
+                      {selectedAsset.fatigueIndex}%
+                    </span>
                   </div>
                   <div className={styles.metricItem}>
                     <span className={styles.indicatorLabel}>ACTIVE DEFECTS</span>
@@ -732,22 +742,54 @@ export const Assets: React.FC = () => {
                       {selectedAsset.activeDefectsCount} Open
                     </span>
                   </div>
-                  <div className={styles.metricItem}>
-                    <span className={styles.indicatorLabel}>LAST INSPECTION</span>
-                    <span className={styles.metricVal}>{selectedAsset.lastInspection}</span>
-                  </div>
-                  <div className={styles.metricItem}>
-                    <span className={styles.indicatorLabel}>NEXT ACTION</span>
-                    <span className={styles.metricVal} style={{ fontSize: '0.82rem', lineHeight: '1.4', marginTop: '4px' }}>
-                      {selectedAsset.nextAction}
-                    </span>
-                  </div>
+                </div>
+              </div>
+
+              {/* ACTION LINKS TO DEFECTS & OPTIMIZATION */}
+              <div className={styles.drawerSection} style={{ padding: '1rem', background: 'rgba(255,255,255,0.6)', borderRadius: '8px', border: '1px solid rgba(30,27,25,0.1)' }}>
+                <h3 className={styles.drawerSubTitle} style={{ border: 'none', padding: 0, marginBottom: '0.6rem' }}>INTELLIGENCE ACTIONS</h3>
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  <a
+                    href="/defects"
+                    style={{
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '6px',
+                      background: 'var(--color-railway-red, #bc473a)',
+                      color: '#ffffff',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <ShieldAlert size={14} /> View Defects ({selectedAsset.activeDefectsCount})
+                  </a>
+                  <a
+                    href="/optimization"
+                    style={{
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '6px',
+                      background: 'rgba(30, 27, 25, 0.08)',
+                      border: '1px solid rgba(30, 27, 25, 0.15)',
+                      color: '#1e1b19',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Activity size={14} /> CP-SAT Optimizer
+                  </a>
                 </div>
               </div>
 
               {/* SERVICE HISTORY */}
               <div className={styles.drawerSection}>
-                <h3 className={styles.drawerSubTitle}>SERVICE HISTORY</h3>
+                <h3 className={styles.drawerSubTitle}>SERVICE &amp; MAINTENANCE SCHEDULE</h3>
                 <div className={styles.timeline}>
                   <div className={styles.timelineLine} />
                   {selectedAsset.serviceHistory.map((history, i) => (
@@ -763,13 +805,14 @@ export const Assets: React.FC = () => {
               {/* DEFECT / FAILURE HISTORY */}
               {selectedAsset.defectHistory.length > 0 && (
                 <div className={styles.drawerSection}>
-                  <h3 className={styles.drawerSubTitle}>DEFECT & FAILURE RECORD</h3>
+                  <h3 className={styles.drawerSubTitle}>DEFECT &amp; FAILURE RECORD</h3>
                   <div className={styles.defectTable}>
                     {selectedAsset.defectHistory.map((defect, i) => (
                       <div key={i} className={styles.defectItem}>
                         <div>
                           <span className={styles.defectDate}>{defect.date}</span>
                           <p className={styles.defectDesc} style={{ margin: '4px 0 0' }}>{defect.defect}</p>
+                          <span style={{ fontSize: '0.72rem', color: '#8a7e72', fontWeight: 600 }}>{defect.resolution}</span>
                         </div>
                         <span 
                           className={styles.severityTag} 
@@ -788,7 +831,7 @@ export const Assets: React.FC = () => {
 
               {/* OPERATIONAL RISK SPECTER */}
               <div className={styles.drawerSection}>
-                <h3 className={styles.drawerSubTitle}>OPERATIONAL RISK</h3>
+                <h3 className={styles.drawerSubTitle}>OPERATIONAL RISK ANALYSIS</h3>
                 
                 <div className={styles.riskItem}>
                   <div className={styles.riskHeader}>

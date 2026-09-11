@@ -13,7 +13,6 @@ import Maintenance from './pages/Maintenance';
 import Defects from './pages/Defects';
 import BlockPlanning from './pages/BlockPlanning';
 import Optimization from './pages/Optimization';
-import Assets from './pages/Assets';
 import Traffic from './pages/Traffic';
 import Reports from './pages/Reports';
 import Auth from './pages/Auth';
@@ -30,6 +29,9 @@ const queryClient = new QueryClient({
 
 import { PageTransitionProvider } from './components/PageTransition';
 import { ScrollProvider } from './components/motion/ScrollSystem';
+import { NotificationProvider } from './context/NotificationContext';
+import { EmergencyBanner } from './components/EmergencyBanner';
+import { ToastContainer } from './components/ToastContainer';
 
 const NonLandingRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <div className="non-landing-page page-fade-enter" style={{ minHeight: '100%' }}>{children}</div>;
@@ -39,11 +41,14 @@ export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <PageTransitionProvider>
-            <ScrollProvider>
-              <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-                <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
+        <NotificationProvider>
+          <BrowserRouter>
+            <PageTransitionProvider>
+              <ScrollProvider>
+                <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
+                  <EmergencyBanner />
+                  <ToastContainer />
+                  <main style={{ flex: 1, width: '100%', margin: '0 auto' }}>
                   <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Home />} />
@@ -81,11 +86,7 @@ export const App: React.FC = () => {
                         <NonLandingRoute><Traffic /></NonLandingRoute>
                       </ProtectedRoute>
                     } />
-                    <Route path="/assets" element={
-                      <ProtectedRoute>
-                        <NonLandingRoute><Assets /></NonLandingRoute>
-                      </ProtectedRoute>
-                    } />
+                    <Route path="/assets" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/report" element={
                       <ProtectedRoute>
                         <NonLandingRoute><IncidentReport /></NonLandingRoute>
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
             </ScrollProvider>
           </PageTransitionProvider>
         </BrowserRouter>
+        </NotificationProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

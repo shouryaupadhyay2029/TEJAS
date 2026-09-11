@@ -1,28 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, RotateCcw, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { Search, RotateCcw, AlertTriangle, CheckCircle2, Info, Clock, Filter, ShieldAlert } from 'lucide-react';
 import GradientBackground from '../../components/GradientBackground';
 import { Navbar } from '../Home/components/Navbar';
 import {
-  highPriorityTasks as mockHighPriorityTasks,
-  timelineBlocks as mockTimelineBlocks,
   assetTrendData,
   mockAssets,
   aiRecommendation
 } from './data/mockData';
-import type { AssetDetail, TaskRecord } from './data/mockData';
+import type { AssetDetail } from './data/mockData';
 import styles from './Dashboard.module.css';
 import { PageEntryReveal } from '../../components/PageEntryReveal';
 import {
   fetchMaintenanceTasks,
   fetchSectionTrafficAll,
+  fetchBlockSchedule,
   type MaintenanceTask,
-  type SectionTraffic
+  type SectionTraffic,
+  type BlockScheduleDetail
 } from '../../services/api';
 
 type SectionType =
   | 'overview'
-  | 'maintenance'
   | 'assets'
   | 'planning'
   | 'optimizer'
@@ -58,24 +57,47 @@ const childVariants = {
 };
 
 export const Dashboard: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<SectionType>('overview');
-  const [selectedTask, setSelectedTask] = useState<TaskRecord | null>(mockHighPriorityTasks[0]);
+  const [activeSection, setActiveSection] = useState<SectionType>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sec = params.get('section');
+    if (sec === 'assets' || sec === 'coordination' || sec === 'live' || sec === 'analytics' || sec === 'alerts') {
+      return sec as SectionType;
+    }
+    return 'overview';
+  });
+  const [hoveredCoordDept, setHoveredCoordDept] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<AssetDetail | null>(mockAssets[0]);
   const [assetSearch, setAssetSearch] = useState('');
 
   // Live Backend API States
   const [liveTasks, setLiveTasks] = useState<MaintenanceTask[]>([]);
   const [liveSections, setLiveSections] = useState<SectionTraffic[]>([]);
+  const [liveBlocks, setLiveBlocks] = useState<BlockScheduleDetail[]>([]);
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState<'ALL' | 'Engineering' | 'S&T' | 'Traction'>('ALL');
+  const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
+
+  // Live IST Clock Ticker
+  useEffect(() => {
+    function updateClock() {
+      const now = new Date();
+      setCurrentTimeStr(now.toLocaleTimeString('en-IN', { hour12: false }) + ' IST');
+    }
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [tasksData, sectionsData] = await Promise.all([
+        const [tasksData, sectionsData, blocksData] = await Promise.all([
           fetchMaintenanceTasks({ limit: 100 }),
-          fetchSectionTrafficAll({ limit: 50 })
+          fetchSectionTrafficAll({ limit: 50 }),
+          fetchBlockSchedule('MONTHLY').catch(() => [])
         ]);
         setLiveTasks(tasksData);
         setLiveSections(sectionsData);
+        setLiveBlocks(blocksData);
       } catch (err) {
         console.warn('Backend API connection warning, falling back to cached state:', err);
       }
@@ -105,7 +127,6 @@ export const Dashboard: React.FC = () => {
   // States for interactive animations
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationComplete, setOptimizationComplete] = useState(false);
-  const [hoveredCoordDept, setHoveredCoordDept] = useState<string | null>(null);
 
   // Filter assets based on search query
   const filteredAssets = mockAssets.filter(
@@ -154,9 +175,7 @@ export const Dashboard: React.FC = () => {
         <div className={styles.secondaryNavContainer}>
           {[
             { id: 'overview', label: 'Overview' },
-            { id: 'maintenance', label: 'Maintenance Priority' },
             { id: 'assets', label: 'Asset Intelligence' },
-            { id: 'planning', label: 'Block Planning' },
             { id: 'coordination', label: 'Coordination Center' },
             { id: 'live', label: 'Live Operations' },
             { id: 'analytics', label: 'Analytics & Reports' },
@@ -212,8 +231,49 @@ export const Dashboard: React.FC = () => {
               </div>
               <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
 
+              {/* COMMAND TOOLBAR */}
+              <motion.div variants={childVariants} className={styles.commandToolbar} style={{ marginTop: '1.5rem' }}>
+                <div className={styles.commandFilters}>
+                  <Filter size={13} style={{ color: 'var(--color-text-muted)', marginRight: '4px' }} />
+                  <span className={styles.kpiLabel} style={{ marginRight: '8px' }}>DEPARTMENT FILTER:</span>
+                  {(['ALL', 'Engineering', 'S&T', 'Traction'] as const).map(dept => (
+                    <button
+                      key={dept}
+                      onClick={() => setSelectedDeptFilter(dept)}
+                      className={`${styles.deptFilterBtn} ${selectedDeptFilter === dept ? styles.deptFilterActive : ''}`}
+                    >
+                      {dept}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.commandActions}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--color-text-muted)', marginRight: '12px' }}>
+                    <Clock size={14} color="#bc473a" />
+                    <span>{currentTimeStr || '10:42:15 IST'}</span>
+                  </div>
+
+                  <button
+                    onClick={triggerOptimization}
+                    disabled={isOptimizing}
+                    className={styles.cmdBtnPrimary}
+                  >
+                    <RotateCcw size={13} className={isOptimizing ? 'animate-spin' : ''} />
+                    {isOptimizing ? 'SOLVING CP-SAT...' : 'RUN CP-SAT SOLVER'}
+                  </button>
+
+                  <button
+                    onClick={() => window.location.href = '/report'}
+                    className={styles.cmdBtnSecondary}
+                  >
+                    <ShieldAlert size={13} color="#bc473a" />
+                    LOG DEFECT
+                  </button>
+                </div>
+              </motion.div>
+
               {/* KPI Strip */}
-              <motion.div variants={childVariants} className={styles.kpiGrid} style={{ marginTop: '2.5rem' }}>
+              <motion.div variants={childVariants} className={styles.kpiGrid} style={{ marginTop: '2rem' }}>
                 {dynamicKpis.map((kpi) => (
                   <div key={kpi.title} className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>{kpi.title}</span>
@@ -222,6 +282,88 @@ export const Dashboard: React.FC = () => {
                     <span className={styles.kpiFooter}>{kpi.change}</span>
                   </div>
                 ))}
+              </motion.div>
+
+              {/* LIVE WORK & PROGRESS MONITORING DESK */}
+              <motion.div variants={childVariants} style={{ marginTop: '3.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                  <div>
+                    <h3 className={styles.kpiLabel} style={{ fontSize: '0.75rem', letterSpacing: '0.12em' }}>
+                      CONTROL OFFICE — LIVE WORK & PROGRESS MONITOR
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                      Real-time track execution status, departmental work completion, and speed restriction monitoring.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className={styles.headerStatusDot} />
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 800, color: 'var(--color-text-muted)' }}>
+                      LIVE FEED: ACTIVE
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Breakdown Panel */}
+                <div className={styles.explanationPanel} style={{ backgroundColor: 'rgba(255, 255, 255, 0.4)', borderRadius: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      <span className={styles.kpiLabel}>TODAY'S SCHEDULED WORK COMPLETION</span>
+                      <h2 className={styles.explanationTitle} style={{ margin: '4px 0 0', fontSize: '1.6rem', fontWeight: 800 }}>
+                        {liveBlocks.length > 0 ? `${Math.round((liveBlocks.filter(b => b.approved_by_control_office || b.sse_approved).length / liveBlocks.length) * 100)}% WORK COMPLETED` : '74% WORK COMPLETED'}
+                      </h2>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className={styles.kpiLabel}>ACTIVE TRAFFIC SPEED RESTRICTIONS (PSR)</span>
+                      <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-mono)', fontSize: '1.1rem', fontWeight: 800, color: '#bc473a' }}>
+                        2 CORRIDORS CAUTION (30 KM/H)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Overall Horizontal Progress Meter */}
+                  <div className={styles.explainBar} style={{ height: '10px', marginBottom: '1.5rem' }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: liveBlocks.length > 0 ? `${Math.round((liveBlocks.filter(b => b.approved_by_control_office || b.sse_approved).length / liveBlocks.length) * 100)}%` : '74%' }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className={styles.explainProgress}
+                      style={{ backgroundColor: '#27ae60' }}
+                    />
+                  </div>
+
+                  {/* Department Work Progress Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                    <div style={{ border: '1px solid var(--color-border)', padding: '12px', background: 'rgba(255, 255, 255, 0.3)', borderRadius: '3px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span className={styles.taskDeptBadge}>ENGINEERING</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, color: '#27ae60' }}>78% DONE</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                        USFD ultrasonic scan passed on Varanasi-Lucknow corridor. Ballast tamping in progress.
+                      </p>
+                    </div>
+
+                    <div style={{ border: '1px solid var(--color-border)', padding: '12px', background: 'rgba(255, 255, 255, 0.3)', borderRadius: '3px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span className={styles.taskDeptBadge}>S&T (SIGNAL & TELECOM)</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, color: '#2980b9' }}>65% DONE</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                        Point machine 4A motor torque calibrated. Axle counter relay inspection underway.
+                      </p>
+                    </div>
+
+                    <div style={{ border: '1px solid var(--color-border)', padding: '12px', background: 'rgba(255, 255, 255, 0.3)', borderRadius: '3px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span className={styles.taskDeptBadge}>TRACTION (OHE)</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, color: '#d67a36' }}>82% DONE</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                        Catenary wire tension re-adjusted. Cantilever insulator replacement verified.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
 
               {/* Concise Status Area */}
@@ -257,156 +399,6 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </motion.div>
-            </motion.div>
-          )}
-
-          {/* S02: MAINTENANCE PRIORITY */}
-          {activeSection === 'maintenance' && (
-            <motion.div
-              key="maintenance"
-              variants={pageVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className={styles.workspaceHeaderWrap}>
-                <div className={styles.workspaceHeader}>
-                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
-                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Maintenance Intelligence</h1>
-                  <p>ML-driven task priority distribution and failure risk explanations.</p>
-                </div>
-                <div className={styles.headerStatus}>
-                  <span>UPDATED: JUST NOW</span>
-                </div>
-              </div>
-              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
-
-              <div className={styles.maintenanceGrid} style={{ marginTop: '2.5rem' }}>
-                {/* Task List */}
-                <motion.div variants={childVariants} className={styles.priorityListSection}>
-                  <h3 className={styles.kpiLabel}>High Priority Task Queue ({liveTasks.length} Active)</h3>
-                  {liveTasks.length === 0 ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                      Loading live task queue from PostgreSQL database...
-                    </div>
-                  ) : (
-                    liveTasks.slice(0, 15).map((task) => {
-                      const taskIdStr = `TSK-${task.task_id}`;
-                      const isSelected = (selectedTask as any)?.task_id === task.task_id;
-                      return (
-                        <div
-                          key={task.task_id}
-                          onClick={() => setSelectedTask(task as any)}
-                          className={`${styles.taskItemCard} ${isSelected ? styles.taskItemActive : ''}`}
-                        >
-                          <div className={styles.taskHeader}>
-                            <span className={styles.taskId}>{taskIdStr}</span>
-                            <span className={styles.taskDeptBadge}>{task.department.replace('_', ' ')}</span>
-                          </div>
-                          <h4 style={{ margin: '4px 0', fontSize: '0.85rem', fontWeight: '800' }}>
-                            {task.from_station_name} → {task.to_station_name}
-                          </h4>
-                          <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
-                            {task.defect_type} (Level {task.defect_severity}) — Urgency: {((task.urgency_score ?? 0) * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                      );
-                    })
-                  )}
-                </motion.div>
-
-                {/* Visual Explanation Panel */}
-                <motion.div variants={childVariants}>
-                  <h3 className={styles.kpiLabel}>AI Decision Explanation</h3>
-                  {selectedTask ? (
-                    <div className={styles.explanationPanel}>
-                      <span className={styles.kpiLabel}>Selected Asset / Corridor</span>
-                      <h2 className={styles.explanationTitle}>
-                        {(selectedTask as any).from_station_name ? `${(selectedTask as any).from_station_name} → ${(selectedTask as any).to_station_name}` : (selectedTask as any).asset || 'Track Segment'}
-                      </h2>
-                      
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Priority Class</span>
-                          <span className={`${styles.explainValue} ${styles.explainValueCritical}`}>
-                            {(selectedTask as any).defect_severity === 6 ? 'EMERGENCY (LEVEL 6)' : ((selectedTask as any).urgency_score ?? 0) >= 0.75 ? 'CRITICAL' : 'HIGH'}
-                          </span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, Math.max(20, ((selectedTask as any).urgency_score ?? 0.8) * 100))}%` }}
-                            transition={{ duration: 0.6, ease: 'easeOut' }}
-                            className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Defect Severity Score</span>
-                          <span className={styles.explainValue}>
-                            LEVEL {(selectedTask as any).defect_severity ?? 5}
-                          </span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${((selectedTask as any).defect_severity ?? 5) * 16.6}%` }}
-                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-                            className={`${styles.explainProgress} ${styles.explainProgressCritical}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Urgency Score Index</span>
-                          <span className={styles.explainValue}>
-                            {(((selectedTask as any).urgency_score ?? 0.8) * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${((selectedTask as any).urgency_score ?? 0.8) * 100}%` }}
-                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                            className={`${styles.explainProgress} ${styles.explainProgressHigh}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.explainRow}>
-                        <div className={styles.explainRowMeta}>
-                          <span className={styles.explainLabel}>Days Overdue</span>
-                          <span className={styles.explainValue}>
-                            {(selectedTask as any).days_overdue ?? 0} days
-                          </span>
-                        </div>
-                        <div className={styles.explainBar}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, ((selectedTask as any).days_overdue ?? 5) * 5)}%` }}
-                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
-                            className={`${styles.explainProgress} ${styles.explainProgressHigh}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className={styles.explainRecommendation}>
-                        <span className={styles.recommendationLabel}>TEJAS AI RECOMMENDATION</span>
-                        <p className={styles.recommendationText}>
-                          "Allocate priority block window for {(selectedTask as any).department ? (selectedTask as any).department.replace('_', ' ') : 'maintenance'}. Defect type: {(selectedTask as any).defect_type || 'Track repair'}."
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.explanationPanel}>
-                      <p style={{ color: 'var(--color-text-muted)' }}>Select a task from the left queue to view AI explanation.</p>
-                    </div>
-                  )}
-                </motion.div>
-              </div>
             </motion.div>
           )}
 
@@ -553,95 +545,6 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </motion.div>
                 )}
-              </div>
-            </motion.div>
-          )}
-
-          {/* S04: BLOCK PLANNING */}
-          {activeSection === 'planning' && (
-            <motion.div
-              key="planning"
-              variants={pageVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className={styles.workspaceHeaderWrap}>
-                <div className={styles.workspaceHeader}>
-                  <span className={styles.headerEyebrow}>OPERATIONS CONSOLE</span>
-                  <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>Block Planning Timeline</h1>
-                  <p>Trace scheduled, active, and conflicting blocks across departments.</p>
-                </div>
-                <div className={styles.headerStatus}>
-                  <span>DAILY VIEW</span>
-                </div>
-              </div>
-              <div style={{ height: '1.5px', backgroundColor: 'var(--color-border)' }} />
-
-              <div className={styles.planningWorkspace} style={{ marginTop: '2.5rem' }}>
-                <motion.div variants={childVariants} className={styles.timelineCard}>
-                  <div className={styles.timelineTimelineGrid}>
-                    {/* Gantt Header Timeline Axis */}
-                    <div className={styles.timelineHeader}>
-                      <div className={styles.timelineLabelSpace}>DEPARTMENT</div>
-                      <div className={styles.timelineAxis}>
-                        {['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'].map((tick) => (
-                          <div key={tick} className={styles.timelineTick}>
-                            {tick}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Department Tracks */}
-                    {(['Engineering', 'S&T', 'Traction'] as const).map((dept) => {
-                      const deptBlocks = mockTimelineBlocks.filter((b: any) => b.department === dept);
-
-                      return (
-                        <div key={dept} className={styles.timelineRow}>
-                          <div className={styles.timelineRowLabel}>{dept}</div>
-                          <div className={styles.timelineBlockContainer}>
-                            {deptBlocks.map((block: any) => {
-                              // Calculate position percentage: grid starts at 08:00 and ends at 18:00 (10 hours total span)
-                              const totalSpanHours = 10;
-                              const startHourOffset = block.startHour - 8;
-                              const leftPercent = (startHourOffset / totalSpanHours) * 100;
-                              const widthPercent = (block.durationHours / totalSpanHours) * 100;
-
-                              const blockColor =
-                                dept === 'Engineering'
-                                  ? 'rgba(210, 180, 140, 0.85)'
-                                  : dept === 'S&T'
-                                  ? 'rgba(229, 152, 102, 0.85)'
-                                  : 'rgba(188, 71, 58, 0.85)';
-
-                              return (
-                                <motion.div
-                                  key={block.id}
-                                  initial={{ scaleX: 0, originX: 0 }}
-                                  animate={{ scaleX: 1 }}
-                                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
-                                  className={styles.timelineGanttBlock}
-                                  style={{
-                                    left: `${leftPercent}%`,
-                                    width: `${widthPercent}%`,
-                                    backgroundColor: blockColor,
-                                  }}
-                                  title={block.description}
-                                >
-                                  <span className={styles.blockLabel}>{block.title}</span>
-                                  <span className={styles.blockSub}>
-                                    {block.durationHours} hrs ({block.startHour}:00)
-                                  </span>
-                                </motion.div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
               </div>
             </motion.div>
           )}
@@ -852,19 +755,31 @@ export const Dashboard: React.FC = () => {
                   <h3 className={styles.compatTitle}>Compatible Activities Detected</h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ borderBottom: '1px solid rgba(30, 27, 25, 0.05)', paddingBottom: '10px', opacity: hoveredCoordDept && hoveredCoordDept !== 'Engineering' ? 0.35 : 1 }}>
+                    <div
+                      onMouseEnter={() => setHoveredCoordDept('Engineering')}
+                      onMouseLeave={() => setHoveredCoordDept(null)}
+                      style={{ borderBottom: '1px solid rgba(30, 27, 25, 0.05)', paddingBottom: '10px', opacity: hoveredCoordDept && hoveredCoordDept !== 'Engineering' ? 0.35 : 1, cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+                    >
                       <span className={styles.kpiLabel}>Engineering Task</span>
                       <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800' }}>Track stabilization (ENG-204)</p>
                       <span style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)' }}>Required: 10:00 - 12:00</span>
                     </div>
                     
-                    <div style={{ borderBottom: '1px solid rgba(30, 27, 25, 0.05)', paddingBottom: '10px', opacity: hoveredCoordDept && hoveredCoordDept !== 'S&T' ? 0.35 : 1 }}>
+                    <div
+                      onMouseEnter={() => setHoveredCoordDept('S&T')}
+                      onMouseLeave={() => setHoveredCoordDept(null)}
+                      style={{ borderBottom: '1px solid rgba(30, 27, 25, 0.05)', paddingBottom: '10px', opacity: hoveredCoordDept && hoveredCoordDept !== 'S&T' ? 0.35 : 1, cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+                    >
                       <span className={styles.kpiLabel}>S&T Task</span>
                       <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800' }}>Signal cable replacement (SNT-409)</p>
                       <span style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)' }}>Required: 10:30 - 12:00</span>
                     </div>
                     
-                    <div style={{ opacity: hoveredCoordDept && hoveredCoordDept !== 'Traction' ? 0.35 : 1 }}>
+                    <div
+                      onMouseEnter={() => setHoveredCoordDept('Traction')}
+                      onMouseLeave={() => setHoveredCoordDept(null)}
+                      style={{ opacity: hoveredCoordDept && hoveredCoordDept !== 'Traction' ? 0.35 : 1, cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+                    >
                       <span className={styles.kpiLabel}>Traction Task</span>
                       <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800' }}>Overhead wire bracket inspection (TRD-102)</p>
                       <span style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)' }}>Required: 11:00 - 12:00</span>
@@ -1162,7 +1077,7 @@ export const Dashboard: React.FC = () => {
                     </p>
                   </div>
                   <div className={styles.alertAction}>
-                    <button className={styles.alertBtn} onClick={() => setActiveSection('maintenance')}>
+                    <button className={styles.alertBtn} onClick={() => setActiveSection('overview')}>
                       REVIEW TASK
                     </button>
                   </div>

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogOut, UserCheck, AlertTriangle } from 'lucide-react';
+import { Menu, X, LogOut, UserCheck, AlertTriangle, Bell, Volume2, VolumeX, ChevronDown, ChevronUp, MapPin, Clock, Wrench, ShieldAlert } from 'lucide-react';
 import styles from '../Home.module.css';
 
 import { TransitionLink } from '../../../components/PageTransition';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotifications } from '../../../context/NotificationContext';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -41,18 +42,24 @@ const navLinks = [
   { to: '/', label: 'HOME', num: '01' },
   { to: '/dashboard', label: 'DASHBOARD', num: '02' },
   { to: '/defects', label: 'DEFECTS', num: '03' },
-  { to: '/maintenance', label: 'MAINTENANCE', num: '04' },
-  { to: '/block-planning', label: 'PLANNING', num: '05' },
-  { to: '/optimization', label: 'OPTIMIZATION', num: '06' },
-  { to: '/traffic', label: 'TRAFFIC', num: '07' },
-  { to: '/assets', label: 'ASSETS', num: '08' },
-  { to: '/reports', label: 'REPORTS', num: '09' },
+  { to: '/block-planning', label: 'PLANNING', num: '04' },
+  { to: '/optimization', label: 'OPTIMIZATION', num: '05' },
+  { to: '/traffic', label: 'TRAFFIC', num: '06' },
+  { to: '/reports', label: 'REPORTS', num: '07' },
 ];
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [bellDrawerOpen, setBellDrawerOpen] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const { user, isAuthenticated, logout } = useAuth();
+  const { isAudioMuted, toggleAudioMute, unreadCount, notifications, acknowledgeEmergency, markAllRead } = useNotifications();
   const navigate = useNavigate();
+
+  const toggleExpand = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const handleLogout = () => {
     logout();
@@ -172,12 +179,285 @@ export const Navbar: React.FC = () => {
           })}
         </motion.div>
 
-        {/* RIGHT — Identity Badge & Login/Logout CTA */}
+        {/* RIGHT — Identity Badge, Audio Control, Bell Drawer & Login/Logout CTA */}
         <motion.div
           className={styles.navRight}
           variants={{ hidden: { opacity: 0, y: -10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.55, ease } } }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative' }}
         >
+          {/* AUDIO MUTE TOGGLE BUTTON */}
+          <button
+            onClick={toggleAudioMute}
+            title={isAudioMuted ? 'Unmute Emergency Siren Audio' : 'Mute Emergency Siren Audio'}
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              borderRadius: '8px',
+              padding: '6px 10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              fontFamily: 'var(--font-mono, monospace)',
+              color: isAudioMuted ? '#bc473a' : '#1e1b19',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isAudioMuted ? <VolumeX size={14} color="#bc473a" /> : <Volume2 size={14} color="#27ae60" />}
+            <span>{isAudioMuted ? 'MUTED' : 'AUDIO ON'}</span>
+          </button>
+
+          {/* NOTIFICATION BELL WITH DROPDOWN DRAWER */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setBellDrawerOpen(prev => !prev)}
+              title="Notifications & Live Alerts"
+              style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '8px',
+                padding: '6px 10px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+            >
+              <Bell size={15} color="#1e1b19" />
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    backgroundColor: '#bc473a',
+                    color: '#faf6f0',
+                    fontSize: '0.55rem',
+                    fontWeight: 900,
+                    fontFamily: 'var(--font-mono, monospace)',
+                    borderRadius: '99px',
+                    padding: '1px 5px',
+                    lineHeight: 1,
+                  }}
+                >
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* DROPDOWN NOTIFICATION DRAWER */}
+            <AnimatePresence>
+              {bellDrawerOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    width: '380px',
+                    backgroundColor: 'rgba(252, 248, 240, 0.97)',
+                    color: '#1e1b19',
+                    borderRadius: '10px',
+                    boxShadow: '0 16px 40px rgba(30, 27, 25, 0.22)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1.5px solid rgba(30, 27, 25, 0.15)',
+                    padding: '16px',
+                    zIndex: 1000,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1.5px solid rgba(30, 27, 25, 0.1)', paddingBottom: '8px' }}>
+                    <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.08em', color: '#bc473a' }}>
+                      OPERATIONS FEED ({notifications.length})
+                    </span>
+                    <button
+                      onClick={markAllRead}
+                      style={{ background: 'none', border: 'none', color: 'rgba(30, 27, 25, 0.65)', fontSize: '0.62rem', cursor: 'pointer', fontFamily: 'var(--font-mono, monospace)', fontWeight: 700 }}
+                    >
+                      CLEAR ALL
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '380px', overflowY: 'auto', paddingRight: '2px' }}>
+                    {notifications.length === 0 ? (
+                      <p style={{ fontSize: '0.75rem', color: 'rgba(30, 27, 25, 0.6)', textAlign: 'center', margin: '1rem 0' }}>No active notifications</p>
+                    ) : (
+                      notifications.map(n => {
+                        const isExpanded = !!expandedIds[n.id];
+                        const dept = n.department || 'OPERATIONS';
+                        const score = n.urgencyScore !== undefined ? (n.urgencyScore <= 1 ? n.urgencyScore * 100 : n.urgencyScore) : null;
+                        
+                        return (
+                          <div
+                            key={n.id}
+                            onClick={(e) => toggleExpand(n.id, e)}
+                            style={{
+                              padding: '12px',
+                              borderRadius: '6px',
+                              background: n.type === 'EMERGENCY' ? 'rgba(188, 71, 58, 0.08)' : 'rgba(255, 255, 255, 0.75)',
+                              border: '1px solid rgba(30, 27, 25, 0.1)',
+                              borderLeft: `4px solid ${n.type === 'EMERGENCY' ? '#bc473a' : n.type === 'OPPORTUNITY' ? '#27ae60' : n.type === 'ATTENTION' ? '#e59866' : '#d2b48c'}`,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: isExpanded ? '0 4px 12px rgba(30, 27, 25, 0.08)' : 'none',
+                            }}
+                          >
+                            {/* Short View Top Bar: Department badge + Relative time + Expand Arrow */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.62rem', fontFamily: 'var(--font-mono, monospace)', fontWeight: 700 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{
+                                  background: dept === 'ENGINEERING' ? 'rgba(188, 71, 58, 0.15)' : dept === 'S&T' ? 'rgba(39, 174, 96, 0.15)' : dept === 'TRACTION' ? 'rgba(229, 152, 102, 0.15)' : 'rgba(30, 27, 25, 0.08)',
+                                  color: dept === 'ENGINEERING' ? '#bc473a' : dept === 'S&T' ? '#27ae60' : dept === 'TRACTION' ? '#d35400' : '#1e1b19',
+                                  padding: '2px 6px',
+                                  borderRadius: '3px',
+                                  letterSpacing: '0.04em'
+                                }}>
+                                  {dept}
+                                </span>
+                                <span style={{ color: n.type === 'EMERGENCY' ? '#bc473a' : n.type === 'OPPORTUNITY' ? '#27ae60' : 'rgba(30,27,25,0.7)' }}>
+                                  {n.type}
+                                </span>
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(30, 27, 25, 0.6)' }}>
+                                <span>{n.timestamp}</span>
+                                {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              </div>
+                            </div>
+
+                            {/* Short Title & Message */}
+                            <h6 style={{ margin: '6px 0 0', fontSize: '0.84rem', fontWeight: 800, color: '#1e1b19' }}>{n.title}</h6>
+                            <p style={{ margin: '3px 0 0', fontSize: '0.74rem', color: 'rgba(30, 27, 25, 0.8)', lineHeight: 1.4 }}>{n.message}</p>
+
+                            {!isExpanded && (
+                              <div style={{ marginTop: '6px', fontSize: '0.62rem', color: '#bc473a', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span>Click to expand report details</span>
+                                <ChevronDown size={12} />
+                              </div>
+                            )}
+
+                            {/* Expanded Detailed View */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  style={{
+                                    marginTop: '10px',
+                                    paddingTop: '10px',
+                                    borderTop: '1px dashed rgba(30, 27, 25, 0.15)',
+                                    fontSize: '0.72rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {/* Exact Time & Date */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(30, 27, 25, 0.85)' }}>
+                                    <Clock size={13} color="#bc473a" />
+                                    <span style={{ fontWeight: 700, fontFamily: 'var(--font-mono, monospace)', fontSize: '0.68rem' }}>
+                                      REPORTED: {n.reportedExactTime || n.timestamp}
+                                    </span>
+                                  </div>
+
+                                  {/* Route / Location */}
+                                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', color: 'rgba(30, 27, 25, 0.85)' }}>
+                                    <MapPin size={13} color="#bc473a" style={{ marginTop: '2px', flexShrink: 0 }} />
+                                    <span>
+                                      <strong>LOCATION:</strong> {n.routeLocation || n.sectionCode || 'Varanasi Division Mainline'}
+                                    </span>
+                                  </div>
+
+                                  {/* Subsystem & Department */}
+                                  {n.subsystem && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(30, 27, 25, 0.85)' }}>
+                                      <Wrench size={13} color="#bc473a" style={{ flexShrink: 0 }} />
+                                      <span>
+                                        <strong>SUBSYSTEM:</strong> {n.subsystem}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Urgency Score Index */}
+                                  {score !== null && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                      <ShieldAlert size={13} color={score > 90 ? '#bc473a' : '#e59866'} />
+                                      <span style={{
+                                        fontFamily: 'var(--font-mono, monospace)',
+                                        fontSize: '0.68rem',
+                                        fontWeight: 800,
+                                        color: score > 90 ? '#bc473a' : '#d35400',
+                                        background: score > 90 ? 'rgba(188, 71, 58, 0.12)' : 'rgba(229, 152, 102, 0.15)',
+                                        padding: '2px 6px',
+                                        borderRadius: '3px'
+                                      }}>
+                                        AI RISK INDEX: {score.toFixed(1)}% {score > 90 ? '(AUDIO SIREN THRESHOLD MET)' : '(SIREN MUTED - SCORE <= 90%)'}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Detailed Observations */}
+                                  {n.detailedObservations && (
+                                    <div style={{ background: 'rgba(255, 255, 255, 0.8)', padding: '6px 8px', borderRadius: '4px', borderLeft: '3px solid #1e1b19', marginTop: '4px' }}>
+                                      <strong style={{ display: 'block', fontSize: '0.68rem', color: '#1e1b19', fontFamily: 'var(--font-mono, monospace)' }}>OBSERVATIONS:</strong>
+                                      <span style={{ color: 'rgba(30, 27, 25, 0.85)', lineHeight: 1.35 }}>{n.detailedObservations}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Recommended Protocol / Action */}
+                                  {n.recommendedAction && (
+                                    <div style={{ background: 'rgba(39, 174, 96, 0.08)', padding: '6px 8px', borderRadius: '4px', borderLeft: '3px solid #27ae60', marginTop: '2px' }}>
+                                      <strong style={{ display: 'block', fontSize: '0.68rem', color: '#27ae60', fontFamily: 'var(--font-mono, monospace)' }}>RECOMMENDED ACTION:</strong>
+                                      <span style={{ color: 'rgba(30, 27, 25, 0.85)', lineHeight: 1.35 }}>{n.recommendedAction}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Acknowledge Button inside card for emergencies */}
+                                  {n.type === 'EMERGENCY' && !n.acknowledged && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        acknowledgeEmergency(n.id);
+                                      }}
+                                      style={{
+                                        marginTop: '6px',
+                                        background: '#bc473a',
+                                        color: '#faf6f0',
+                                        border: 'none',
+                                        padding: '6px 12px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.68rem',
+                                        fontWeight: 800,
+                                        fontFamily: 'var(--font-mono, monospace)',
+                                        cursor: 'pointer',
+                                        letterSpacing: '0.04em',
+                                      }}
+                                    >
+                                      ACKNOWLEDGE & STOP ALARM
+                                    </button>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           {isAuthenticated && user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{
