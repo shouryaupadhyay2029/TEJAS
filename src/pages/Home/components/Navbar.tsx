@@ -45,7 +45,8 @@ const navLinks = [
   { to: '/block-planning', label: 'PLANNING', num: '04' },
   { to: '/optimization', label: 'OPTIMIZATION', num: '05' },
   { to: '/traffic', label: 'TRAFFIC', num: '06' },
-  { to: '/reports', label: 'REPORTS', num: '07' },
+  { to: '/gis-map', label: 'GIS MAP', num: '07' },
+  { to: '/reports', label: 'REPORTS', num: '08' },
 ];
 
 export const Navbar: React.FC = () => {

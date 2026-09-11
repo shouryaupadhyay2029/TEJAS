@@ -15,6 +15,7 @@ import BlockPlanning from './pages/BlockPlanning';
 import Optimization from './pages/Optimization';
 import Traffic from './pages/Traffic';
 import Reports from './pages/Reports';
+import GisMap from './pages/GisMap';
 import Auth from './pages/Auth';
 import { IncidentReport } from './pages/IncidentReport/IncidentReport';
 
@@ -95,6 +96,11 @@ export const App: React.FC = () => {
                     <Route path="/reports" element={
                       <ProtectedRoute>
                         <NonLandingRoute><Reports /></NonLandingRoute>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/gis-map" element={
+                      <ProtectedRoute>
+                        <NonLandingRoute><GisMap /></NonLandingRoute>
                       </ProtectedRoute>
                     } />
 

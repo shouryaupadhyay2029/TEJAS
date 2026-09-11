@@ -1,0 +1,491 @@
+.gisPage {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #faf6f0;
+  color: #1e1b19;
+  position: relative;
+}
+
+.contentContainer {
+  flex: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 6.8rem 2rem 3rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.headerFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-family: var(--font-display, serif);
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: #1e1b19;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.metricBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metricCard {
+  background: rgba(252, 248, 240, 0.85);
+  border: 1px solid rgba(30, 27, 25, 0.12);
+  backdrop-filter: blur(12px);
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.04);
+}
+
+.metricIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metricVal {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e1b19;
+  line-height: 1.1;
+}
+
+.metricLabel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: rgba(30, 27, 25, 0.6);
+  text-transform: uppercase;
+}
+
+.mapWrapper {
+  position: relative;
+  width: 100%;
+  height: 680px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(30, 27, 25, 0.15);
+  box-shadow: 0 12px 36px rgba(30, 27, 25, 0.12);
+  background-color: #e5e0d8;
+}
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Floating Controls Bar on Map */
+.floatingControls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  background: rgba(252, 248, 240, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(30, 27, 25, 0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+}
+
+.controlGroupTitle {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #bc473a;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.filterBtnRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(30, 27, 25, 0.15);
+  color: #1e1b19;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterBtnActive {
+  background: #1e1b19;
+  color: #faf6f0;
+  border-color: #1e1b19;
+}
+
+/* Custom Pulsing Leaflet Markers */
+:global(.defect-pulsing-marker) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.defect-pulse-ring) {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(188, 71, 58, 0.35);
+  border: 2px solid #bc473a;
+  animation: pulseGlow 1.4s infinite ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+:global(.train-marker-icon) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1b19;
+  color: #faf6f0;
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+:global(.train-marker-freight) {
+  background: #d35400;
+  border-color: #f39c12;
+}
+
+:global(.train-marker-express) {
+  background: #1e824c;
+  border-color: #2ecc71;
+}
+
+@keyframes pulseGlow {
+  0% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(188, 71, 58, 0.7);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 10px rgba(188, 71, 58, 0);
+  }
+  100% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(188, 71, 58, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .mapWrapper {
+    height: 500px;
+  }
+  .floatingControls {
+    position: static;
+    max-width: 100%;
+    margin-bottom: 12px;
+  }
+}
+
+/* RailRadar Train Search Bar & Quota Badge */
+.searchSection {
+  background: rgba(252, 248, 240, 0.85);
+  border: 1.5px solid rgba(30, 27, 25, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 4px 16px rgba(30, 27, 25, 0.04);
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 500px;
+}
+
+.searchInput {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(30, 27, 25, 0.2);
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e1b19;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: #bc473a;
+}
+
+.searchBtn {
+  background: #1e1b19;
+  color: #faf6f0;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.searchBtn:hover {
+  background: #bc473a;
+}
+
+.quotaBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  color: #1e824c;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* Modal Backdrop & RailRadar Timetable Drawer */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 27, 25, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modalContent {
+  background: #faf6f0;
+  border: 2px solid rgba(30, 27, 25, 0.2);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1.5px solid rgba(30, 27, 25, 0.1);
+  padding-bottom: 0.75rem;
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #1e1b19;
+  padding: 0 4px;
+}
+
+.trainHaltList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.quickSelectSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+}
+
+.quickChip {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(30, 27, 25, 0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #1e1b19;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quickChip:hover {
+  background: #1e1b19;
+  color: #faf6f0;
+  border-color: #1e1b19;
+}
+
+.kavachMetricCard {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1.5px solid rgba(188, 71, 58, 0.3);
+}
+
+:global(.train-kavach-warning) {
+  animation: kavachPulse 1s infinite alternate ease-in-out;
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.8) !important;
+}
+
+/* System Architecture & Data Provenance Guide Card at Bottom */
+.provenanceCard {
+  background: rgba(252, 248, 240, 0.9);
+  border: 1.5px solid rgba(30, 27, 25, 0.15);
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 8px 30px rgba(30, 27, 25, 0.05);
+  margin-top: 1rem;
+}
+
+.provenanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1.5px dashed rgba(30, 27, 25, 0.15);
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.provenanceBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #bc473a;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.provenanceTitle {
+  font-family: var(--font-display, serif);
+  font-size: 1.4rem;
+  color: #1e1b19;
+  margin: 0;
+}
+
+.provenanceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.provenanceCol {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(30, 27, 25, 0.1);
+  border-radius: 10px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.colHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(30, 27, 25, 0.08);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.colHeader h3 {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1e1b19;
+  margin: 0;
+}
+
+.colIcon {
+  color: #bc473a;
+  flex-shrink: 0;
+}
+
+.provenanceList {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.provenanceList li {
+  font-size: 0.8rem;
+}
+
