@@ -40,6 +40,24 @@ import { useAuth } from '../context/AuthContext';
 export const BlockPlanning: React.FC = () => {
   const { user } = useAuth();
 
+  const isSseRole = Boolean(
+    !user?.role ||
+    user.role === 'SSE' ||
+    user.role === 'FIELD_OFFICER_ENG' ||
+    user.role.includes('ENG') ||
+    user.role.includes('FIELD') ||
+    user.role === 'OPERATIONS_CONTROLLER' ||
+    user.role === 'DIVISIONAL_ENGINEER'
+  );
+
+  const isDomRole = Boolean(
+    user?.role === 'DOM' ||
+    user?.role === 'OPERATIONS_CONTROLLER' ||
+    user?.role === 'DIVISIONAL_OPERATIONS_MANAGER' ||
+    user?.role === 'SECTION_CONTROLLER' ||
+    user?.role === 'DIVISIONAL_ENGINEER'
+  );
+
   const [blocks, setBlocks] = useState<PlanningBlock[]>([]);
   const [hoveredBlock, setHoveredBlock] = useState<PlanningBlock | null>(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
@@ -111,6 +129,16 @@ export const BlockPlanning: React.FC = () => {
 
   const handleDualSignoff = async (approved: boolean) => {
     if (!signoffModalBlock) return;
+    if (signoffRole === 'DOM' && !isDomRole) {
+      setToastMessage('RESTRICTED: DOM Traffic Sign-Off can only be granted by DOM Traffic Officers!');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
+    if (signoffRole === 'SSE' && !isSseRole) {
+      setToastMessage('RESTRICTED: SSE Ground Sign-Off can only be granted by Senior Section Engineers!');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
     try {
       setIsSubmittingSignoff(true);
       await signoffBlockSchedule(signoffModalBlock.block_id, signoffRole, approved, signoffNotes);
@@ -128,6 +156,16 @@ export const BlockPlanning: React.FC = () => {
   };
 
   const handleDualSignoffDirect = async (block: BlockScheduleDetail, role: 'SSE' | 'DOM') => {
+    if (role === 'DOM' && !isDomRole) {
+      setToastMessage('RESTRICTED: DOM Traffic Sign-Off can only be granted by DOM Traffic Officers!');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
+    if (role === 'SSE' && !isSseRole) {
+      setToastMessage('RESTRICTED: SSE Ground Sign-Off can only be granted by Senior Section Engineers!');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
     try {
       setIsSubmittingSignoff(true);
       const notes = role === 'SSE' ? 'SSE Ground Readiness Safety Clearance Granted' : 'DOM Traffic Stoppage Clearance Granted';
@@ -605,14 +643,19 @@ export const BlockPlanning: React.FC = () => {
                         {b.urgency_score ? (b.urgency_score * 100).toFixed(0) : '85'} SCORE
                       </span>
 
-                      {/* Dual-Safety Status Badges (Clickable) */}
+                      {/* Dual-Safety Status Badges (Clickable with Role Guarding) */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                         <span
                           onClick={() => {
+                            if (!isSseRole) {
+                              setToastMessage('RESTRICTED: SSE Ground Verification requires Senior Section Engineer authority!');
+                              setTimeout(() => setToastMessage(null), 4000);
+                              return;
+                            }
                             setSignoffModalBlock(b);
                             setSignoffRole('SSE');
                           }}
-                          title="Click to open SSE Ground Readiness Verification modal"
+                          title={isSseRole ? "Click to open SSE Ground Readiness Verification modal" : "Restricted: Senior Section Engineer (SSE) role required"}
                           style={{
                             fontSize: '0.65rem',
                             fontWeight: 700,
@@ -624,7 +667,8 @@ export const BlockPlanning: React.FC = () => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            cursor: 'pointer',
+                            cursor: isSseRole ? 'pointer' : 'not-allowed',
+                            opacity: isSseRole ? 1 : 0.6,
                             transition: 'transform 0.15s ease'
                           }}
                         >
@@ -633,10 +677,15 @@ export const BlockPlanning: React.FC = () => {
 
                         <span
                           onClick={() => {
+                            if (!isDomRole) {
+                              setToastMessage('RESTRICTED: DOM Traffic Clearance Verification requires DOM Officer authority!');
+                              setTimeout(() => setToastMessage(null), 4000);
+                              return;
+                            }
                             setSignoffModalBlock(b);
                             setSignoffRole('DOM');
                           }}
-                          title="Click to open DOM Traffic Clearance Verification modal"
+                          title={isDomRole ? "Click to open DOM Traffic Clearance Verification modal" : "Restricted: Divisional Operations Manager (DOM) role required"}
                           style={{
                             fontSize: '0.65rem',
                             fontWeight: 700,
@@ -648,7 +697,8 @@ export const BlockPlanning: React.FC = () => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            cursor: 'pointer',
+                            cursor: isDomRole ? 'pointer' : 'not-allowed',
+                            opacity: isDomRole ? 1 : 0.6,
                             transition: 'transform 0.15s ease'
                           }}
                         >
@@ -708,28 +758,28 @@ export const BlockPlanning: React.FC = () => {
                             {!isSseDone && (
                               <button
                                 type="button"
-                                disabled={isSubmittingSignoff}
+                                disabled={isSubmittingSignoff || !isSseRole}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   handleDualSignoffDirect(b, 'SSE');
                                 }}
-                                title="Click to instantly grant SSE Ground Readiness Safety Clearance"
+                                title={!isSseRole ? "Restricted: Senior Section Engineer (SSE) role required" : "Click to grant SSE Ground Readiness Safety Clearance"}
                                 style={{
-                                  background: '#bc473a',
+                                  background: !isSseRole ? '#9ca3af' : '#bc473a',
                                   color: '#fff',
                                   border: 'none',
                                   borderRadius: '5px',
                                   padding: '0.35rem 0.65rem',
                                   fontSize: '0.7rem',
                                   fontWeight: 800,
-                                  cursor: isSubmittingSignoff ? 'not-allowed' : 'pointer',
+                                  cursor: (!isSseRole || isSubmittingSignoff) ? 'not-allowed' : 'pointer',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
                                   whiteSpace: 'nowrap',
                                   zIndex: 10,
-                                  opacity: isSubmittingSignoff ? 0.6 : 1
+                                  opacity: (!isSseRole || isSubmittingSignoff) ? 0.45 : 1
                                 }}
                               >
                                 <ShieldCheck size={12} /> SSE
@@ -738,28 +788,28 @@ export const BlockPlanning: React.FC = () => {
                             {!isDomDone && (
                               <button
                                 type="button"
-                                disabled={isSubmittingSignoff}
+                                disabled={isSubmittingSignoff || !isDomRole}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   handleDualSignoffDirect(b, 'DOM');
                                 }}
-                                title="Click to instantly grant DOM Traffic Stoppage Clearance"
+                                title={!isDomRole ? "Restricted: Divisional Operations Manager (DOM) role required" : "Click to grant DOM Traffic Stoppage Clearance"}
                                 style={{
-                                  background: '#1e1b19',
+                                  background: !isDomRole ? '#9ca3af' : '#1e1b19',
                                   color: '#fff',
                                   border: 'none',
                                   borderRadius: '5px',
                                   padding: '0.35rem 0.65rem',
                                   fontSize: '0.7rem',
                                   fontWeight: 800,
-                                  cursor: isSubmittingSignoff ? 'not-allowed' : 'pointer',
+                                  cursor: (!isDomRole || isSubmittingSignoff) ? 'not-allowed' : 'pointer',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
                                   whiteSpace: 'nowrap',
                                   zIndex: 10,
-                                  opacity: isSubmittingSignoff ? 0.6 : 1
+                                  opacity: (!isDomRole || isSubmittingSignoff) ? 0.45 : 1
                                 }}
                               >
                                 <ShieldCheck size={12} /> DOM
