@@ -359,3 +359,18 @@ def get_all_maintenance_tasks(
     rows = db.execute(text(sql_str), params).mappings().all()
     return list(rows)
 
+
+@router.delete("/clear-all")
+@router.post("/clear-all")
+def clear_all_defects_and_blocks(
+    db: Session = Depends(get_db)
+):
+    """
+    Clears all reported maintenance tasks and scheduled block plans to start fresh.
+    """
+    db.execute(text("DELETE FROM block_schedule;"))
+    db.execute(text("DELETE FROM maintenance_tasks;"))
+    db.commit()
+    return {"message": "All maintenance defects and block schedules cleared successfully."}
+
+
