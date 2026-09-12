@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
 import app.models
-from app.routers import sections, tasks, schedule, network, optimizer, auth, traffic
+from app.routers import sections, tasks, schedule, network, optimizer, auth, traffic, telemetry
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,7 +55,17 @@ app.include_router(schedule.router)
 app.include_router(network.router)
 app.include_router(optimizer.router)
 app.include_router(traffic.router)
+app.include_router(telemetry.router)
+
+@app.post("/broadcast/telemetry", tags=["telemetry"])
+async def broadcast_telemetry(payload: dict):
+    """
+    HTTP POST endpoint to broadcast a telemetry event or emergency defect alert to all connected WebSocket clients.
+    """
+    await telemetry.manager.broadcast(payload)
+    return {"status": "broadcasted", "payload_type": payload.get("event_type", "UNKNOWN")}
 
 @app.get("/health", tags=["health"])
 def health_check():
     return {"status": "ok"}
+
