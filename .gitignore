@@ -44,3 +44,7 @@ ENV/
 # ML Models and Archives
 backend/ml/**/*.joblib
 backend/ml/**/archive/
+
+# Temporary scratch scripts
+scratch/
+

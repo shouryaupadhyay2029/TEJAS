@@ -9,7 +9,7 @@ load_dotenv()
 
 from app.database import engine, Base
 import app.models
-from app.routers import sections, tasks, schedule, network, optimizer, auth, traffic, telemetry
+from app.routers import sections, tasks, schedule, network, optimizer, auth, traffic, telemetry, simulation
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for all origins
+# CORS Policy Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -59,6 +59,7 @@ app.include_router(network.router)
 app.include_router(optimizer.router)
 app.include_router(traffic.router)
 app.include_router(telemetry.router)
+app.include_router(simulation.router)
 
 @app.post("/broadcast/telemetry", tags=["telemetry"])
 async def broadcast_telemetry(payload: dict):
