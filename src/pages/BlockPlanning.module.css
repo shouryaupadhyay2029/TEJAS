@@ -1446,3 +1446,510 @@
   }
 }
 
+/* ======================================================
+   SECTION S07: WHAT-IF CP-SAT SCENARIO SIMULATOR
+   ====================================================== */
+
+.simContainer {
+  background: linear-gradient(135deg, rgba(30, 27, 25, 0.96) 0%, rgba(20, 18, 15, 0.98) 100%);
+  border: 1px solid rgba(188, 71, 58, 0.25);
+  border-radius: 20px;
+  padding: 2.25rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: #faf6f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.simContainer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(188, 71, 58, 0.8), rgba(210, 180, 140, 0.6), rgba(188, 71, 58, 0.8), transparent);
+}
+
+/* Header */
+.simHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.simTitleGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.simIcon {
+  color: #bc473a;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.simTitle {
+  font-family: var(--font-display, serif);
+  font-size: 1.65rem;
+  font-weight: 400;
+  color: #faf6f0;
+  margin: 0 0 0.3rem;
+  line-height: 1.2;
+}
+
+.simSubtitle {
+  font-size: 0.8rem;
+  color: rgba(210, 180, 140, 0.7);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 540px;
+}
+
+.simBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(188, 71, 58, 0.12);
+  border: 1px solid rgba(188, 71, 58, 0.3);
+  color: #d2856c;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Two-column grid: form | results */
+.simGrid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .simGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Input (Form) Card ---- */
+.simFormCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(210, 180, 140, 0.12);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.simCardTitle {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.6);
+  margin: 0 0 0.25rem;
+}
+
+.simFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.simFormRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.simLabel {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.55);
+}
+
+.simSelect,
+.simInput {
+  background: rgba(10, 8, 6, 0.6);
+  border: 1px solid rgba(210, 180, 140, 0.18);
+  border-radius: 8px;
+  color: #faf6f0;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.simSelect:focus,
+.simInput:focus {
+  border-color: rgba(188, 71, 58, 0.55);
+  box-shadow: 0 0 0 2px rgba(188, 71, 58, 0.12);
+}
+
+.simSelect option {
+  background: #1a1712;
+  color: #faf6f0;
+}
+
+/* Department checkbox group */
+.deptCheckboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.deptCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(210, 180, 140, 0.65);
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(210, 180, 140, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.deptCheckboxLabel:hover {
+  background: rgba(188, 71, 58, 0.06);
+  border-color: rgba(188, 71, 58, 0.2);
+  color: rgba(210, 180, 140, 0.9);
+}
+
+.deptCheckboxLabel input[type="checkbox"] {
+  accent-color: #bc473a;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.deptCheckboxLabelActive {
+  background: rgba(188, 71, 58, 0.1);
+  border-color: rgba(188, 71, 58, 0.4);
+  color: #d2856c;
+}
+
+/* Error box */
+.simErrorBox {
+  background: rgba(188, 71, 58, 0.08);
+  border: 1px solid rgba(188, 71, 58, 0.3);
+  color: #e8786a;
+  font-size: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-mono, monospace);
+}
+
+/* Run button */
+.simRunBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #bc473a 0%, #a33c30 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(188, 71, 58, 0.35);
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.simRunBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(188, 71, 58, 0.5);
+  background: linear-gradient(135deg, #cf5447 0%, #bc473a 100%);
+}
+
+.simRunBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes spinAnim {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spinIcon {
+  animation: spinAnim 1s linear infinite;
+}
+
+/* ---- Results Panel ---- */
+.simResultsCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(210, 180, 140, 0.1);
+  border-radius: 14px;
+  padding: 1.5rem;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Placeholder state */
+.simPlaceholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  color: rgba(210, 180, 140, 0.35);
+  padding: 2rem;
+}
+
+.simPlaceholderIcon {
+  opacity: 0.25;
+  color: #d2b48c;
+}
+
+.simPlaceholder p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 320px;
+}
+
+.simPlaceholder strong {
+  color: rgba(210, 180, 140, 0.6);
+}
+
+/* Verdict banner */
+.simVerdictBanner {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.simVerdictTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.simVerdictMeta {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+
+/* Metrics grid */
+.simMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .simMetricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.simMetricCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(210, 180, 140, 0.1);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+
+.simMetricVal {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #d2b48c;
+  margin-bottom: 0.2rem;
+  line-height: 1;
+}
+
+.simMetricLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.5);
+}
+
+/* Alt window card */
+.simAltWindowCard {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.simAltHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #6ee7b7;
+  margin-bottom: 0.3rem;
+}
+
+.simAltText {
+  font-size: 0.78rem;
+  color: rgba(110, 231, 183, 0.75);
+  line-height: 1.5;
+}
+
+/* Sub-title with icon */
+.simSubTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.55);
+  margin: 0 0 0.6rem;
+}
+
+/* Train table */
+.simTrainTableContainer {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(210, 180, 140, 0.08);
+  margin-bottom: 1.25rem;
+}
+
+.simTrainTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.simTrainTable thead {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.simTrainTable th {
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.45);
+  border-bottom: 1px solid rgba(210, 180, 140, 0.1);
+  white-space: nowrap;
+}
+
+.simTrainTable td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid rgba(210, 180, 140, 0.05);
+  color: rgba(250, 246, 240, 0.75);
+  line-height: 1.4;
+}
+
+.simTrainTable tbody tr:hover {
+  background: rgba(210, 180, 140, 0.04);
+}
+
+.simTrainTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.trainTypeBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+.delayBad {
+  font-family: var(--font-mono, monospace);
+  font-weight: 800;
+  color: #f87171;
+}
+
+.delayGood {
+  font-family: var(--font-mono, monospace);
+  font-weight: 800;
+  color: #6ee7b7;
+}
+
+/* Optimization notes */
+.simNotesBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(210, 180, 140, 0.1);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+.simNotesHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(210, 180, 140, 0.5);
+  margin-bottom: 0.6rem;
+}
+
+.simNotesList {
+  margin: 0;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.simNotesList li {
+  font-size: 0.78rem;
+  color: rgba(210, 180, 140, 0.7);
+  line-height: 1.5;
+}
