@@ -86,6 +86,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_optional_user(token: Optional[str] = Depends(OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)), db: Session = Depends(get_db)) -> Optional[User]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        officer_id: str = payload.get("sub")
+        if officer_id:
+            return db.query(User).filter(User.officer_id == officer_id).first()
+    except Exception:
+        pass
+    return None
+
 def require_role(*allowed_roles: str):
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role not in allowed_roles:

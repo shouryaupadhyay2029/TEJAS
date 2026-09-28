@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.auth import get_current_user
+from app.auth import get_current_user, get_optional_user
 from app.models import User, Section, SectionTimeSlot, SectionTrafficSummary, Station
 from app.schemas import SectionOut, SectionTrafficOut, SectionAvailabilityResponse, SlotItem
 
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/sections", tags=["sections"])
 @router.get("/traffic/all", response_model=List[SectionTrafficOut])
 def get_all_section_traffic(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
     Returns all section traffic summary metrics joined with section and station details.
@@ -47,7 +47,7 @@ def get_all_sections(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
     Utility endpoint returning paginated sections with readable from/to station details.
