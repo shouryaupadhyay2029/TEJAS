@@ -24,6 +24,12 @@ async def lifespan(app: FastAPI):
             logger.info(f"Connecting to database and creating tables (Attempt {attempt}/{max_retries})...")
             Base.metadata.create_all(bind=engine)
             logger.info("Database tables created successfully!")
+            try:
+                from scripts.seed_demo_users import seed_users
+                seed_users()
+                logger.info("Demo users auto-seeded successfully!")
+            except Exception as seed_err:
+                logger.warning(f"Demo user auto-seed warning: {seed_err}")
             break
         except Exception as exc:
             logger.warning(f"Database connection failed on attempt {attempt}/{max_retries}: {exc}")

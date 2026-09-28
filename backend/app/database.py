@@ -6,7 +6,10 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 load_dotenv()
 
-raw_db_url = os.getenv("DATABASE_URL", "sqlite:///./tejas.db")
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+default_sqlite_path = os.path.join(backend_dir, "tejas.db")
+
+raw_db_url = os.getenv("DATABASE_URL", f"sqlite:///{default_sqlite_path}")
 
 # If running locally outside Docker container, translate docker hostname 'db' to 'localhost'
 if "@db:" in raw_db_url and not os.path.exists("/.dockerenv"):
@@ -23,7 +26,7 @@ try:
         pass
 except Exception:
     # Fallback to local SQLite database so backend always runs seamlessly
-    db_url = "sqlite:///./tejas.db"
+    db_url = f"sqlite:///{default_sqlite_path}"
     engine = create_engine(db_url, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
