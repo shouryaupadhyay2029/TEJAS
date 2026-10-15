@@ -7,3 +7,10 @@ __pycache__
 .git
 .gitignore
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
+.env
+data/
+ml/**/archive/
+ml/**/*.joblib

@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 from contextlib import asynccontextmanager
@@ -48,9 +49,17 @@ app = FastAPI(
 )
 
 # CORS Policy Configuration
+# In production, ALLOWED_ORIGINS env var should list the Vercel frontend URL
+# e.g. ALLOWED_ORIGINS=https://tejas-frontend.vercel.app
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+if _raw_origins == "*":
+    allow_origins = ["*"]
+else:
+    allow_origins = [o.strip() for o in _raw_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -77,5 +86,4 @@ async def broadcast_telemetry(payload: dict):
 
 @app.get("/health", tags=["health"])
 def health_check():
-    return {"status": "ok"}
-
+    return {"status": "ok", "version": "1.0.0"}

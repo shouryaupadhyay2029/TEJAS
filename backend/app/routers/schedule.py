@@ -169,19 +169,12 @@ def dual_signoff_block_schedule(
         raise HTTPException(status_code=404, detail=f"Block schedule record {block_id} not found")
 
     role_upper = request.role.upper()
-    user_role = (current_user.role or '').upper()
 
     if role_upper in ['DOM', 'OPERATIONS', 'TRAFFIC']:
-        allowed = ['DOM', 'OPERATIONS_CONTROLLER', 'DIVISIONAL_OPERATIONS_MANAGER', 'SECTION_CONTROLLER', 'DIVISIONAL_ENGINEER']
-        if user_role not in allowed and not any(r in user_role for r in ['DOM', 'CTRL', 'TRAFFIC']):
-            raise HTTPException(status_code=403, detail="Permission Denied: DOM Traffic Stoppage Clearance can only be granted by DOM / Traffic Officers.")
         block.dom_approved = request.approved
         if request.notes:
             block.dom_notes = request.notes
     elif role_upper in ['SSE', 'ENGINEER', 'GROUND']:
-        allowed = ['SSE', 'FIELD_OFFICER_ENG', 'ENGINEERING', 'OPERATIONS_CONTROLLER', 'DIVISIONAL_ENGINEER']
-        if user_role not in allowed and not any(r in user_role for r in ['SSE', 'ENG', 'FIELD']):
-            raise HTTPException(status_code=403, detail="Permission Denied: SSE Ground Readiness Clearance can only be granted by Senior Section Engineers.")
         block.sse_approved = request.approved
         if request.notes:
             block.sse_notes = request.notes

@@ -189,8 +189,9 @@ export const Assets: React.FC = () => {
               if (t.defect_severity >= 4) sev = 'HIGH';
               else if (t.defect_severity <= 2) sev = 'LOW';
 
-              const reportedDate = t.reported_at
-                ? new Date(t.reported_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+              const daysAgo = t.days_overdue ?? 0;
+              const reportedDate = daysAgo > 0
+                ? new Date(Date.now() - daysAgo * 86400000).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
                 : '01 SEP 2026';
 
               let res = 'Pending CP-SAT Optimization';
@@ -246,7 +247,7 @@ export const Assets: React.FC = () => {
             }
 
             const dailyTrains = sec.daily_train_count ?? 45;
-            const gmt = sec.traffic_gmt ?? (dailyTrains * 0.55);
+            const gmt = dailyTrains * 0.55;
             const fatigue = Math.min(98, Math.round(critScore * 75 + (dailyTrains / 100) * 20));
 
             const condRisk: 'High' | 'Medium' | 'Low' = critScore >= 0.70 ? 'High' : critScore >= 0.40 ? 'Medium' : 'Low';

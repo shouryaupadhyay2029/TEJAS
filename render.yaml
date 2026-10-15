@@ -1,0 +1,24 @@
+services:
+  # ───────────────────────────────────────────
+  # TEJAS FastAPI Backend
+  # Deployed as a Render Web Service (Docker)
+  # ───────────────────────────────────────────
+  - type: web
+    name: tejas-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      # SQLite — no external DB needed on free tier
+      - key: DATABASE_URL
+        value: sqlite:////backend/data/tejas.db
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    disk:
+      name: tejas-db-disk
+      mountPath: /backend/data
+      sizeGB: 1
+    healthCheckPath: /health
